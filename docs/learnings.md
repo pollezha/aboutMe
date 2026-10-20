@@ -33,3 +33,10 @@
   пиннингом в Directory.Packages.props (`CentralPackageTransitivePinningEnabled`), не глушить NU190x.
   У каждого сервиса — `Properties/launchSettings.json` с профилем http.
 - Куда закреплено: Directory.Packages.props, тест AppHostTests; шаг установки — в T6 (CI) и README (T7).
+
+## 2026-10-20 — этап 1, T4: версии фронтенда
+- Что случилось: последний TypeScript — 7.x (нативный порт), но typescript-eslint 8.72 требует `typescript <6.1`,
+  а совместимость vue-tsc с TS 7 не подтверждена.
+- Правило на будущее: держать `typescript ~6.0` до поддержки TS 7 в typescript-eslint и vue-tsc; при обновлении
+  сначала `npm view typescript-eslint peerDependencies`.
+- Куда закреплено: frontend/package.json (`~6.0.3`).

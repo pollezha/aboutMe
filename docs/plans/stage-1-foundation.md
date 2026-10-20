@@ -47,7 +47,7 @@ Vue-каркас, валидатор контента, CI. Окружение п
     в статусе Running/Healthy (скриншот или вывод в PR).
   - Зависит от: T2
 
-- [ ] T4 — Каркас фронтенда (Vue 3 + TS + Vite + Pinia + vue-i18n + линтеры)
+- [x] T4 — Каркас фронтенда (Vue 3 + TS + Vite + Pinia + vue-i18n + линтеры)
   - Файлы: `frontend/` (`package.json`, `vite.config.ts`, `tsconfig*.json`, `eslint.config.js`,
     `.prettierrc`, `index.html`, `src/main.ts`, `src/App.vue`, `src/i18n/{index.ts,en.json,ru.json}`,
     `src/stores/ui.ts`), `frontend/src/__tests__/App.spec.ts`. Скрипты: `dev`, `build`, `lint`, `format:check`,
