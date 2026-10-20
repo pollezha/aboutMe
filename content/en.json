@@ -1,0 +1,16 @@
+{
+  "$schema": "./schema/content.schema.json",
+  "contentVersion": "2026-10-20T00:00:00Z",
+  "lang": "en",
+  "profile": {
+    "name": "Yakov Polezhaev",
+    "role": ".NET Backend Developer",
+    "status": "Open to work",
+    "workFormat": "Remote / relocation",
+    "links": [
+      { "kind": "github", "label": "GitHub", "href": "https://github.com/pollezha" },
+      { "kind": "telegram", "label": "Telegram", "href": "https://t.me/poll_ezha" },
+      { "kind": "hh", "label": "hh.ru", "href": "https://hh.ru/resume/28e123adff10fa48aa0039ed1f7a63354f3842" }
+    ]
+  }
+}

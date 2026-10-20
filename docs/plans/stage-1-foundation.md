@@ -57,7 +57,7 @@ Vue-каркас, валидатор контента, CI. Окружение п
   - Готово, когда: `npm run lint && npm run typecheck && npm test && npm run build` — всё зелёное.
   - Зависит от: — (параллельно с T1–T3)
 
-- [ ] T5 — Схема контента и валидатор в сборке (FR9, AC7)
+- [x] T5 — Схема контента и валидатор в сборке (FR9, AC7)
   - Файлы: `content/schema/content.schema.json` (JSON Schema: profile, chapters, skills с датами, links),
     `content/en.json` (минимальный, только подтверждённые данные: имя, роль, ссылки GitHub/Telegram/hh;
     без `[ADD]`), `frontend/scripts/validate-content.ts` (Ajv + правила: нет строк с `[ADD]`, нет `href`
@@ -110,6 +110,8 @@ T6 и T7 — после обеих.
 ## Отличия от roadmap
 - `src/Contracts` не создаём пустым в этапе 1: контракт события — отдельной задачей E4-T1 (правило «смена
   контрактов — отдельными задачами»), пустой проект без кода — шум.
+- T5: `tsx` не нужен — Node 24 импортирует `.ts` напрямую; правила — чистый TS-модуль `content-rules.ts`
+  (typecheck + Vitest), CLI — `validate-content.mjs`. Из npm-зависимостей T5 добавлен только `ajv`.
 - Шаблон сервиса (E1-T2) = gateway + общие ServiceDefaults; отдельный шаблон `dotnet new` не делаем —
   четыре остальных сервиса появятся в этапе 4 по образцу gateway.
 
