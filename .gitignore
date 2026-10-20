@@ -1,0 +1,32 @@
+# Секреты и локальные настройки
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+*.pfx
+
+# Локальные настройки Claude Code
+.claude/settings.local.json
+
+# Зависимости и сборка
+node_modules/
+dist/
+build/
+out/
+coverage/
+.cache/
+bin/
+obj/
+__pycache__/
+.venv/
+
+# IDE и ОС
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db
+*.log
