@@ -131,6 +131,8 @@
 - E4-T5 projector: consumer group A → агрегаты в PostgreSQL, идемпотентность по eventId.
 - E4-T6 live-hub: consumer group B → SignalR (онлайн, лента агрегатов).
 - E4-T7 Фронт: content из API со вшитым снимком как fallback; отправка событий; SignalR-клиент.
+- E4-T7b Записка в бутылке (FR17): `POST /api/messages` в events-api → Telegram Bot API, honeypot, лимит
+  3/ч в gateway, форма на фронте — TC-21.
 - E4-T8 Интеграционные тесты (Testcontainers) на каждый сервис и сквозной сценарий.
 - Запасной вариант по сроку: projector и live-hub в одном процессе с двумя consumer group (ADR).
 

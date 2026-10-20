@@ -172,6 +172,7 @@ frontend/src/
 | `GET /api/content/{lang}` | content-api | кэш браузера по ETag (`api.` не проксируется через CDN) |
 | `POST /api/events` | events-api | rate limit 60 событий/мин на клиента, тело ≤ 16 КБ |
 | `/hubs/live` (WebSocket) | live-hub | ≤ 3 соединения на клиента |
+| `POST /api/messages` | events-api | 3 записки в час на клиента, тело ≤ 4 КБ (FR17) |
 | `/health` | агрегат health всех сервисов | только для smoke в CD и внутренних алертов |
 | `/alive` | сам gateway | для внешнего uptime-пинга (T7) |
 
@@ -193,6 +194,12 @@ CORS: только домены сайта; разрешены методы `GET
 - Если Kafka недоступна дольше таймаута (2 с) → 503; фронт событие выбрасывает (аналитика best effort,
   сайт от этого не страдает). Outbox не нужен: у events-api нет своей БД, единственная запись — в журнал.
 - Ответ — 202 Accepted.
+- **Записки (FR17):** `POST /api/messages` `{name ≤ 80, replyTo ≤ 120, text ≤ 2000, website}` (`website` —
+  honeypot: заполнен → 204 без отправки). Валидация → отправка через Telegram Bot API (`sendMessage` в чат
+  владельца; токен и chat id из env) типизированным HttpClient с resilience-хендлером (таймаут 5 с, 2 ретрая).
+  Успех → 202; Telegram недоступен → 503, фронт предлагает написать в Telegram напрямую. Тело записки не
+  пишется в логи, трейсы (только длины) и Kafka; в журнал уходит только `cta_click{cta: bottle}`. Записки не в
+  Kafka осознанно: это не аналитика, а доставка, и хранить личные данные негде и незачем.
 
 ### 5.4 Контракт события `site.events.v1`
 ```json
@@ -206,7 +213,7 @@ CORS: только домены сайта; разрешены методы `GET
   "theme": "day | evening | night",
   "device": "desktop | mobile",
   "payload": { }                        // по типу: visit{source}, stop_opened{stop}, skill_opened{skill},
-                                        // cta_click{cta: contact|cv|telegram|github|hh|email}, web_vital{name,value}
+                                        // cta_click{cta: contact|cv|telegram|github|hh|email|bottle}, web_vital{name,value}
 }
 ```
 Сериализация — JSON (System.Text.Json, source generators). Эволюция: только добавление необязательных полей;

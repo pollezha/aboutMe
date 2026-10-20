@@ -68,7 +68,7 @@ docs/claude-workflow.md  # описание процесса и рекоменд
 ## Окружение
 - Windows 11, Git Bash. Хуки запускаются через `bash`; jq не нужен (хук использует node, если jq нет).
 - Плагины (scope project, `.claude/settings.json`; переустановка — `bash scripts/install-plugins.sh`): csharp-lsp, typescript-lsp, context7 (свежие доки .NET 10/Aspire/TresJS), playwright, github, streaming-skills-plugin (Kafka), frontend-design, figma. grafana-mcp — к этапу мониторинга.
-- Концепт: `docs/concept/plan.md` (план) и `docs/concept/mockup-route-city-v5.html` (концепт-арт, не финальный дизайн). Большие HTML/картинки не вставлять в чат — только путь к файлу.
+- Концепт: `docs/concept/plan.md` (план) и `docs/concept/mockup-v6.html` (актуальный концепт-арт, не финальный дизайн; v5 — предыдущий). Большие HTML/картинки не вставлять в чат — только путь к файлу.
 - Хук `.claude/hooks/guard-protected-files.sh` блокирует правку `.env*`, `secrets/`, ключей, lock-файлов и `.github/workflows/` через Edit/Write.
 
 ## Чего не делать
