@@ -4,18 +4,18 @@
 > Обновляй, когда меняются стек, соглашения или команды. Устаревшая строка хуже отсутствующей.
 
 ## Что это
-Личный проект «обо мне». Назначение и аудитория уточняются в первой спеке (`/spec`). Пока раздел не заполнен — спроси пользователя, а не придумывай.
+Сайт-портфолио Якова (.NET backend developer, open to work): изометрический остров-город, где здания — главы резюме. Аудитория — рекрутеры (понять за 30 с) и техлиды (живой бэкенд, код, мониторинг). Спека: `docs/spec/portfolio-mvp.md`, дизайн: `docs/design/architecture.md`, этапы: `docs/plans/roadmap.md`.
 
 ## Цели / не-цели
-- Цель: <...>
-- Не-цель: <что сознательно НЕ делаем, чтобы агент не «улучшал» лишнее>
+- Цель: имя, роль, статус и контакт видны за 30 с; сайт сам доказывает стек (5 сервисов, Kafka, SignalR, OTel) — метрики M1–M5, T1–T11 в спеке.
+- Не-цель (MVP): модели Blender, The Lab, блог, админка/CMS, Kubernetes, публичная Grafana, Schema Registry, DLQ, outbox, OTel Web SDK.
 
 ## Стек
-> Не выбран. Определяется через `/spec` → `/architecture` (ADR в docs/adr/). Не добавляй фреймворки и зависимости до принятого ADR.
-- Backend: <...>
-- Frontend: <...>
-- Хранилища / брокеры: <...>
-- Инфраструктура: <...>
+> Принят в ADR-0001…0006. Новые фреймворки и зависимости — только с согласия пользователя.
+- Backend: .NET 10, ASP.NET Core Minimal APIs, YARP, EF Core (Npgsql), SignalR, Confluent.Kafka, Aspire (AppHost + ServiceDefaults); тесты xUnit + Testcontainers.
+- Frontend: Vue 3 + TS + Vite, TresJS + cientos, Pinia, vue-i18n, vite-ssg; тесты Vitest, Playwright, axe, Lighthouse CI, size-limit.
+- Хранилища / брокеры: PostgreSQL (схемы `content`, `stats`), Kafka KRaft (топик `site.events.v1`, группы `projector`, `live-hub`).
+- Инфраструктура: один VPS + Docker Compose + Caddy; фронт на Cloudflare Pages; OTel Collector → Prometheus/Loki/Tempo → Grafana; GitHub Actions + GHCR.
 
 ## Команды
 ```bash
@@ -32,8 +32,13 @@
 
 ## Структура
 ```
-src/        # <...>
-tests/      # <...>
+frontend/   # Vue 3 + TS + Vite + TresJS, свои тесты (Vitest, Playwright)
+services/   # развёртываемые .NET-сервисы: gateway, content-api, events-api, projector, live-hub
+src/        # общие .NET-проекты: Contracts, ServiceDefaults, AppHost (Aspire)
+tests/      # тесты .NET: <Project>.Tests, интеграционные на Testcontainers
+deploy/     # compose, Caddy, OTel Collector, Grafana
+content/    # контент EN/RU в JSON
+docs/concept/ # исходный план и концепт-арт (см. ADR-0001)
 docs/spec/  # спецификации фич (скилл /spec)
 docs/adr/   # архитектурные решения (скилл /architecture)
 docs/plans/ # планы реализации (скилл /plan)
