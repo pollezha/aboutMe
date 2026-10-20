@@ -1,8 +1,13 @@
 <Solution>
+  <Folder Name="/services/" />
+  <Folder Name="/services/gateway/">
+    <Project Path="services/gateway/Gateway.csproj" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/ServiceDefaults/ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Gateway.Tests/Gateway.Tests.csproj" />
     <Project Path="tests/ServiceDefaults.Tests/ServiceDefaults.Tests.csproj" />
   </Folder>
 </Solution>

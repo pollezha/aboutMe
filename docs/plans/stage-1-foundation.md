@@ -32,7 +32,7 @@ Vue-каркас, валидатор контента, CI. Окружение п
     `dotnet format --verify-no-changes` чистый.
   - Зависит от: —
 
-- [ ] T2 — Сервис gateway (заглушка YARP)
+- [x] T2 — Сервис gateway (заглушка YARP)
   - Файлы: `services/gateway/` (Program.cs: ServiceDefaults + YARP из конфигурации, пока без маршрутов;
     `appsettings.json`), `tests/Gateway.Tests/` (WebApplicationFactory).
   - Тест сначала: `GET /health` и `/alive` → 200; неизвестный маршрут `/api/x` → 404 (а не 500).
