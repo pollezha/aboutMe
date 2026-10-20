@@ -19,15 +19,19 @@
 
 ## Команды
 ```bash
-# сборка
-<build command>
-# тесты (все / один)
-<test command>
-<test single command>
-# линтер / форматтер
-<lint command>
-# локальный запуск (с зависимостями)
-<run command>
+# .NET (из корня): сборка, тесты (MTP + xUnit v3), формат
+dotnet build
+dotnet test
+dotnet test --project tests/Gateway.Tests --filter-method "*Unknown_api_route*"
+dotnet format --verify-no-changes
+# фронт (из frontend/); build сначала валидирует content/*.json
+npm run lint && npm run format:check && npm run typecheck && npm test && npm run build
+npx vitest run src/__tests__/App.spec.ts -t "English"
+# локальный запуск: всё через Aspire / только фронт на снимке контента
+dotnet run --project src/AppHost
+npm run dev
+# один раз на машине (иначе сборка AppHost падает ASPIRE009)
+dotnet dnx --yes aspire.cli@13.6.1 -- setup --install-path ~/.aspire
 ```
 
 ## Структура

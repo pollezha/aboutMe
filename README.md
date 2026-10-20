@@ -1,9 +1,70 @@
 # aboutMe
 
-Личный проект «обо мне». Описание, стек и команды появятся после первой спецификации (`/spec`).
+Portfolio site of Yakov Polezhaev, .NET backend developer. An isometric island city where every building is
+a chapter of the CV. The site is also the proof of skills: it runs on its own .NET services, Kafka, SignalR
+and a full OpenTelemetry stack, and the monitoring is public.
 
-## Разработка с Claude Code
+> Status: stage 1 of 8 (foundation). The roadmap is in [docs/plans/roadmap.md](docs/plans/roadmap.md).
 
-Репозиторий подготовлен на базе Claude Code Starter Kit. Процесс работы описан в [docs/claude-workflow.md](docs/claude-workflow.md), контекст для агента — в [CLAUDE.md](CLAUDE.md), критерии ревью — в [REVIEW.md](REVIEW.md).
+## Architecture
 
-Начать: запусти `claude` в корне репозитория и вызови `/spec <идея>`.
+```
+browser ─► Cloudflare Pages (Vue 3 + TresJS, prerendered, content snapshot)
+   │
+   └─► Caddy ─► gateway (YARP) ─┬─► content-api ─► PostgreSQL
+                                ├─► events-api ─► Kafka site.events.v1 ─┬─► projector ─► PostgreSQL
+                                │                                       └─► live-hub ─► SignalR ─► browser
+                                └─► live-hub (/hubs/live)
+OpenTelemetry Collector ─► Prometheus · Loki · Tempo ─► Grafana ─► Telegram alerts
+```
+
+Details: [technical design](docs/design/architecture.md), decisions in [docs/adr/](docs/adr/),
+requirements and acceptance tests in [the spec](docs/spec/portfolio-mvp.md).
+
+## Run locally
+
+Requirements: Docker, [.NET 10 SDK](https://dotnet.microsoft.com/download), Node.js 24 LTS.
+
+One-time setup of the Aspire CLI bundle (DCP and dashboard; takes a few minutes):
+
+```bash
+dotnet dnx --yes aspire.cli@13.6.1 -- setup --install-path ~/.aspire
+```
+
+Run everything (opens the Aspire dashboard with logs, traces and metrics):
+
+```bash
+dotnet run --project src/AppHost
+```
+
+Frontend only (works without the backend, on the content snapshot):
+
+```bash
+cd frontend && npm ci && npm run dev
+```
+
+## Checks
+
+```bash
+dotnet build && dotnet test && dotnet format --verify-no-changes
+cd frontend && npm run lint && npm run format:check && npm run typecheck && npm test && npm run build
+```
+
+`npm run build` validates `content/*.json` first and fails on `[ADD]` placeholders or empty links.
+
+## Repository layout
+
+| Path | What |
+|---|---|
+| `frontend/` | Vue 3 + TypeScript + Vite, tests (Vitest) |
+| `services/` | Deployable .NET services: gateway (more in stage 4) |
+| `src/` | Shared .NET projects: ServiceDefaults, AppHost (Aspire) |
+| `tests/` | .NET tests (xUnit v3, Aspire integration tests) |
+| `content/` | Site content EN/RU as JSON + JSON Schema |
+| `docs/` | Spec, design, ADRs, plans, learnings |
+
+## Built with an AI agent
+
+Developed with Claude Code using a spec → design → plan → TDD → verify → review process.
+The agent rules live in [CLAUDE.md](CLAUDE.md), review criteria in [REVIEW.md](REVIEW.md),
+the workflow in [docs/claude-workflow.md](docs/claude-workflow.md).

@@ -80,7 +80,7 @@ Vue-каркас, валидатор контента, CI. Окружение п
     (`pollezha/aboutMe`) и `gh` (`winget install GitHub.cli`).
   - Зависит от: T3, T5
 
-- [ ] T7 — Команды в CLAUDE.md и README «как запустить»
+- [x] T7 — Команды в CLAUDE.md и README «как запустить»
   - Файлы: `CLAUDE.md` (раздел «Команды»: build, test, test одного, lint/format, запуск AppHost и фронта),
     `README.md` (что это, требования: Docker, .NET 10 SDK, Node LTS; запуск одной командой; ссылки на спеку,
     дизайн, ADR).
