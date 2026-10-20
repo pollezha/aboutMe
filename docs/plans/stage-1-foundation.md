@@ -18,7 +18,7 @@ Vue-каркас, валидатор контента, CI. Окружение п
 ## Задачи
 Каждая задача: укладывается в половину контекста, даёт рабочее состояние, один коммит.
 
-- [ ] T1 — Каркас .NET-решения и ServiceDefaults
+- [x] T1 — Каркас .NET-решения и ServiceDefaults
   - Файлы: `global.json` (SDK 10.0.x, rollForward latestFeature), `aboutMe.slnx`, `Directory.Build.props`
     (net10.0, Nullable, ImplicitUsings, TreatWarningsAsErrors, AnalysisLevel latest-recommended),
     `Directory.Packages.props` (central package management), дополнение `.editorconfig` для C#,
