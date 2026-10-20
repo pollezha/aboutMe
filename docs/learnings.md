@@ -21,3 +21,15 @@
   мониторингу). Версии пакетов сверять по NuGet/context7, а не по памяти: на 2026-10 Aspire 13.6.1,
   OpenTelemetry 1.20, Microsoft.Extensions.* 10.11, xunit.v3 4.0.2.
 - Куда закреплено: global.json, тест DefaultEndpointsTests (Production → 200).
+
+## 2026-10-20 — этап 1, T3: Aspire 13.6 AppHost
+- Что случилось: шаблон AppHost включает `AspireUseCliBundle`; сборка сама ставит Aspire CLI (DCP + дашборд)
+  через `dnx aspire.cli setup` с лимитом 120 с — на этом канале установка шла 3,5 мин и сборка падала
+  ASPIRE009. Aspire.Hosting 13.6.1 транзитивно тянет MessagePack 2.5.302 с уязвимостью (GHSA-qhrr-8q5h-9q3h),
+  NU1902 при TreatWarningsAsErrors роняет сборку. Без `launchSettings.json` у сервиса Aspire не видит его
+  HTTP-эндпоинт, и `WithHttpHealthCheck` падает.
+- Правило на будущее: на новой машине и в CI сначала `dotnet dnx --yes aspire.cli@<версия> -- setup
+  --install-path ~/.aspire` (в CI — кэшировать `~/.aspire`). Уязвимые транзитивные пакеты поднимать
+  пиннингом в Directory.Packages.props (`CentralPackageTransitivePinningEnabled`), не глушить NU190x.
+  У каждого сервиса — `Properties/launchSettings.json` с профилем http.
+- Куда закреплено: Directory.Packages.props, тест AppHostTests; шаг установки — в T6 (CI) и README (T7).

@@ -39,7 +39,7 @@ Vue-каркас, валидатор контента, CI. Окружение п
   - Готово, когда: тесты зелёные, сборка без предупреждений, `dotnet run` gateway отвечает на `/health`.
   - Зависит от: T1
 
-- [ ] T3 — AppHost (Aspire) поднимает gateway
+- [x] T3 — AppHost (Aspire) поднимает gateway
   - Файлы: `src/AppHost/` (gateway как project-ресурс), `tests/AppHost.Tests/` (Aspire.Hosting.Testing).
   - Тест сначала: интеграционный — запустить `DistributedApplication` из AppHost, дождаться, пока ресурс
     `gateway` станет healthy, `GET /health` через выданный клиент → 200.
