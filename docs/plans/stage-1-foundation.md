@@ -69,7 +69,7 @@ Vue-каркас, валидатор контента, CI. Окружение п
     понятным сообщением и проходит с исправной (вывод обеих команд в PR).
   - Зависит от: T4
 
-- [ ] T6 — CI в GitHub Actions
+- [x] T6 — CI в GitHub Actions
   - Файлы: `.github/workflows/ci.yml` — job `dotnet` (setup по `global.json`, restore, build, test,
     `format --verify-no-changes`) и job `frontend` (`npm ci`, lint, format:check, typecheck, test, build);
     триггер — PR и push в main.
