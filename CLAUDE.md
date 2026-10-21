@@ -69,6 +69,11 @@ docs/claude-workflow.md  # описание процесса и рекоменд
 
 Для мелочей (опечатка, однострочный фикс) — сразу implement + verify.
 
+**Оркестрация.** Основная сессия (модель Fable) — оркестратор: планирует, поручает, проверяет, коммитит, ведёт
+шлюзы этапов. Код пишет сабагент `implementer` (Opus, свежий контекст на задачу), ревьюят `reviewer` и
+`verifier` (Opus). Оркестратор не читает исходники и логи целиком — работает через планы, отчёты, `git diff --stat`
+и хвосты вывода проверок. Независимые задачи — параллельно в worktree.
+
 ## Окружение
 - Windows 11, Git Bash. Хуки запускаются через `bash`; jq не нужен (хук использует node, если jq нет).
 - Плагины (scope project, `.claude/settings.json`; переустановка — `bash scripts/install-plugins.sh`): csharp-lsp, typescript-lsp, context7 (свежие доки .NET 10/Aspire/TresJS), playwright, github, streaming-skills-plugin (Kafka), frontend-design, figma. grafana-mcp — к этапу мониторинга.
