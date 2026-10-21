@@ -17,7 +17,6 @@ jobs:
     name: .NET build, test, format
     runs-on: ubuntu-latest
     env:
-      ASPIRE_VERSION: 13.6.1
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
       ASPIRE_CLI_TELEMETRY_OPTOUT: '1'
     steps:
@@ -26,6 +25,10 @@ jobs:
       - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
+
+      # Single source of truth for the Aspire version: the SDK in src/AppHost/AppHost.csproj
+      - name: Read Aspire version
+        run: echo "ASPIRE_VERSION=$(sed -nE 's/.*Aspire\.AppHost\.Sdk\/([0-9.]+).*/\1/p' src/AppHost/AppHost.csproj)" >> "$GITHUB_ENV"
 
       # AppHost (Aspire) needs the CLI bundle with DCP and dashboard; the build's own setup has a 120 s limit
       - name: Cache Aspire CLI bundle
