@@ -208,7 +208,7 @@
 
 ## 5. Чек-лист этапов
 - [ ] 0. Решения и контент — спека, ADR, content/en.json без `[ADD]`, CV
-- [ ] 1. Фундамент — solution, AppHost, ServiceDefaults, Vue-каркас, валидатор контента, CI
+- [x] 1. Фундамент — solution, AppHost, ServiceDefaults, Vue-каркас, валидатор контента, CI (v0.1.0, 2026-10-21)
 - [ ] 2. Дизайн-проход — токены, единая система окон, 4 брейкпоинта, hero
 - [ ] 3. Сайт без бэкенда — сцена, окна, темы, 2D, SEO, Playwright, Lighthouse CI, деплой на CDN
 - [ ] 4. Сервисы — gateway, content-api, events-api, Kafka, projector, live-hub, интеграционные тесты
