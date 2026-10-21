@@ -19,7 +19,9 @@
     "getting-started",
     "qa",
     "qa/round-2-fixes",
-    "qa/round-3-mask"
+    "qa/round-3-mask",
+    "qa/round-4-2d-nav",
+    "qa/round-5-phone-flow"
   ],
   "nextSteps": [
     "review by user",
@@ -209,10 +211,12 @@
     "Screen/Desktop 1440×900/Night": "33:461",
     "Screen/Desktop 1440×900/Evening": "33:478",
     "Screen/Tablet 768×1024/Day (2D)": "34:709",
-    "Screen/Phone 390×844/Day (2D)": "34:826",
     "Screen/State/Loading scene": "34:964",
     "Screen/State/API offline": "34:1125",
-    "Screen/State/Reduced motion": "34:1145"
+    "Screen/State/Reduced motion": "34:1145",
+    "Screen/Phone 390×844 · viewport (fold)": "56:1378",
+    "Screen/Phone 390 · full page (2D)": "34:826",
+    "phoneFixedBar": "56:1408"
   },
   "foundationsPage": {
     "root": "8:2",
@@ -276,6 +280,14 @@
     "round3": [
       "Top-right baked PNG controls masked by Mask/top-right rectangle (x>1180, y<90, scaled) bound to Primitives sky/day (bg/canvas is FRAME_FILL-scoped and does not resolve on rectangles) in 33:2, 33:246, 33:461, 33:478, 34:964, 34:1125, 34:1145 (ids 47:1321/1323/1325/1327/1329/1331/1333)",
       "Blimp/CV region of the reference is covered by the opaque Hero card; no extra mask"
+    ],
+    "round4": [
+      "2D screens 34:709 / 34:826: Chapters list removed; caption updated; BottomBar compact placed as fixed bar (768: route + Primary Contact, 390: six numbered 50px stops) — both bars detached from BottomBar instance because nested-instance resize/visibility overrides are not applied inside instances; 8 hotspots Hotspot/<NN Name> inside Static map frame (dashed chapter stroke, opacity .6, min 44×44); phone first screen at 844 shows Hero (to 626) + bar (724–828); frames expanded to page height with scroll note",
+      "Specs §5 2D (36:172): structure/what-disappears rewritten, new row Хотспоты зданий"
+    ],
+    "round5": [
+      "Phone 390 rebuilt as scroll flow: compact Hero (337px: name 32px, role, status, Contact+CV+Telegram icon in one row, 3 metrics Display/Number-sm), static map 358×358 (image CROP window 730×730 at x=340 of the 1440×900 reference — island only, no baked controls/blimp/bar), 8 hotspots min 44×44, bottom spacer 88; page height 919",
+      "Two frames: viewport (fold) 56:1378 with fixed 72px BottomBar (6 numbered Route/Stop, titles hidden) at y=756; full page 34:826 with scroll note"
     ]
   },
   "sessionId": "da974e76-2eac-4a24-8e23-306f913cfb77"
