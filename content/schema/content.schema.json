@@ -24,7 +24,11 @@
         "status": { "$ref": "#/$defs/text" },
         "workFormat": { "$ref": "#/$defs/text" },
         "location": { "$ref": "#/$defs/text" },
-        "links": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/link" } }
+        "links": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/link" }
+        }
       }
     }
   },
@@ -35,9 +39,11 @@
       "additionalProperties": false,
       "required": ["kind", "label", "href"],
       "properties": {
-        "kind": { "enum": ["github", "telegram", "hh", "linkedin", "email", "cv"] },
+        "kind": {
+          "enum": ["github", "telegram", "hh", "linkedin", "email", "cv"]
+        },
         "label": { "$ref": "#/$defs/text" },
-        "href": { "type": "string" }
+        "href": { "type": "string", "pattern": "^(https://|mailto:|/)" }
       }
     }
   }

@@ -34,4 +34,16 @@ describe('App', () => {
     expect(header.text()).toContain('.NET backend-разработчик')
     expect(header.text()).not.toContain('Yakov Polezhaev')
   })
+
+  it('sets <html lang> to en by default and to ru after ui.setLang("ru")', async () => {
+    document.documentElement.lang = ''
+    const { ui } = mountApp()
+
+    expect(document.documentElement.lang).toBe('en')
+
+    ui.setLang('ru')
+    await nextTick()
+
+    expect(document.documentElement.lang).toBe('ru')
+  })
 })

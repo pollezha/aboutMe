@@ -37,10 +37,10 @@ dotnet dnx --yes aspire.cli@13.6.1 -- setup --install-path ~/.aspire
 ## Структура
 ```
 frontend/   # Vue 3 + TS + Vite + TresJS, свои тесты (Vitest, Playwright)
-services/   # развёртываемые .NET-сервисы: gateway, content-api, events-api, projector, live-hub
-src/        # общие .NET-проекты: Contracts, ServiceDefaults, AppHost (Aspire)
-tests/      # тесты .NET: <Project>.Tests, интеграционные на Testcontainers
-deploy/     # compose, Caddy, OTel Collector, Grafana
+services/   # развёртываемые .NET-сервисы: gateway, content-api, events-api, projector, live-hub (сейчас только gateway)
+src/        # общие .NET-проекты: ServiceDefaults, AppHost (Aspire); Contracts (E4-T1)
+tests/      # тесты .NET: <Project>.Tests; интеграционные на Testcontainers — с этапа 4
+deploy/     # (этап 5–6) compose, Caddy, OTel Collector, Grafana
 content/    # контент EN/RU в JSON
 docs/concept/ # исходный план и концепт-арт (см. ADR-0001)
 docs/spec/  # спецификации фич (скилл /spec)
@@ -52,9 +52,9 @@ docs/claude-workflow.md  # описание процесса и рекоменд
 ```
 
 ## Соглашения
-- <Именование, слои, куда класть новый код>
-- <Обработка ошибок, логирование>
-- <Работа с БД: миграции, транзакции>
+- Слои: сервис — `services/<svc>`, общий .NET-код — `src/ServiceDefaults` (каждый сервис: `AddServiceDefaults()` + `MapDefaultEndpoints()`); фронт — `frontend/src/{content,stores,theme,scene,ui,fallback2d,telemetry,i18n}`.
+- Ошибки и логи: ответы об ошибках — `ProblemDetails` (RFC 9457), необработанное → 500 без деталей исключения; логи структурные в stdout с `TraceId`; IP и PII не логировать (design §5.1–5.2).
+- БД: EF Core миграции — отдельной задачей и отдельным шагом деплоя, только вперёд-совместимые; projector пишет агрегат и отметку `eventId` в одной транзакции (ADR-0002).
 - Секреты только через переменные окружения / user-secrets. Никогда не коммитить `.env`.
 - Каждая фича — тесты на поведение, а не на реализацию.
 
@@ -75,10 +75,10 @@ docs/claude-workflow.md  # описание процесса и рекоменд
 и хвосты вывода проверок. Независимые задачи — параллельно в worktree.
 
 ## Окружение
-- Windows 11, Git Bash. Хуки запускаются через `bash`; jq не нужен (хук использует node, если jq нет).
+- Windows 11, Git Bash. Хуки запускаются через `bash`, логика хука — на node (jq не нужен).
 - Плагины (scope project, `.claude/settings.json`; переустановка — `bash scripts/install-plugins.sh`): csharp-lsp, typescript-lsp, context7 (свежие доки .NET 10/Aspire/TresJS), playwright, github, streaming-skills-plugin (Kafka), frontend-design, figma. grafana-mcp — к этапу мониторинга.
 - Концепт: `docs/concept/plan.md` (план) и `docs/concept/mockup-v6.html` (актуальный концепт-арт, не финальный дизайн; v5 — предыдущий). Большие HTML/картинки не вставлять в чат — только путь к файлу.
-- Хук `.claude/hooks/guard-protected-files.sh` блокирует правку `.env*`, `secrets/`, ключей, lock-файлов и `.github/workflows/` через Edit/Write.
+- Хук `.claude/hooks/guard-protected-files.sh` (логика в `.js`) блокирует правку `.env*`, `secrets/`, ключей, lock-файлов и `.github/workflows/` через Edit/Write и через команды Bash/PowerShell (cp/sed -i/rm/redirect/Set-Content), а также чтение секретов (cat .env). Матрица проверок хука — в scratchpad при правке; lock-файлы меняются только через npm/dotnet.
 
 ## Чего не делать
 - Не добавлять зависимости без явного согласия.

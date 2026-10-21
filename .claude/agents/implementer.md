@@ -1,7 +1,7 @@
 ---
 name: implementer
 description: Исполнитель одной задачи из плана в стиле TDD в свежем контексте. Пишет тест, код, прогоняет проверки и возвращает короткий отчёт. Не коммитит. Используется скиллом implement по поручению оркестратора.
-tools: Read, Write, Edit, Glob, Grep, Bash, PowerShell
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: opus
 ---
 

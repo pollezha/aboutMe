@@ -126,6 +126,7 @@
 - E4-T1 Contracts: событие `site.events.v1` (eventId UUIDv7, type, occurredAt, sessionId, lang, theme,
   payload), DTO контента; версия схемы.
 - E4-T2 gateway (YARP): маршруты, rate limit, CORS, фильтр ботов.
+- E4-T2b `/health` gateway — только внутренний доступ (RequireHost/Caddy `respond 404`), наружу только `/alive`; кэш результата health-проверок на несколько секунд.
 - E4-T3 content-api: EF Core + PostgreSQL, сид из JSON, output cache + ETag; миграции отдельной задачей.
 - E4-T4 events-api: валидация, обезличивание (хэш sessionId с суточной солью), producer с идемпотентностью.
 - E4-T5 projector: consumer group A → агрегаты в PostgreSQL, идемпотентность по eventId.
