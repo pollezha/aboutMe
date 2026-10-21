@@ -4,8 +4,27 @@
   "fileUrl": "https://www.figma.com/design/1D6lW84rl4yYR8VQwV10Pp",
   "planKey": "team::1311653453620320399",
   "scope": "full-library",
-  "completedSteps": ["capture-concept", "foundations/variables", "foundations/text-styles", "foundations/effect-styles", "pages/skeleton"],
-  "nextSteps": ["foundations/specimen-page", "components", "windows", "screens", "specs", "cover", "getting-started", "qa"],
+  "completedSteps": [
+    "capture-concept",
+    "foundations/variables",
+    "foundations/text-styles",
+    "foundations/effect-styles",
+    "pages/skeleton",
+    "foundations/specimen-page",
+    "components",
+    "windows",
+    "screens",
+    "specs",
+    "cover",
+    "getting-started",
+    "qa",
+    "qa/round-2-fixes"
+  ],
+  "nextSteps": [
+    "review by user",
+    "export tokens to frontend/src/theme/palette.ts",
+    "fill [ADD] placeholders"
+  ],
   "pages": {
     "📘 Cover": "6:113",
     "🚀 Getting started": "6:114",
@@ -21,40 +40,238 @@
     "renderedPng": "3:58",
     "readmeNote": "3:60",
     "breakpointsSection": "3:2",
-    "breakpointFrames": { "Desktop 1440": "3:3", "Laptop 1280×720": "3:6", "Tablet 768": "3:9", "Phone 390": "3:12" }
+    "breakpointFrames": {
+      "Desktop 1440": "3:3",
+      "Laptop 1280×720": "3:6",
+      "Tablet 768": "3:9",
+      "Phone 390": "3:12"
+    }
   },
   "collections": {
     "Primitives": "VariableCollectionId:6:2",
     "Semantic": "VariableCollectionId:6:48",
     "Layout": "VariableCollectionId:6:75"
   },
-  "semanticModes": ["Day", "Evening", "Night"],
+  "semanticModes": [
+    "Day",
+    "Evening",
+    "Night"
+  ],
   "variables": {
-    "bg/canvas": "VariableID:6:49", "bg/surface": "VariableID:6:50", "bg/surface-alt": "VariableID:6:51",
-    "text/primary": "VariableID:6:52", "text/secondary": "VariableID:6:53", "text/on-accent": "VariableID:6:54", "text/on-dark": "VariableID:6:55",
-    "border/default": "VariableID:6:56", "accent/primary": "VariableID:6:57", "accent/primary-shadow": "VariableID:6:58", "focus/ring": "VariableID:6:59",
-    "status/success": "VariableID:6:60", "status/danger": "VariableID:6:61",
-    "chapter/profile": "VariableID:6:62", "chapter/prospace": "VariableID:6:63", "chapter/timepath": "VariableID:6:64", "chapter/techstack": "VariableID:6:65",
-    "chapter/education": "VariableID:6:66", "chapter/contact": "VariableID:6:67", "chapter/monitoring": "VariableID:6:68", "chapter/summary": "VariableID:6:69",
-    "scene/sky": "VariableID:6:70", "scene/sea": "VariableID:6:71", "scene/ground": "VariableID:6:72", "scene/sand": "VariableID:6:73", "scene/road": "VariableID:6:74",
-    "font/family-text": "VariableID:6:76", "font/family-mono": "VariableID:6:77",
-    "font/size-xs": "VariableID:6:78", "font/size-sm": "VariableID:6:79", "font/size-md": "VariableID:6:80", "font/size-lg": "VariableID:6:81", "font/size-xl": "VariableID:6:82", "font/size-2xl": "VariableID:6:83",
-    "space/1": "VariableID:6:84", "space/2": "VariableID:6:85", "space/3": "VariableID:6:86", "space/4": "VariableID:6:87", "space/5": "VariableID:6:88", "space/6": "VariableID:6:89", "space/8": "VariableID:6:90", "space/10": "VariableID:6:91", "space/12": "VariableID:6:92",
-    "radius/sm": "VariableID:6:93", "radius/md": "VariableID:6:94", "radius/lg": "VariableID:6:95", "radius/full": "VariableID:6:96",
-    "size/touch": "VariableID:6:97", "size/bottom-bar": "VariableID:6:98", "size/window-max": "VariableID:6:99"
+    "bg/canvas": "VariableID:6:49",
+    "bg/surface": "VariableID:6:50",
+    "bg/surface-alt": "VariableID:6:51",
+    "text/primary": "VariableID:6:52",
+    "text/secondary": "VariableID:6:53",
+    "text/on-accent": "VariableID:6:54",
+    "text/on-dark": "VariableID:6:55",
+    "border/default": "VariableID:6:56",
+    "accent/primary": "VariableID:6:57",
+    "accent/primary-shadow": "VariableID:6:58",
+    "focus/ring": "VariableID:6:59",
+    "status/success": "VariableID:6:60",
+    "status/danger": "VariableID:6:61",
+    "chapter/profile": "VariableID:6:62",
+    "chapter/prospace": "VariableID:6:63",
+    "chapter/timepath": "VariableID:6:64",
+    "chapter/techstack": "VariableID:6:65",
+    "chapter/education": "VariableID:6:66",
+    "chapter/contact": "VariableID:6:67",
+    "chapter/monitoring": "VariableID:6:68",
+    "chapter/summary": "VariableID:6:69",
+    "scene/sky": "VariableID:6:70",
+    "scene/sea": "VariableID:6:71",
+    "scene/ground": "VariableID:6:72",
+    "scene/sand": "VariableID:6:73",
+    "scene/road": "VariableID:6:74",
+    "font/family-text": "VariableID:6:76",
+    "font/family-mono": "VariableID:6:77",
+    "font/size-xs": "VariableID:6:78",
+    "font/size-sm": "VariableID:6:79",
+    "font/size-md": "VariableID:6:80",
+    "font/size-lg": "VariableID:6:81",
+    "font/size-xl": "VariableID:6:82",
+    "font/size-2xl": "VariableID:6:83",
+    "space/1": "VariableID:6:84",
+    "space/2": "VariableID:6:85",
+    "space/3": "VariableID:6:86",
+    "space/4": "VariableID:6:87",
+    "space/5": "VariableID:6:88",
+    "space/6": "VariableID:6:89",
+    "space/8": "VariableID:6:90",
+    "space/10": "VariableID:6:91",
+    "space/12": "VariableID:6:92",
+    "radius/sm": "VariableID:6:93",
+    "radius/md": "VariableID:6:94",
+    "radius/lg": "VariableID:6:95",
+    "radius/full": "VariableID:6:96",
+    "size/touch": "VariableID:6:97",
+    "size/bottom-bar": "VariableID:6:98",
+    "size/window-max": "VariableID:6:99"
   },
   "textStyles": {
-    "Display/Hero": "S:349894c7479982fdc188c0635739c4da87182a95,", "Display/Number": "S:071b43b809c4c6542cb6548a92b3798f93f9976c,",
-    "Heading/Window": "S:b2c4a5bd7f30fedc6408d613523574addc1c0f83,", "Heading/Section": "S:04e5a3d96cd511f955777e22e7022d8b5182b019,",
-    "Label/Eyebrow": "S:1fe7be084d76427b230e5de57fb3739e890c7d7f,", "Label/Caption": "S:74c9e6162f11e114d0d8d2e29a60e69e6a4ee50f,",
-    "Body/Default": "S:f2e0b6c3a2c681571ab0466cbd98803fe506ef97,", "Body/Strong": "S:bbdfe0272108b76103dd9065a20119b55d137b0c,",
-    "Body/Small": "S:b90ceeabdbf740eafe9527f5a56e6e953b659b80,", "Mono/Stack": "S:27c4e855b0e638e0570c3bccf03619afc5698ff0,"
+    "Display/Hero": "S:349894c7479982fdc188c0635739c4da87182a95,",
+    "Display/Number": "S:071b43b809c4c6542cb6548a92b3798f93f9976c,",
+    "Heading/Window": "S:b2c4a5bd7f30fedc6408d613523574addc1c0f83,",
+    "Heading/Section": "S:04e5a3d96cd511f955777e22e7022d8b5182b019,",
+    "Label/Eyebrow": "S:1fe7be084d76427b230e5de57fb3739e890c7d7f,",
+    "Label/Caption": "S:74c9e6162f11e114d0d8d2e29a60e69e6a4ee50f,",
+    "Body/Default": "S:f2e0b6c3a2c681571ab0466cbd98803fe506ef97,",
+    "Body/Strong": "S:bbdfe0272108b76103dd9065a20119b55d137b0c,",
+    "Body/Small": "S:b90ceeabdbf740eafe9527f5a56e6e953b659b80,",
+    "Mono/Stack": "S:27c4e855b0e638e0570c3bccf03619afc5698ff0,",
+    "Display/Number-sm": "S:a5b3d0542282fadacfe2ee075aae478ef36e28dd,"
   },
   "effectStyles": {
-    "Elevation/Card": "S:f3300a280ff06fe1ba73be22b89285fffb8cc52e,", "Elevation/Panel": "S:6dd4a9d94d54f3ab0e9d362e6d863c991e2eac70,", "Elevation/Pressed": "S:4a2c2aaabd4432e017865058a6fae36cae80d1ca,"
+    "Elevation/Card": "S:f3300a280ff06fe1ba73be22b89285fffb8cc52e,",
+    "Elevation/Panel": "S:6dd4a9d94d54f3ab0e9d362e6d863c991e2eac70,",
+    "Elevation/Pressed": "S:4a2c2aaabd4432e017865058a6fae36cae80d1ca,"
   },
-  "fonts": { "text": "Bricolage Grotesque (Regular, Medium, SemiBold, Bold, ExtraBold available)", "mono": "IBM Plex Mono (Regular, Bold)" },
-  "components": {},
-  "windows": {},
-  "screens": {}
+  "fonts": {
+    "text": "Bricolage Grotesque (Regular, Medium, SemiBold, Bold, ExtraBold available)",
+    "mono": "IBM Plex Mono (Regular, Bold)"
+  },
+  "components": {
+    "icons": {
+      "Icon/arrow-right": "10:75",
+      "Icon/external": "10:80",
+      "Icon/close": "10:85",
+      "Icon/play": "10:90",
+      "Icon/pause": "10:95",
+      "Icon/theme": "10:100",
+      "Icon/lang": "10:106",
+      "Icon/rotate": "10:112",
+      "Icon/email": "10:117",
+      "Icon/telegram": "10:123",
+      "Icon/github": "10:129",
+      "Icon/download": "10:134",
+      "Icon/check": "10:139"
+    },
+    "Button/Primary": "14:42",
+    "Button/Secondary": "14:63",
+    "Button/Ghost": "14:84",
+    "Button/Icon": "14:105",
+    "Tag/Chapter": "15:136",
+    "Pill/Status": "15:137",
+    "Route/Stop": "15:180",
+    "Card/Metric": "15:189",
+    "List/KeyResult": "15:190",
+    "Toast/Sent": "15:197",
+    "Field/Input": "18:210",
+    "Field/Textarea": "18:231",
+    "Rack/Server": "18:248",
+    "Rack/Rack": "18:249",
+    "BottomBar": "19:450",
+    "Hero/FirstScreen": "21:465",
+    "Window/Shell": "23:498",
+    "Window/Shell variants": {
+      "desktop": "23:398",
+      "mobile": "23:450"
+    },
+    "showcases": {
+      "buttons": "14:106",
+      "tagsStopsCards": "15:204",
+      "fieldsRack": "18:263"
+    },
+    "sectionLabels": [
+      "23:499",
+      "23:500",
+      "23:501",
+      "23:502",
+      "23:503",
+      "23:504"
+    ]
+  },
+  "windows": {
+    "Window/01 Profile/Desktop": "28:276",
+    "Window/01 Profile/Mobile": "28:372",
+    "Window/02 ProSpace/Desktop": "26:2",
+    "Window/02 ProSpace/Mobile": "26:198",
+    "Window/02 ProSpace/Desktop · Night": "31:1886",
+    "Window/03 TimePath/Desktop": "29:395",
+    "Window/03 TimePath/Mobile": "29:564",
+    "Window/04 Tech stack/Desktop": "29:725",
+    "Window/04 Tech stack/Mobile": "29:916",
+    "Window/05 Education/Desktop": "30:899",
+    "Window/05 Education/Mobile": "30:1053",
+    "Window/06 Contact/Desktop": "30:1200",
+    "Window/06 Contact/Mobile": "30:1405",
+    "Window/07 30-sec summary/Desktop": "31:1323",
+    "Window/07 30-sec summary/Mobile": "31:1453",
+    "Window/08 Monitoring/Desktop": "31:1577",
+    "Window/08 Monitoring/Mobile": "31:1731",
+    "nightBackdrop": "31:2053"
+  },
+  "screens": {
+    "Screen/Desktop 1440×900/Day": "33:2",
+    "Screen/Laptop 1280×720/Day": "33:246",
+    "Screen/Desktop 1440×900/Night": "33:461",
+    "Screen/Desktop 1440×900/Evening": "33:478",
+    "Screen/Tablet 768×1024/Day (2D)": "34:709",
+    "Screen/Phone 390×844/Day (2D)": "34:826",
+    "Screen/State/Loading scene": "34:964",
+    "Screen/State/API offline": "34:1125",
+    "Screen/State/Reduced motion": "34:1145"
+  },
+  "foundationsPage": {
+    "root": "8:2",
+    "colors": "8:6",
+    "colorModeGroups": {
+      "Day": "8:9",
+      "Evening": "8:144",
+      "Night": "8:279"
+    },
+    "typography": "9:2",
+    "spacingRadius": "9:66",
+    "elevation": "9:127",
+    "breakpoints": "10:2",
+    "icons": "10:70"
+  },
+  "contrastFindings": [
+    "status/danger Night: 2.8:1 vs bg/surface (text use fails)",
+    "status/success Day: 4.4:1 vs bg/surface (borderline; use text/primary for pill text)",
+    "chapter/* are backgrounds only; text/primary on chapter/profile|contact|education|techstack(Day) < 4.5"
+  ],
+  "decisions": [
+    "BottomBar: 30-sec summary moved to Hero (does not fit 1376px)",
+    "Pill/Status text uses text/primary (success text 4.4:1 in Day)",
+    "Button/Icon icon color = bg/surface (inverts per mode)",
+    "Toast text = bg/surface on text/primary",
+    "Nested instance text (Link1/Link2/Prev/Next) overridden via setProperties, not exposed as Window props (Figma forbids property refs on instance sublayers)",
+    "Experience shown as 2 yrs 3 mo (Jul 2024 → Oct 2026), computed on frontend",
+    "Added text style Display/Number-sm 20px for Hero metrics"
+  ],
+  "docPages": {
+    "specsRoot": "36:2",
+    "specsSections": [
+      "36:3",
+      "36:4",
+      "36:5",
+      "36:37",
+      "36:54",
+      "36:80",
+      "36:172",
+      "36:189",
+      "46:2"
+    ],
+    "cover": "37:2",
+    "gettingStarted": "38:2",
+    "specsOpenDecisions": "46:2"
+  },
+  "qa": {
+    "componentsUnboundPaints": 0,
+    "textsBelow12px": 0,
+    "overlapsTopLevel": 0,
+    "namingExceptions": [
+      "BottomBar (no Category/ prefix, per brief name)"
+    ],
+    "knownRenderArtifact": "Bricolage SemiBold/Bold light-on-dark text looks faint/outlined in MCP screenshots (Night); fills are correct (#F3F5F8)",
+    "round2": [
+      "pins repositioned below Hero (no bounds overlap on 33:2, 33:246, 33:461, 33:478)",
+      "Hero metrics 3×152px fit in 472px (clipping was pin overlay)",
+      "Icon/* SVG root frame fills cleared (13 masters); Button/Icon nested strokes rebound to bg/surface in all instances (Components 11, Screens 39, Windows 17)",
+      "Foundations swatch cards HUG, ratio text 3 lines fully visible"
+    ]
+  },
+  "sessionId": "da974e76-2eac-4a24-8e23-306f913cfb77"
 }
