@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dotnet:
+    name: .NET build, test, format
+    runs-on: ubuntu-latest
+    env:
+      ASPIRE_VERSION: 13.6.1
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      ASPIRE_CLI_TELEMETRY_OPTOUT: '1'
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      # AppHost (Aspire) needs the CLI bundle with DCP and dashboard; the build's own setup has a 120 s limit
+      - name: Cache Aspire CLI bundle
+        id: aspire-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.aspire
+          key: aspire-${{ runner.os }}-${{ env.ASPIRE_VERSION }}
+
+      - name: Install Aspire CLI bundle
+        if: steps.aspire-cache.outputs.cache-hit != 'true'
+        run: dotnet dnx --yes aspire.cli@${{ env.ASPIRE_VERSION }} -- setup --install-path ~/.aspire
+
+      - run: dotnet restore aboutMe.slnx
+      - run: dotnet build aboutMe.slnx --no-restore
+      - run: dotnet test --no-build
+      - run: dotnet format aboutMe.slnx --verify-no-changes --no-restore
+
+  frontend:
+    name: Frontend lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
