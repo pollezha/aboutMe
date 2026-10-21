@@ -21,7 +21,8 @@
     "qa/round-2-fixes",
     "qa/round-3-mask",
     "qa/round-4-2d-nav",
-    "qa/round-5-phone-flow"
+    "qa/round-5-phone-flow",
+    "qa/round-6-tablet-crop"
   ],
   "nextSteps": [
     "review by user",
@@ -288,7 +289,8 @@
     "round5": [
       "Phone 390 rebuilt as scroll flow: compact Hero (337px: name 32px, role, status, Contact+CV+Telegram icon in one row, 3 metrics Display/Number-sm), static map 358×358 (image CROP window 730×730 at x=340 of the 1440×900 reference — island only, no baked controls/blimp/bar), 8 hotspots min 44×44, bottom spacer 88; page height 919",
       "Two frames: viewport (fold) 56:1378 with fixed 72px BottomBar (6 numbered Route/Stop, titles hidden) at y=756; full page 34:826 with scroll note"
-    ]
+    ],
+    "round6": "Tablet 768: static map cropped to island (ref 340..1070 × 85..745), 736×666, hotspots remapped; frame = 768×1024 viewport, HTML/Page scrolls with paddingBottom 120, BottomBar 54:3491 fixed at viewport bottom"
   },
   "sessionId": "da974e76-2eac-4a24-8e23-306f913cfb77"
 }
