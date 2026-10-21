@@ -1,0 +1,60 @@
+{
+  "runId": "ds-aboutme-2026-10-21",
+  "fileKey": "1D6lW84rl4yYR8VQwV10Pp",
+  "fileUrl": "https://www.figma.com/design/1D6lW84rl4yYR8VQwV10Pp",
+  "planKey": "team::1311653453620320399",
+  "scope": "full-library",
+  "completedSteps": ["capture-concept", "foundations/variables", "foundations/text-styles", "foundations/effect-styles", "pages/skeleton"],
+  "nextSteps": ["foundations/specimen-page", "components", "windows", "screens", "specs", "cover", "getting-started", "qa"],
+  "pages": {
+    "📘 Cover": "6:113",
+    "🚀 Getting started": "6:114",
+    "🎨 Foundations": "6:115",
+    "🧩 Components": "6:116",
+    "🪟 Windows": "6:117",
+    "🖥 Screens": "6:118",
+    "📝 Specs": "6:119",
+    "🧪 Concept (reference)": "0:1"
+  },
+  "conceptPage": {
+    "captureFrame": "1:2",
+    "renderedPng": "3:58",
+    "readmeNote": "3:60",
+    "breakpointsSection": "3:2",
+    "breakpointFrames": { "Desktop 1440": "3:3", "Laptop 1280×720": "3:6", "Tablet 768": "3:9", "Phone 390": "3:12" }
+  },
+  "collections": {
+    "Primitives": "VariableCollectionId:6:2",
+    "Semantic": "VariableCollectionId:6:48",
+    "Layout": "VariableCollectionId:6:75"
+  },
+  "semanticModes": ["Day", "Evening", "Night"],
+  "variables": {
+    "bg/canvas": "VariableID:6:49", "bg/surface": "VariableID:6:50", "bg/surface-alt": "VariableID:6:51",
+    "text/primary": "VariableID:6:52", "text/secondary": "VariableID:6:53", "text/on-accent": "VariableID:6:54", "text/on-dark": "VariableID:6:55",
+    "border/default": "VariableID:6:56", "accent/primary": "VariableID:6:57", "accent/primary-shadow": "VariableID:6:58", "focus/ring": "VariableID:6:59",
+    "status/success": "VariableID:6:60", "status/danger": "VariableID:6:61",
+    "chapter/profile": "VariableID:6:62", "chapter/prospace": "VariableID:6:63", "chapter/timepath": "VariableID:6:64", "chapter/techstack": "VariableID:6:65",
+    "chapter/education": "VariableID:6:66", "chapter/contact": "VariableID:6:67", "chapter/monitoring": "VariableID:6:68", "chapter/summary": "VariableID:6:69",
+    "scene/sky": "VariableID:6:70", "scene/sea": "VariableID:6:71", "scene/ground": "VariableID:6:72", "scene/sand": "VariableID:6:73", "scene/road": "VariableID:6:74",
+    "font/family-text": "VariableID:6:76", "font/family-mono": "VariableID:6:77",
+    "font/size-xs": "VariableID:6:78", "font/size-sm": "VariableID:6:79", "font/size-md": "VariableID:6:80", "font/size-lg": "VariableID:6:81", "font/size-xl": "VariableID:6:82", "font/size-2xl": "VariableID:6:83",
+    "space/1": "VariableID:6:84", "space/2": "VariableID:6:85", "space/3": "VariableID:6:86", "space/4": "VariableID:6:87", "space/5": "VariableID:6:88", "space/6": "VariableID:6:89", "space/8": "VariableID:6:90", "space/10": "VariableID:6:91", "space/12": "VariableID:6:92",
+    "radius/sm": "VariableID:6:93", "radius/md": "VariableID:6:94", "radius/lg": "VariableID:6:95", "radius/full": "VariableID:6:96",
+    "size/touch": "VariableID:6:97", "size/bottom-bar": "VariableID:6:98", "size/window-max": "VariableID:6:99"
+  },
+  "textStyles": {
+    "Display/Hero": "S:349894c7479982fdc188c0635739c4da87182a95,", "Display/Number": "S:071b43b809c4c6542cb6548a92b3798f93f9976c,",
+    "Heading/Window": "S:b2c4a5bd7f30fedc6408d613523574addc1c0f83,", "Heading/Section": "S:04e5a3d96cd511f955777e22e7022d8b5182b019,",
+    "Label/Eyebrow": "S:1fe7be084d76427b230e5de57fb3739e890c7d7f,", "Label/Caption": "S:74c9e6162f11e114d0d8d2e29a60e69e6a4ee50f,",
+    "Body/Default": "S:f2e0b6c3a2c681571ab0466cbd98803fe506ef97,", "Body/Strong": "S:bbdfe0272108b76103dd9065a20119b55d137b0c,",
+    "Body/Small": "S:b90ceeabdbf740eafe9527f5a56e6e953b659b80,", "Mono/Stack": "S:27c4e855b0e638e0570c3bccf03619afc5698ff0,"
+  },
+  "effectStyles": {
+    "Elevation/Card": "S:f3300a280ff06fe1ba73be22b89285fffb8cc52e,", "Elevation/Panel": "S:6dd4a9d94d54f3ab0e9d362e6d863c991e2eac70,", "Elevation/Pressed": "S:4a2c2aaabd4432e017865058a6fae36cae80d1ca,"
+  },
+  "fonts": { "text": "Bricolage Grotesque (Regular, Medium, SemiBold, Bold, ExtraBold available)", "mono": "IBM Plex Mono (Regular, Bold)" },
+  "components": {},
+  "windows": {},
+  "screens": {}
+}
