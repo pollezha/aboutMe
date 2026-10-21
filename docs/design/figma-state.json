@@ -18,7 +18,8 @@
     "cover",
     "getting-started",
     "qa",
-    "qa/round-2-fixes"
+    "qa/round-2-fixes",
+    "qa/round-3-mask"
   ],
   "nextSteps": [
     "review by user",
@@ -271,6 +272,10 @@
       "Hero metrics 3×152px fit in 472px (clipping was pin overlay)",
       "Icon/* SVG root frame fills cleared (13 masters); Button/Icon nested strokes rebound to bg/surface in all instances (Components 11, Screens 39, Windows 17)",
       "Foundations swatch cards HUG, ratio text 3 lines fully visible"
+    ],
+    "round3": [
+      "Top-right baked PNG controls masked by Mask/top-right rectangle (x>1180, y<90, scaled) bound to Primitives sky/day (bg/canvas is FRAME_FILL-scoped and does not resolve on rectangles) in 33:2, 33:246, 33:461, 33:478, 34:964, 34:1125, 34:1145 (ids 47:1321/1323/1325/1327/1329/1331/1333)",
+      "Blimp/CV region of the reference is covered by the opaque Hero card; no extra mask"
     ]
   },
   "sessionId": "da974e76-2eac-4a24-8e23-306f913cfb77"
