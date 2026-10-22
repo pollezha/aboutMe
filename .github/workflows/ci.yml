@@ -68,3 +68,11 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+
+      # Drift between the Figma snapshot and the generated theme (palette.ts, tokens.css, pinInk.ts, pins.css).
+      # Untracked files count too: a new generated file that was not committed fails the check.
+      - name: Check generated theme is up to date
+        run: |
+          npm run gen:theme
+          git diff --exit-code -- src/theme
+          test -z "$(git status --porcelain -- src/theme)"
