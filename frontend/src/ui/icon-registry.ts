@@ -12,6 +12,14 @@ export type IconName =
   | 'github'
   | 'download'
   | 'check'
+  | 'sign-licence'
+  | 'sign-waybill'
+  | 'sign-route'
+  | 'sign-rack'
+  | 'sign-diploma'
+  | 'sign-envelope'
+  | 'sign-summary'
+  | 'sign-monitoring'
 
 const files = import.meta.glob<string>('./icons/*.svg', {
   query: '?raw',
