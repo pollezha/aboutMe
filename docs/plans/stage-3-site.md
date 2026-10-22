@@ -60,7 +60,7 @@ Roadmap: docs/plans/roadmap.md, этап 3 (E3-T1…T10) · ADR: 0003 (HTML по
     `src/ui/windows`).
   - Зависит от: T1.
 
-- [ ] T3 — Окно 04 Tech stack: стойки, серверы, опыт из дат, мобильный bottom-sheet
+- [x] T3 — Окно 04 Tech stack: стойки, серверы, опыт из дат, мобильный bottom-sheet
   - Файлы: `ui/windows/TechStackWindow.vue`, `ui/windows/blocks/Rack.vue`, `Server.vue`, `ServerDetails.vue`
     (desktop — панель справа; < 768 — bottom-sheet snap 60 % с `aria-expanded`, UX14), `content/experience.ts`
     (срок сервера), тесты.
