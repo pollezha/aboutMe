@@ -49,10 +49,8 @@ const PIN_CHAPTERS = semanticNames
 // knownIssue: chapter/profile #2F6BFF в Day/Evening не даёт 4.5:1 ни со светлым (4.12), ни с тёмным
 // (3.83) номером на пине — нужен более тёмный синий в Figma. Зафиксировано текущее значение:
 // изменится цвет — тест упадёт, и knownIssue нужно будет закрыть или обновить.
-const KNOWN_PIN_ISSUES: Partial<Record<ThemeName, Partial<Record<PinChapter, number>>>> = {
-  day: { profile: 4.12 },
-  evening: { profile: 4.12 },
-}
+// Пусто: chapter/profile Day/Evening затемнён до #285FE8 (4.94:1) в Figma 2026-10-22. Оставлено для будущих исключений.
+const KNOWN_PIN_ISSUES: Partial<Record<ThemeName, Partial<Record<PinChapter, number>>>> = {}
 
 /** Объявления `--name: value` из единственного блока `:root` или `:root[data-theme=<theme>]`. */
 function declarations(theme?: ThemeName, css: string = tokensCss): [string, string][] {
