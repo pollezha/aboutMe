@@ -48,7 +48,7 @@ Roadmap: docs/plans/roadmap.md, этап 3 (E3-T1…T10) · ADR: 0003 (HTML по
   - Зависит от: — (блокирует T2–T4, T6). Открытые `[ADD]` из спеки (метрика ProSpace, фото, LinkedIn) —
     если пользователь не дал, пункт убирается из контента, а не остаётся плейсхолдером.
 
-- [ ] T2 — Окна 01 Profile, 02 ProSpace, 03 TimePath с контентом
+- [x] T2 — Окна 01 Profile, 02 ProSpace, 03 TimePath с контентом
   - Файлы: `frontend/src/ui/windows/ProfileWindow.vue`, `ProSpaceWindow.vue`, `TimePathWindow.vue`,
     общие блоки `ui/windows/blocks/` (`KeyNumbers`, `Timeline`, `BulletList`, `ProjectCard`), `App.vue`
     (подстановка тела окна по `ChapterId` через `<component :is>`), тесты `ui/windows/__tests__/*.spec.ts`.
