@@ -63,6 +63,18 @@ function cvHtml(cv) {
   src: url('${fontUrl('@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2')}') format('woff2-variations');
 }
 @font-face {
+  font-family: 'Onest Variable';
+  font-weight: 100 900;
+  src: url('${fontUrl('@fontsource-variable/onest/files/onest-cyrillic-ext-wght-normal.woff2')}') format('woff2-variations');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Onest Variable';
+  font-weight: 100 900;
+  src: url('${fontUrl('@fontsource-variable/onest/files/onest-cyrillic-wght-normal.woff2')}') format('woff2-variations');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
   font-family: 'IBM Plex Mono';
   font-weight: 500;
   src: url('${fontUrl('@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2')}') format('woff2');
@@ -74,15 +86,15 @@ function cvHtml(cv) {
   src: url('${fontUrl('@fontsource/ibm-plex-mono/files/ibm-plex-mono-cyrillic-500-normal.woff2')}') format('woff2');
   unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
 }
-@page { size: A4; margin: 18mm; }
+@page { size: A4; margin: 16mm 18mm; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 body {
   background: ${day['bg/surface']};
   color: ${day['text/primary']};
-  font-family: 'Bricolage Grotesque Variable', 'Segoe UI', sans-serif;
+  font-family: 'Bricolage Grotesque Variable', 'Onest Variable', system-ui, sans-serif;
   font-size: 10.5px;
-  line-height: 1.45;
+  line-height: 1.4;
 }
 body.preview { width: 210mm; padding: 18mm; }
 a { color: inherit; text-decoration: none; }

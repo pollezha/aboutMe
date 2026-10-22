@@ -1,5 +1,5 @@
 // Скриншоты первого экрана для сверки с Figma: сборка → vite preview → headless Chrome.
-// Результат: docs/design/shots/<w>x<h>-<theme>.png. Chrome: env CHROME_PATH или стандартный путь Windows.
+// Результат: docs/design/shots/<w>x<h>-<theme>[-ru].png. Chrome: env CHROME_PATH или стандартный путь Windows.
 // Размер вьюпорта задаётся через DevTools Protocol (Emulation.setDeviceMetricsOverride): окно Chrome
 // не бывает уже ~500 px, поэтому `--window-size=390,…` дал бы неверную раскладку телефона.
 import { execFileSync, spawn } from 'node:child_process'
@@ -24,6 +24,11 @@ const SIZES = [
   [390, 844],
 ]
 const THEMES = ['day', 'night']
+// RU-кадры для проверки кириллицы (Onest) рядом с латиницей (Bricolage).
+const RU_SHOTS = [
+  [1440, 900, 'day'],
+  [390, 844, 'day'],
+]
 
 /** Минимальный CDP-клиент поверх встроенного WebSocket (Node ≥ 22). */
 async function connect(wsUrl) {
@@ -77,7 +82,7 @@ async function waitForDebugger() {
   throw new Error('Chrome DevTools endpoint did not come up')
 }
 
-async function shoot(width, height, theme) {
+async function shoot(width, height, theme, lang = 'en') {
   const response = await fetch(`http://127.0.0.1:${debugPort}/json/new?about:blank`, {
     method: 'PUT',
   })
@@ -91,12 +96,19 @@ async function shoot(width, height, theme) {
       deviceScaleFactor: 1,
       mobile: width < 768,
     })
+    // App не читает язык из URL: язык берётся из стора, а тот — из localStorage.
+    if (lang !== 'en') {
+      await page.send('Page.addScriptToEvaluateOnNewDocument', {
+        source: `localStorage.setItem('aboutme.lang', ${JSON.stringify(lang)})`,
+      })
+    }
     const loaded = page.once('Page.loadEventFired')
     await page.send('Page.navigate', { url: `http://localhost:${previewPort}/?theme=${theme}` })
     await loaded
     await delay(SETTLE_MS)
     const { data } = await page.send('Page.captureScreenshot', { format: 'png' })
-    const file = join(outDir, `${width}x${height}-${theme}.png`)
+    const suffix = lang === 'en' ? '' : `-${lang}`
+    const file = join(outDir, `${width}x${height}-${theme}${suffix}.png`)
     writeFileSync(file, Buffer.from(data, 'base64'))
     console.log(`shot ${file}`)
   } finally {
@@ -140,6 +152,7 @@ try {
   for (const [width, height] of SIZES) {
     for (const theme of THEMES) await shoot(width, height, theme)
   }
+  for (const [width, height, theme] of RU_SHOTS) await shoot(width, height, theme, 'ru')
 } finally {
   browser.kill()
   await server.close()

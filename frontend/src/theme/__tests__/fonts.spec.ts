@@ -69,7 +69,7 @@ describe('fonts', () => {
     const files = [...woff2Files(fontsCssUrl)].map((href) => href.split('/').pop())
 
     for (const file of files) {
-      expect(file).toMatch(/-(latin|cyrillic)-(wght|\d00)-normal\.woff2$/)
+      expect(file).toMatch(/-(latin|cyrillic|cyrillic-ext)-(wght|\d00)-normal\.woff2$/)
     }
   })
 
@@ -78,6 +78,37 @@ describe('fonts', () => {
 
     expect(faces.length).toBeGreaterThan(0)
     for (const [, body] of faces) expect(body).toMatch(/unicode-range:/)
+  })
+
+  it('covers cyrillic U+0400-04FF for the text font with Onest, keeping latin on Bricolage', () => {
+    const css = fs.readFileSync(fontsCssUrl, 'utf8')
+    const onestFaces = [...css.matchAll(/@font-face\s*\{([^}]*)\}/g)]
+      .map(([, body]) => body!)
+      .filter((body) => /font-family:\s*'Onest Variable'/.test(body))
+    const ranges = onestFaces.flatMap((body) =>
+      [
+        ...(/unicode-range:([^;]*);/.exec(body)?.[1] ?? '').matchAll(
+          /U\+([0-9A-F]+)(?:-([0-9A-F]+))?/gi,
+        ),
+      ].map(([, from, to]) => [parseInt(from!, 16), parseInt(to ?? from!, 16)] as const),
+    )
+    const covered = (code: number) => ranges.some(([from, to]) => code >= from && code <= to)
+
+    expect(covered(0x0400) && covered(0x044f) && covered(0x04ff)).toBe(true)
+    expect(covered(0x0041) || covered(0x0061)).toBe(false)
+    expect(css).toMatch(
+      /--font-text:\s*'Bricolage Grotesque Variable',\s*'Onest Variable',\s*system-ui,\s*sans-serif;/,
+    )
+  })
+
+  it('does not load latin subsets of Onest', () => {
+    const onestFiles = [...woff2Files(fontsCssUrl)]
+      .map((href) => href.split('/').pop()!)
+      .filter((file) => file.startsWith('onest-'))
+
+    expect(onestFiles.length).toBeGreaterThan(0)
+    for (const file of onestFiles)
+      expect(file).toMatch(/^onest-cyrillic(-ext)?-wght-normal\.woff2$/)
   })
 })
 

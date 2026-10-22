@@ -155,9 +155,12 @@ danger в Night, 30-sec summary вне панели, дата стажа, пле
 - **Контраст номера в ChapterTag (Night):** светлые акценты (prospace #FF8A4C, timepath #4FD1C0) с номером
   `text/on-dark` могут быть < 4,5:1 — проверить в T6 расширением palette.spec (пары on-dark × chapter/* по темам);
   при провале — тёмный номер для светлых акцентов.
-- **Кириллица:** у Bricolage Grotesque нет cyrillic-subset — RU-тексты на `--font-text` рендерятся system-ui.
-  Решение пользователя: принять fallback / выбрать второй шрифт для RU (новая зависимость) / сменить семейство.
-  До решения — knownIssue в Specs §7; на EN-версию не влияет.
+- **Кириллица (решено):** у Bricolage Grotesque нет cyrillic-subset. Решение пользователя — второй шрифт только
+  для RU: `@fontsource-variable/onest@^5.3.1`, подключены только subset `cyrillic` (15.9 КБ) и `cyrillic-ext`
+  (10.5 КБ), ось `wght` 100–900, без latin. Стек `--font-text: 'Bricolage Grotesque Variable', 'Onest Variable',
+  system-ui, sans-serif` — браузер выбирает начертание по `unicode-range`: кириллица → Onest, латинские вставки
+  (`.NET`) → Bricolage (проверено через CDP `CSS.getPlatformFontsForNode`, кадры `*-day-ru.png`). Все woff2
+  вместе — 111.7 КБ из 150 КБ (было 85.9 КБ). knownIssue «кириллица Bricolage» в Specs §7 (Figma) можно снять.
 - Открытые решения Specs §7 — значения из Figma как есть; `status/danger` Night помечен knownIssue.
 - Контент окон 01–08 в коде — этап 3 (окна здесь только каркасом `ChapterWindow`).
 - Сцена TresJS и грузовик — этап 3; в T6 на месте сцены заглушка цвета `scene/sky` или статичная карта.
