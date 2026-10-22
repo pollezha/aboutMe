@@ -27,6 +27,9 @@ dotnet format --verify-no-changes
 # фронт (из frontend/); build сначала валидирует content/*.json
 npm run lint && npm run format:check && npm run typecheck && npm test && npm run build
 npx vitest run src/__tests__/App.spec.ts -t "English"
+npm run gen:theme  # palette.ts + tokens.css из снимка Figma (идемпотентно)
+npm run shots      # сборка + 8 скриншотов первого экрана → docs/design/shots/ (нужен Chrome; CHROME_PATH)
+npm run og         # public/og.png 1200×630 + favicon-192/512.png (headless Chrome)
 # локальный запуск: всё через Aspire / только фронт на снимке контента
 dotnet run --project src/AppHost
 npm run dev
