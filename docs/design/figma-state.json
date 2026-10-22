@@ -28,7 +28,8 @@
     "fixes/screens",
     "fixes/windows",
     "fixes/specs",
-    "fixes/package-2-R1-R4"
+    "fixes/package-2-R1-R4",
+    "hero/compact-primary-2026-10-22"
   ],
   "nextSteps": [
     "T1b: resync figma-tokens.json → palette/tokens.css (red/300, focus/ring, chapter/techstack Night, chapter/summary; pair ink/900 × chapter/techstack Night)",
@@ -141,7 +142,19 @@
     "Body/Small": "S:b90ceeabdbf740eafe9527f5a56e6e953b659b80,",
     "Mono/Stack": "S:27c4e855b0e638e0570c3bccf03619afc5698ff0,",
     "Display/Number-sm": "S:a5b3d0542282fadacfe2ee075aae478ef36e28dd,",
-    "Label/Nav-xs": "S:362c33e329474b73b00349007d37dd4e3deb8148,"
+    "Label/Nav-xs": "S:362c33e329474b73b00349007d37dd4e3deb8148,",
+    "Display/Hero-sm": "S:04ea9c1f87231745f1132527664eedc345aeae0a,",
+    "Label/Tag-xs": "S:2d0778c0e086f752d037680ddd40291d64d76ac9,",
+    "Body/Caption-xs": "S:c0516a7c5615d954379b28b9f0e817537f512f06,",
+    "Mono/Number-xs": "S:3dabeb25bb41e24350299b05a5be59bd250b6717,",
+    "Mono/Stack-xs": "S:3bdb3e3062ac9b987441a105e9635aaf3fa28c13,",
+    "Heading/Window-sm": "S:2eb6d392ceb7f6a7613981d7cc546272d9fe11fd,"
+  },
+  "textStyleAudit2026-10-22": {
+    "rule": "every component/window/screen TEXT has a textStyleId; Inter service texts (Review/*, notes, § section labels, showcase captions) left unstyled on purpose",
+    "newStyles": "Display/Hero-sm 32 ExtraBold 110% -1% · Label/Tag-xs 12 Bold 120% +6% (pins, metric labels) · Body/Caption-xs 12 Regular 145% · Mono/Number-xs Plex 12 Bold 140% · Mono/Stack-xs Plex 12 Regular 140% · Heading/Window-sm 24 Bold 120% (mobile window titles)",
+    "unstyledBeforeAfter": { "Components": "155 → 33 (all Inter)", "Windows": "209 → 98 (all Inter)", "Screens": "490 → 113 (all Inter)" },
+    "note": "styles applied on master components; instances inherited automatically"
   },
   "effectStyles": {
     "Elevation/Card": "S:f3300a280ff06fe1ba73be22b89285fffb8cc52e,",
@@ -195,9 +208,24 @@
       "Eyebrow": "Eyebrow#23:8"
     },
     "Hero/FirstScreen variants": {
-      "desktop": "21:365",
-      "mobile": "21:418",
-      "laptop": "75:462"
+      "desktop-legacy (unused, was desktop)": "21:365",
+      "mobile (compact ≈187, no metrics)": "21:418",
+      "laptop (unused)": "75:462",
+      "desktop-compact (PRIMARY ≥ 1280)": "95:496",
+      "desktop-strip (unused)": "95:546"
+    },
+    "heroDecision2026-10-22": {
+      "desktop": "Variant=desktop-compact 400×260 on all ≥ 1280 screens (33:2, 33:246, 33:461, 33:478, 79:1553, 34:964, 34:1125, 34:1145); Metrics row fill removed (was plain white, broke Night); legacy/laptop/strip marked unused in description",
+      "mobile": "Variant=mobile rebuilt as compact (pad 12, gap 4, r22): Pill · Name Display/Hero-sm · Role · Meta · Contact + CV + Telegram; instances 108:522 (viewport) and 108:553 (full page); 3 numbers → Window/01 Profile «KEY NUMBERS» (3 × Card/Metric sm, desktop ColB + mobile Content)",
+      "stateOverlays": "LoadingCard 34:1119 → bottom-right above the bar (1016,540); OfflineBanner 34:1141 → y 84 (below the top pin row); ReducedMotionNote 34:1161 → y 76 — none overlaps a pin"
+    },
+    "Hero/FirstScreen props": {
+      "Controls": "Controls#95:0 (BOOLEAN, strip only: rotate/pause + divider at the right edge; false on 1280 → controls float under the strip)"
+    },
+    "heroRework2026-10-22": {
+      "desktop-compact": "400×260, pad 14/16: Pill, Name Display/Hero-sm 32, Role, Meta «Remote / relocation · Serbia · CET», Contact + CV + Button/Icon telegram, 3 metrics inline (Display/Number-sm + Label/Nav-xs, no cards). 8% of 1440×900",
+      "desktop-strip": "1376×85 horizontal: Identity (Name+Pill / Role+Meta) · Metrics FILL centered · Actions (CTA + divider + Controls). On 1232 (laptop) metrics gap 20, Controls=false → fits exactly",
+      "componentsPageShift": "Window/Shell section (23:498, 23:504, 74:469) moved +700 y to make room in the Hero set (now 1424×1239)"
     },
     "Tag/Text": "73:432",
     "Pin/Compact": "75:515",
@@ -256,7 +284,9 @@
     "Window/08 Monitoring/Mobile": "31:1731",
     "nightBackdrop": "31:2053",
     "Window/04 Tech stack/Mobile · server bottom-sheet": "82:1875",
-    "Window/08 Monitoring/Desktop states row": "82:2112"
+    "Window/08 Monitoring/Desktop states row": "82:2112",
+    "contact2026-10-22": "Contacts row (desktop I30:1200;23:414;30:1382, mobile I30:1405;23:466;30:1575): CV EN → /cv/Yakov_Polezhaev_CV_EN.pdf, CV RU → /cv/Yakov_Polezhaev_CV_RU.pdf, Telegram, GitHub, Email → mailto:polezhaev.yasha@gmail.com (Icon/email); placeholder «⚠ email для EN» removed; targets are in layer names",
+    "profileKeyNumbers2026-10-22": "KEY NUMBERS block after ON THE ROAD SINCE in 28:276 (ColB) and 28:372 (Content, wraps 2+1): SHIPMENTS / DAY 1000+ · FILTER PAGE 40 s → 2 s · IN PRODUCTION 2+ yrs"
   },
   "screens": {
     "Screen/Desktop 1440×900/Day": "33:2",
@@ -267,11 +297,27 @@
     "Screen/State/Loading scene": "34:964",
     "Screen/State/API offline": "34:1125",
     "Screen/State/Reduced motion": "34:1145",
-    "Screen/Phone 390×844 · viewport (fold)": "56:1378",
+    "Screen/Phone 390×844 · viewport (fold)": "98:4223",
     "Screen/Phone 390 · full page (2D)": "34:826",
-    "phoneFixedBar": "56:1408",
+    "phoneFixedBar": "98:4261",
     "Screen/Desktop 1440×900/Day · RU": "79:1553",
-    "sceneCrop": "image-fill CROP region 1080×675 at (180,90) of the 1440×900 reference (k=4/3); laptop region x=162; masks Mask/top-right removed; pins remapped",
+    "archiveOnConceptPage2026-10-22": {
+      "Archive/Phone viewport · Hero 337 with metrics (old 56:1378)": "56:1378",
+      "Archive/Phone viewport · Hero B overlay (rejected)": "98:4275",
+      "Archive/Desktop · Hero A compact (sample, transferred)": "96:1437",
+      "Archive/Desktop · Hero B strip (rejected)": "96:1636",
+      "Archive/Laptop · Hero B strip (rejected)": "96:1849",
+      "position": "🧪 Concept page, y 2200, with their notes at y 2166"
+    },
+    "heroDecision2026-10-22": {
+      "status": "DECIDED: desktop-compact (A) on ≥ 1280, compact Hero + map above the fold on phone",
+      "sceneCrops": "1440: k=1.1 island top y=20 (whole island visible, Hero clears the island corner); Laptop 1280×720: k=0.7 island 128–590 (reused from the B sample, plus patches 106:358 top band / 106:369 baked controls); outside-crop area = scene/sky fill under the image",
+      "patches": "Patch/* frames = sea-texture tiles sampled from clean bands of the same reference over baked artifacts (blimp/CV/EN-RU, GitHub, old Profile pin, Telegram sign, bottle, baked bar) and over out-of-crop margins; slight tone seams are the reference, not the design",
+      "pinsDesktop1440": "profile (274,414) · prospace (663,32) · timepath (991,32) · techstack (1087,276) · education (838,349) · contact (516,462) · monitoring (627,528)",
+      "pinsLaptop1280": "profile (346,380) · prospace (565,136) · timepath (751,136) · techstack (806,274) · education (665,314) · contact (470,405) · monitoring (596,468)",
+      "phone": "98:4223 is the primary viewport: compact Hero instance 187 px, static map 358 at y 271–629 above the fold, fixed bar 756; MapNote moved out of the frame (98:4260 / 56:1377 as notes under the frames); full page 34:826 = 844 high (page 717: Hero → map → 88 spacer)"
+    },
+    "sceneCropLegacy": "(before 2026-10-22) image-fill CROP region 1080×675 at (180,90) of the 1440×900 reference (k=4/3); laptop region x=162; masks Mask/top-right removed",
     "pinsCompact": "Pin/Compact instances on 34:771 (tablet), 56:1398 and phone full page maps; Number prop Number#75:0",
     "sceneNotes": "moved outside frames (y = frame.y + height + 12): 78:1346 (33:2), 78:1347 (33:461), 78:1348 (33:478), 78:1349 (34:964), 78:1350 (34:1125), 78:1351 (34:1145), 78:1352 (33:246), 79:1567 (RU)"
   },
@@ -308,7 +354,13 @@
     "§2 Пауза анимаций": "83:11",
     "§7 R2": "83:14",
     "§7 R4": "83:17",
-    "§7 open (visited, placement/ADR, OG)": "83:20"
+    "§7 open (visited, placement/ADR, OG)": "83:20",
+    "§7 ✅ 8 Email EN (D25 closed)": "111:2",
+    "§7 ✅ 9 Hero compact decision": "111:5",
+    "§1 Hero row rewritten (compact)": "36:27",
+    "§1 Offline banner / Loading card placement": "36:36 / 83:4",
+    "§4 Hero styles": "36:135",
+    "§5 2D phone structure": "36:179"
   },
   "decisions": [
     "BottomBar: 30-sec summary moved to Hero (does not fit 1376px)",
@@ -364,7 +416,11 @@
     ],
     "round6": "Tablet 768: static map cropped to island (ref 340..1070 × 85..745), 736×666, hotspots remapped; frame = 768×1024 viewport, HTML/Page scrolls with paddingBottom 120, BottomBar 54:3491 fixed at viewport bottom"
   },
-  "sessionId": "9effed8c-ff2c-4f1a-bf4b-0c505230928d",
+  "sessionId": "0ae1bf4c-67f2-477a-9042-595b8fcea60c",
+  "contentDecisions2026-10-22": {
+    "emailEN": "polezhaev.yasha@gmail.com (D25 closed)",
+    "cv": "/cv/Yakov_Polezhaev_CV_EN.pdf, /cv/Yakov_Polezhaev_CV_RU.pdf; Hero CV button → EN"
+  },
   "knownIssues": [
     "RU screen 79:1553: Bricolage Grotesque has no Cyrillic — fallback font in Figma; system-ui acceptable on site",
     "Reference PNG still carries baked Lab/Email/old pins and a sliver of the plane/bottle at the right edge (noted in on-screen note); not part of the design",
