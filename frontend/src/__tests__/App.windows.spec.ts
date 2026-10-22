@@ -4,7 +4,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { nextTick } from 'vue'
 import en from '../../../content/en.json'
 import App from '../App.vue'
-import { CHAPTERS, type ChapterId } from '../content/chapters'
+import { CHAPTERS } from '../content/chapters'
 import { resolveChapter } from '../content/format'
 import type { ContentBundle } from '../content/types'
 import { createAppI18n } from '../i18n'
@@ -67,9 +67,6 @@ function openDialog(w: VueWrapper) {
   return w.get('dialog[open]')
 }
 
-// TODO(T3): убрать исключение, когда окно Tech stack заменит PlaceholderBody.
-const PENDING: readonly ChapterId[] = ['techstack']
-
 describe('chapter windows in 2D mode', () => {
   it.each(CHAPTERS.map((chapter) => chapter.id))(
     '#%s opens its window from a deep link',
@@ -80,8 +77,7 @@ describe('chapter windows in 2D mode', () => {
       const dialog = openDialog(wrapper)
       expect(dialog.attributes('data-chapter')).toBe(id)
       expect(dialog.get('h2').text()).toBe(resolveChapter(content, id).title)
-      if (!PENDING.includes(id))
-        expect(dialog.find('.window__body .chapter-body').exists()).toBe(true)
+      expect(dialog.find('.window__body .chapter-body').exists()).toBe(true)
     },
   )
 
@@ -96,9 +92,7 @@ describe('chapter windows in 2D mode', () => {
       const id = ui.openWindow
       expect(id).not.toBeNull()
       const dialog = openDialog(wrapper)
-      if (id && !PENDING.includes(id)) {
-        expect(dialog.find('.window__body .chapter-body').exists()).toBe(true)
-      }
+      expect(dialog.find('.window__body .chapter-body').exists()).toBe(true)
       ui.closeWindow()
       await nextTick()
     }

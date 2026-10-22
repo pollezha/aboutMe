@@ -3,6 +3,7 @@ import en from '../../../../content/en.json'
 import {
   experienceBadge,
   formatExperience,
+  formatTerm,
   resolveHighlights,
   serverExperience,
   sinceLabel,
@@ -168,5 +169,18 @@ describe('resolveHighlights', () => {
       value: '1000+',
       note: 'through my last module',
     })
+  })
+})
+
+describe('formatTerm', () => {
+  it('prints years and months in the short server form', () => {
+    expect(formatTerm({ years: 2, months: 3 })).toBe('2 y 3 m')
+    expect(formatTerm({ years: 2, months: 0 })).toBe('2 y')
+    expect(formatTerm({ years: 0, months: 9 })).toBe('9 m')
+    expect(formatTerm({ years: 0, months: 0 })).toBe('0 m')
+  })
+
+  it('has a Russian form', () => {
+    expect(formatTerm({ years: 1, months: 4 }, 'ru')).toBe('1 г. 4 мес.')
   })
 })

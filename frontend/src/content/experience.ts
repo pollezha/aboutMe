@@ -99,6 +99,20 @@ export function formatExperience(duration: Duration, lang: ContentLang = 'en'): 
   return parts.join(' ')
 }
 
+const TERM_UNITS: Record<ContentLang, { years: string; months: string }> = {
+  en: { years: 'y', months: 'm' },
+  ru: { years: 'г.', months: 'мес.' },
+}
+
+/** Срок сервера в стойке (Figma Rack/Server): «2 y 3 m», «2 y», «9 m». */
+export function formatTerm(duration: Duration, lang: ContentLang = 'en'): string {
+  const units = TERM_UNITS[lang]
+  const parts: string[] = []
+  if (duration.years > 0) parts.push(`${duration.years} ${units.years}`)
+  if (duration.months > 0 || duration.years === 0) parts.push(`${duration.months} ${units.months}`)
+  return parts.join(' ')
+}
+
 /** Короткое значение метрики: «2+ yrs», «2 yrs», «5 mo». */
 export function experienceBadge(duration: Duration, lang: ContentLang = 'en'): string {
   if (duration.years === 0) return months(duration.months, lang)

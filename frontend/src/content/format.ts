@@ -1,5 +1,12 @@
 import type { ChapterId } from './chapters'
-import { experienceBadge, formatExperience, sinceLabel, totalExperience } from './experience'
+import {
+  experienceBadge,
+  formatExperience,
+  formatTerm,
+  serverExperience,
+  sinceLabel,
+  totalExperience,
+} from './experience'
 import type { ChapterMetric, Chapters, ContentBundle, ContentLang, ExperienceEntry } from './types'
 
 // Токены дат в текстах глав (схема `chapters`): даты не хранятся строками, а считаются из `experience[]`.
@@ -142,6 +149,29 @@ export function resolveChapter<K extends ChapterId>(
   return fillDeep(chapter, (text) =>
     fillDates(text, { experience: content.experience, experienceId, now, lang: content.lang }),
   )
+}
+
+/** Срок сервера Tech stack (FR6): `term` — на кнопке, `label` — в панели «EXPERIENCE». */
+export interface ServerTenure {
+  term: string
+  since: string
+  label: string
+}
+
+const SINCE: Record<ContentLang, string> = { en: 'since', ru: 'с' }
+
+/** «2 y 3 m · since Jul 2024»: объединение периодов ролей из `usedIn`, начало — самая ранняя из них. */
+export function serverTenure(
+  usedIn: readonly string[],
+  experience: ExperienceEntry[],
+  now = new Date(),
+  lang: ContentLang = 'en',
+): ServerTenure {
+  const roles = experience.filter((entry) => usedIn.includes(entry.id))
+  const term = formatTerm(serverExperience(usedIn, experience, now), lang)
+  const start = earliest(roles)
+  const since = start ? `${SINCE[lang]} ${monthYear(start, 'short', lang)}` : ''
+  return { term, since, label: since ? `${term} · ${since}` : term }
 }
 
 /** Метрика окна, готовая к `MetricCard`. */
