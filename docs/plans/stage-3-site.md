@@ -71,7 +71,7 @@ Roadmap: docs/plans/roadmap.md, этап 3 (E3-T1…T10) · ADR: 0003 (HTML по
     axe в jsdom-прогоне (`vitest-axe` не добавляем — проверка в T11).
   - Зависит от: T1. Параллельно с T2.
 
-- [ ] T4 — Окна 05 Education, 06 Contact, 07 30-sec summary, 08 Monitoring (статичное состояние)
+- [x] T4 — Окна 05 Education, 06 Contact, 07 30-sec summary, 08 Monitoring (статичное состояние)
   - Файлы: `ui/windows/EducationWindow.vue`, `ContactWindow.vue` (одна Primary «Send message» → до этапа 4
     ведёт в Telegram, FR17; CV EN/RU Secondary; ссылка «30-sec summary», R3), `SummaryWindow.vue`
     (deep-link `#summary`), `MonitoringWindow.vue` (каркас Figma 31:1577 в состоянии `offline`: «last known»,
