@@ -81,3 +81,11 @@
 - Правило на будущее: любой коммит в `frontend/` — хотя бы `npm run format:check` перед ним; файлы-снимки
   (`scripts/design/`) целиком в `.prettierignore`, а не по одному.
 - Куда закреплено: `.prettierignore` (папка), этот урок; при следующем повторе — pre-commit хук.
+
+## 2026-10-22 — этап 2, T6: скриншоты и раскладка
+- Что случилось: headless Chrome не рендерит окно уже своей минимальной ширины — `--window-size=390` даёт
+  обрезанный справа кадр; `spawnSync` Chrome из того же процесса, где крутится vite `preview()`, вешает сервер.
+  Панель laptop не влезает ниже ~1150 px — понадобился четвёртый режим (768–1279 stacked).
+- Правило на будущее: скриншоты узких вьюпортов — через DevTools Protocol (`Emulation.setDeviceMetricsOverride`),
+  Chrome запускать асинхронно; брейкпоинты фиксировать в одном месте (`useBreakpoint`) и сверять с Figma.
+- Куда закреплено: `frontend/scripts/shots.mjs`, `src/ui/useBreakpoint.ts`, App.spec (tablet-кейс).

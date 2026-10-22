@@ -83,7 +83,7 @@ danger в Night, 30-sec summary вне панели, дата стажа, пле
   - Готово, когда: тесты зелёные; `npm run build` — Content OK.
   - Зависит от: T3
 
-- [ ] T6 — Первый экран в приложении + 2D-режим + сверка с Figma
+- [x] T6 — Первый экран в приложении + 2D-режим + сверка с Figma
   - Файлы: `frontend/src/App.vue` (HTML-слой: TopBar, Hero, BottomBar; слот сцены — пока заглушка с
     `scene/sky` фоном), `frontend/src/fallback2d/StaticMap.vue` (картинка острова + 8 хотспотов-кнопок с
     aria-label, координаты в %), `frontend/src/stores/ui.ts` (theme, lang, mode 2d/3d, activeStop,
@@ -129,6 +129,20 @@ danger в Night, 30-sec summary вне панели, дата стажа, пле
 3. 8 скриншотов первого экрана визуально совпадают с Figma-экранами (список расхождений в PR).
 4. Чек-лист design-review закрыт (T7).
 Затем `/verify` → `/review` → `/learn` → PR в main, тег `v0.2.0`.
+
+## Расхождения код ↔ Figma после T6 (для T7 / Specs §7)
+- **Решение:** цифры пинов (белые) на chapter-цветах < 4,5:1 (Day prospace 3,3; Night 1,7–3,5) — тёмный номер
+  на светлых акцентах; расширить palette.spec парами on-dark × chapter/* по темам (отмечено в T3).
+- CV-кнопки нет: в `content/en.json` нет ссылки kind=cv (D6 — ждёт файл). Добавить плейсхолдерный путь нельзя
+  (валидатор), значит кнопка появится вместе с CV.
+- Тема: кнопка «pressed» только в night; тема циклична day→evening→night — решить индикацию (3 иконки?).
+- Телефон: метрики переносятся на 3 строки (в Figma короткие подписи «my last module», «40s→2s») — короткие
+  варианты note для sm в контенте или CSS-clamp; роль на 390 крупнее Figma.
+- Планшет: остановки 72 px → «Previous role» переносится; порядок Contact/Monitoring в баре обратный Figma;
+  бар на 16 px выше низа (Figma — вплотную). Скриншот 768 снят в 3D (headless имеет WebGL2) — добавить `?mode=2d`.
+- Статус-пилюля «Open to work» без «· remote / relocation»; строка локации «Remote / relocation · …» vs Figma
+  «Remote or relocation in Europe · …» — контент.
+- Кнопки 14 px/44 vs Figma 16 px/48 у Contact — уточнить токен size lg.
 
 ## Что сознательно оставлено на потом (не блокирует)
 - **Контраст номера в ChapterTag (Night):** светлые акценты (prospace #FF8A4C, timepath #4FD1C0) с номером
