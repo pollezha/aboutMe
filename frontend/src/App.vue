@@ -16,6 +16,7 @@ import StaticMap from './fallback2d/StaticMap.vue'
 import { useLocaleSync } from './i18n'
 import { SCENE_TIMEOUT_MS, loadSceneWhenIdle, type SceneLoad } from './scene'
 import { MIN_3D_WIDTH, detectWebGL2, shouldUse3D } from './scene/shouldUse3D'
+import { mapRotation } from './scene/useCamera'
 import { isTheme, useUiStore, type Theme } from './stores/ui'
 import BottomBar, { type BottomBarStop } from './ui/BottomBar.vue'
 import ChapterWindow from './ui/ChapterWindow.vue'
@@ -284,11 +285,12 @@ onBeforeUnmount(() => {
       </span>
       <div class="top-bar__actions">
         <IconButton
-          v-if="layout === 'overlay'"
+          v-if="ui.mode === '3d'"
           class="top-bar__rotate"
           icon="rotate"
-          label="Rotate map (coming soon)"
-          disabled
+          label="Rotate map"
+          title="Rotate map · R"
+          @click="mapRotation.rotate()"
         />
         <IconButton
           v-if="ui.mode === '3d'"
@@ -415,11 +417,6 @@ onBeforeUnmount(() => {
 .top-bar__actions {
   display: flex;
   gap: var(--space-2);
-}
-
-.top-bar__rotate:disabled {
-  opacity: 0.45;
-  cursor: default;
 }
 
 .app__main {

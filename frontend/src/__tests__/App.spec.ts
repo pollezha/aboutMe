@@ -5,6 +5,7 @@ import { defineComponent, h, nextTick, onMounted } from 'vue'
 import App from '../App.vue'
 import { createAppI18n } from '../i18n'
 import { loadSceneWhenIdle } from '../scene'
+import { mapRotation } from '../scene/useCamera'
 import { useUiStore } from '../stores/ui'
 
 // three/WebGL в jsdom не рендерим: чанк сцены — заглушка, которая по флагу «рисует первый кадр».
@@ -381,13 +382,25 @@ describe('App', () => {
     expect(localStorage.getItem('aboutme.theme')).toBeNull()
   })
 
-  it('marks the rotate button as coming soon without a tooltip', () => {
+  it('rotates the map a quarter turn from the top controls in 3D', async () => {
     const { wrapper } = mountApp()
+    const before = mapRotation.rotation.value
 
     const rotate = wrapper.get('.top-bar__rotate')
-    expect(rotate.attributes('aria-label')).toBe('Rotate map (coming soon)')
-    expect(rotate.attributes('title')).toBeUndefined()
-    expect(rotate.attributes('disabled')).toBeDefined()
+    expect(rotate.attributes('aria-label')).toBe('Rotate map')
+    expect(rotate.attributes('title')).toBe('Rotate map · R')
+    expect(rotate.attributes('disabled')).toBeUndefined()
+    await rotate.trigger('click')
+
+    expect(mapRotation.rotation.value).toBe((before + 90) % 360)
+  })
+
+  it('has no rotate button in 2D', () => {
+    setViewport(390)
+    const { wrapper, ui } = mountApp()
+
+    expect(ui.mode).toBe('2d')
+    expect(wrapper.find('.top-bar__rotate').exists()).toBe(false)
   })
 
   it('opens the Contact window from the #contact deep link', async () => {
