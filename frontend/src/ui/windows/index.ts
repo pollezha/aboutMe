@@ -4,6 +4,7 @@ import type { IconName } from '../icon-registry'
 import PlaceholderBody from './PlaceholderBody.vue'
 import ProSpaceWindow from './ProSpaceWindow.vue'
 import ProfileWindow from './ProfileWindow.vue'
+import TechStackWindow from './TechStackWindow.vue'
 import TimePathWindow from './TimePathWindow.vue'
 
 /**
@@ -20,7 +21,7 @@ export const WINDOWS: Record<ChapterId, WindowEntry> = {
   profile: { body: ProfileWindow, sign: 'sign-licence' },
   prospace: { body: ProSpaceWindow, sign: 'sign-waybill' },
   timepath: { body: TimePathWindow, sign: 'sign-route' },
-  techstack: { body: PlaceholderBody, sign: 'sign-rack' },
+  techstack: { body: TechStackWindow, sign: 'sign-rack' },
   education: { body: PlaceholderBody, sign: 'sign-diploma' },
   contact: { body: PlaceholderBody, sign: 'sign-envelope' },
   summary: { body: PlaceholderBody, sign: 'sign-summary' },

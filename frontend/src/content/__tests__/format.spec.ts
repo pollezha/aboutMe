@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { fillDates, formatPeriod, resolveChapter, resolveMetric } from '../format'
+import { fillDates, formatPeriod, resolveChapter, resolveMetric, serverTenure } from '../format'
 import type { ContentBundle, ExperienceEntry } from '../types'
 import en from '../../../../content/en.json'
 
@@ -97,5 +97,24 @@ describe('resolveMetric', () => {
     expect(
       resolveMetric({ label: 'A', value: '1', note: 'n', accent: true }, content, now),
     ).toEqual({ label: 'A', value: '1', note: 'n', accent: true })
+  })
+})
+
+describe('serverTenure', () => {
+  it('computes the term and the start month from the roles in usedIn', () => {
+    expect(serverTenure(['timepath', 'prospace'], experience, now)).toEqual({
+      term: '2 y 3 m',
+      since: 'since Jul 2024',
+      label: '2 y 3 m · since Jul 2024',
+    })
+    expect(serverTenure(['prospace'], experience, now).label).toBe('9 m · since Jan 2026')
+  })
+
+  it('counts overlapping roles once', () => {
+    const overlapping: ExperienceEntry[] = [
+      { id: 'a', company: 'A', role: 'Dev', from: '2025-01', to: '2025-12' },
+      { id: 'b', company: 'B', role: 'Dev', from: '2025-07', to: '2026-06' },
+    ]
+    expect(serverTenure(['a', 'b'], overlapping, now).label).toBe('1 y 6 m · since Jan 2025')
   })
 })
