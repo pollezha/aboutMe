@@ -118,7 +118,7 @@ Roadmap: docs/plans/roadmap.md, этап 3 (E3-T1…T10) · ADR: 0003 (HTML по
     времени spike — 1 рабочий день; при провале бюджета/производительности — чистый three (ADR-0005, вариант B).
   - Зависит от: — (блокирует T8–T10). Параллельно с T1–T4.
 
-- [ ] T8 — Здания, подписи, клик и поворот карты (FR2)
+- [x] T8 — Здания, подписи, клик и поворот карты (FR2)
   - Файлы: `scene/Island.vue`, `scene/Roads.vue`, `scene/Water.vue`, `scene/buildings/Building.vue` (+ 6 главных
     и фоновые через `InstancedMesh`), `scene/Labels.vue` (cientos `Html`: `<button>` с именем главы,
     `tabindex=-1` — Tab идёт по бару, Specs §3), `scene/useCamera.ts` (поворот 90°, 300 мс, мгновенно при
