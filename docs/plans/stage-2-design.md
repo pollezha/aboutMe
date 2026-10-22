@@ -144,6 +144,13 @@ danger в Night, 30-sec summary вне панели, дата стажа, пле
   «Remote or relocation in Europe · …» — контент.
 - Кнопки 14 px/44 vs Figma 16 px/48 у Contact — уточнить токен size lg.
 
+## Ревью этапа 2 — итог
+Раунд 1: 0 blocker, 4 major, 7 minor, 5 nit — все подтверждены verifier, исправлены (2ecffdc, db4f45d, 828523c).
+Раунд 2 (только дифф исправлений): 0 blocker, 0 major, 1 minor → в этап 3: inline-скрипт в `<head>` ставит
+`data-theme`/`theme-color`/`color-scheme` из localStorage до загрузки CSS (иначе вспышка Day при сохранённой Night;
+критично с vite-ssg). Остальное в этап 3: `tokens-only` глобы на `src/scene`, общий `scripts/cdp.mjs`, абсолютный
+`og:image` после выбора домена.
+
 ## Что сознательно оставлено на потом (не блокирует)
 - **Контраст номера в ChapterTag (Night):** светлые акценты (prospace #FF8A4C, timepath #4FD1C0) с номером
   `text/on-dark` могут быть < 4,5:1 — проверить в T6 расширением palette.spec (пары on-dark × chapter/* по темам);
