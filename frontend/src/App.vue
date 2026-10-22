@@ -10,6 +10,7 @@ import {
   type ChapterId,
 } from './content/chapters'
 import { resolveHighlights } from './content/experience'
+import { resolveChapter } from './content/format'
 import type { ContentBundle } from './content/types'
 import StaticMap from './fallback2d/StaticMap.vue'
 import { useLocaleSync } from './i18n'
@@ -20,6 +21,8 @@ import ChapterWindow from './ui/ChapterWindow.vue'
 import HeroCard from './ui/HeroCard.vue'
 import IconButton from './ui/IconButton.vue'
 import { useBreakpoint } from './ui/useBreakpoint'
+import { WINDOWS } from './ui/windows'
+import ProofLinks from './ui/windows/blocks/ProofLinks.vue'
 
 useLocaleSync()
 const { t } = useI18n()
@@ -107,6 +110,16 @@ function open(id: string) {
 }
 
 const windowChapter = computed(() => (ui.openWindow ? chapterInfo(ui.openWindow) : null))
+// Шапка и подвал окна — из контента главы (даты подставлены); тело — из реестра окон.
+const windowText = computed(() => (ui.openWindow ? resolveChapter(content, ui.openWindow) : null))
+const windowEyebrow = computed(() => {
+  if (!windowChapter.value || !windowText.value) return ''
+  const { index } = windowChapter.value
+  // «Stop N of 6 · …» (R2) — только у остановок маршрута.
+  if (!index) return windowText.value.eyebrow
+  const stop = t('window.stop', { n: Number(index), total: ROUTE.length })
+  return `${stop} · ${windowText.value.eyebrow}`
+})
 const neighbours = computed(() => (ui.openWindow ? routeNeighbours(ui.openWindow) : {}))
 const prevLink = computed(() => {
   const prev = neighbours.value.prev
@@ -241,23 +254,22 @@ onBeforeUnmount(() => {
     />
 
     <ChapterWindow
-      v-if="windowChapter"
+      v-if="windowChapter && windowText"
       :open="true"
       :chapter="windowChapter.id"
       :number="windowChapter.index"
-      :eyebrow="
-        windowChapter.index
-          ? `Chapter ${windowChapter.index} · ${windowChapter.subtitle}`
-          : windowChapter.subtitle
-      "
-      :title="windowChapter.title"
+      :eyebrow="windowEyebrow"
+      :sign="WINDOWS[windowChapter.id].sign"
+      :title="windowText.title"
+      :subtitle="windowText.subtitle"
       :prev="prevLink"
       :next="nextLink"
       @update:open="onWindowOpen"
       @prev="neighbours.prev && ui.openChapter(neighbours.prev.id)"
       @next="neighbours.next && ui.openChapter(neighbours.next.id)"
     >
-      <p class="t-body-default">Chapter content — stage 3</p>
+      <component :is="WINDOWS[windowChapter.id].body" :content="content" />
+      <template #links><ProofLinks :links="windowText.proofLinks" /></template>
     </ChapterWindow>
   </div>
 </template>
