@@ -6,14 +6,18 @@ import { palette } from '../theme/palette'
 export type Lang = 'en' | 'ru'
 export type Theme = 'day' | 'evening' | 'night'
 export type Mode = '3d' | '2d'
+/** idle — сцена не грузится; loading — ждём scene_ready; ready — сцена на экране; failed — таймаут/ошибка, показан баннер. */
+export type SceneState = 'idle' | 'loading' | 'ready' | 'failed'
 
 const THEMES: readonly Theme[] = ['day', 'evening', 'night']
 const LANGS: readonly Lang[] = ['en', 'ru']
+const MODES: readonly Mode[] = ['3d', '2d']
 
 const KEY = {
   theme: 'aboutme.theme',
   lang: 'aboutme.lang',
   motionPaused: 'aboutme.motionPaused',
+  sceneChoice: 'aboutme.sceneChoice',
 } as const
 
 // localStorage может быть недоступен (приватный режим, квота, SSR) — настройки тогда живут только в памяти.
@@ -46,6 +50,12 @@ export const useUiStore = defineStore('ui', () => {
   const lang = ref<Lang>(pick(load(KEY.lang), LANGS, 'en'))
   const motionPaused = ref(load(KEY.motionPaused) === 'true')
   const mode = ref<Mode>('3d')
+  /** Явный выбор пользователя (FR10); null — не выбирал, режим решает shouldUse3D(). */
+  const savedChoice = load(KEY.sceneChoice)
+  const userChoice = ref<Mode | null>(
+    MODES.includes(savedChoice as Mode) ? (savedChoice as Mode) : null,
+  )
+  const sceneState = ref<SceneState>('idle')
   const activeStop = ref<ChapterId | null>(null)
   const openWindow = ref<ChapterId | null>(null)
 
@@ -92,6 +102,28 @@ export const useUiStore = defineStore('ui', () => {
     mode.value = next
   }
 
+  function setSceneState(next: SceneState) {
+    sceneState.value = next
+  }
+
+  /** «Continue without 3D»: 2D сейчас и при следующих визитах. */
+  function continueWithout3D() {
+    userChoice.value = '2d'
+    save(KEY.sceneChoice, '2d')
+    mode.value = '2d'
+    sceneState.value = 'idle'
+  }
+
+  /** Сцена не успела (таймаут) или не загрузилась: 2D с баннером, но это не выбор пользователя. */
+  function sceneTimedOut() {
+    mode.value = '2d'
+    sceneState.value = 'failed'
+  }
+
+  function dismissSceneBanner() {
+    if (sceneState.value === 'failed') sceneState.value = 'idle'
+  }
+
   /** Клик по остановке/хотспоту/кнопке: окно открывается сразу (D5), остановка становится активной. */
   function openChapter(id: ChapterId) {
     activeStop.value = id
@@ -107,6 +139,8 @@ export const useUiStore = defineStore('ui', () => {
     lang,
     mode,
     motionPaused,
+    userChoice,
+    sceneState,
     activeStop,
     openWindow,
     setTheme,
@@ -117,6 +151,10 @@ export const useUiStore = defineStore('ui', () => {
     toggleLang,
     toggleMotion,
     setMode,
+    setSceneState,
+    continueWithout3D,
+    sceneTimedOut,
+    dismissSceneBanner,
     openChapter,
     closeWindow,
   }
