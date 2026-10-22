@@ -4,6 +4,9 @@
     "role": ".NET backend-разработчик"
   },
   "window": {
-    "stop": "Остановка {n} из {total}"
+    "stop": "Остановка {n} из {total}",
+    "monitoring": {
+      "offline": "офлайн · бэкенд появится на этапе 4"
+    }
   }
 }

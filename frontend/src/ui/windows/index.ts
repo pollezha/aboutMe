@@ -1,9 +1,13 @@
 import type { Component } from 'vue'
 import type { ChapterId } from '../../content/chapters'
 import type { IconName } from '../icon-registry'
+import ContactWindow from './ContactWindow.vue'
+import EducationWindow from './EducationWindow.vue'
+import MonitoringWindow from './MonitoringWindow.vue'
 import PlaceholderBody from './PlaceholderBody.vue'
 import ProSpaceWindow from './ProSpaceWindow.vue'
 import ProfileWindow from './ProfileWindow.vue'
+import SummaryWindow from './SummaryWindow.vue'
 import TimePathWindow from './TimePathWindow.vue'
 
 /**
@@ -21,8 +25,8 @@ export const WINDOWS: Record<ChapterId, WindowEntry> = {
   prospace: { body: ProSpaceWindow, sign: 'sign-waybill' },
   timepath: { body: TimePathWindow, sign: 'sign-route' },
   techstack: { body: PlaceholderBody, sign: 'sign-rack' },
-  education: { body: PlaceholderBody, sign: 'sign-diploma' },
-  contact: { body: PlaceholderBody, sign: 'sign-envelope' },
-  summary: { body: PlaceholderBody, sign: 'sign-summary' },
-  monitoring: { body: PlaceholderBody, sign: 'sign-monitoring' },
+  education: { body: EducationWindow, sign: 'sign-diploma' },
+  contact: { body: ContactWindow, sign: 'sign-envelope' },
+  summary: { body: SummaryWindow, sign: 'sign-summary' },
+  monitoring: { body: MonitoringWindow, sign: 'sign-monitoring' },
 }

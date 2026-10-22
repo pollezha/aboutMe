@@ -4,6 +4,9 @@
     "role": ".NET Backend Developer"
   },
   "window": {
-    "stop": "Stop {n} of {total}"
+    "stop": "Stop {n} of {total}",
+    "monitoring": {
+      "offline": "offline · backend arrives with stage 4"
+    }
   }
 }
