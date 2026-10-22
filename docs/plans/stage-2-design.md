@@ -1,134 +1,147 @@
-# План: этап 2 «Дизайн-проход»
+# План: этап 2 «Дизайн → код»
 
 Спека: docs/spec/portfolio-mvp.md (FR1, FR4, FR5, FR7, FR10, NFR1–NFR3) · Дизайн: docs/design/architecture.md §4
-Разбор концепта: docs/concept/design-review.md (D1–D25) · Этапы: docs/plans/roadmap.md (E2-T1…E2-T6)
+Источник истины дизайна: Figma <https://www.figma.com/design/1D6lW84rl4yYR8VQwV10Pp> — ID сущностей в
+`docs/design/figma-state.json`, правила и контент — `docs/design/figma-brief.md`. Страница 📝 Specs содержит
+таблицу «Figma-компонент → Vue-файл → CSS-переменные → props» — задачи ниже реализуют её построчно.
 ADR: 0003 (HTML поверх 3D), 0004 (контент как JSON), 0005 (Vue)
 
-Цель этапа: закрыть дизайн-долги концепта **до** сцены и окон, чтобы в этапе 3 не переделывать дважды.
-Дизайн-система живёт в коде (решение 2026-10-21, Figma нет): токены → каркас окна → HTML-прототипы
-четырёх брейкпоинтов → утверждение в браузере. Концепт `docs/concept/mockup-v6.html` — источник идей,
-не пикселей; цвета берутся оттуда, но каждая пара проходит контраст.
+Решение пользователя 2026-10-22: работаем по текущему зафиксированному дизайну; открытые решения (Specs §7:
+danger в Night, 30-sec summary вне панели, дата стажа, плейсхолдеры, метрики Monitoring) в коде остаются
+плейсхолдерами/значениями из Figma и закрываются позже без переделки структуры.
 
-Зависимости этапа (одобрение плана = согласие): **нет новых npm-пакетов** — только `@fontsource-variable/*`
-для двух шрифтов (T1, self-hosted, без запросов к Google Fonts). Шрифты выбираются в T1 по критерию:
-variable, latin + cyrillic, ≤ 150 КБ на оба семейства суммарно (NFR1).
+Цель этапа: дизайн-система и HTML-слой первого экрана в коде, 1:1 с Figma, с автоматической проверкой
+соответствия (токены, контраст, размеры) — чтобы этап 3 (сцена, окна с контентом) собирался на готовых
+компонентах.
 
-Что намеренно **не** делаем в этапе 2: TresJS-сцену, грузовик, SignalR, реальные окна глав с полным контентом
-(этап 3). Прототипы — статичный HTML/CSS на токенах и минимум JS (переключатель темы/языка, диалог), чтобы
-их можно было открыть в браузере и перенести в Vue без переделки стилей.
+Зависимости этапа (одобрение плана = согласие): `@fontsource-variable/bricolage-grotesque` (variable, wght) и `@fontsource/ibm-plex-mono` (variable-версии нет; только
+веса 400 и 700, latin+cyrillic; суммарно ≤ 150 КБ — проверяется тестом).
+Больше ничего: TresJS, vite-ssg, Playwright, Lighthouse — этап 3.
+
+Чтение Figma в задачах: через MCP `get_variable_defs` / `get_design_context` по node-id из `figma-state.json`.
+Файл Figma при этом **не изменяется**; никакие другие файлы Figma не открываются.
 
 ## Задачи
 Каждая задача: укладывается в половину контекста, даёт рабочее состояние, один коммит.
 
-- [ ] T1 — Токены палитры трёх тем + типографика, с тестом контраста (E2-T1, D8, D13, D15)
-  - Файлы: `frontend/src/theme/palette.ts` (объект `{ day, evening, night }`: токены UI — bg, surface, text,
-    textMuted, accent `#FFD23F`, accentText, border, focus, success, danger, chapter-акценты для 8 окон; токены сцены —
-    sky, water, sun, ground, road; общие — радиусы, тени, отступы по шкале 4 px, размеры шрифта: min 12, подписи 13–14,
-    текст 15–16), `frontend/src/theme/contrast.ts` (WCAG относительная яркость + ratio), `frontend/src/theme/apply.ts`
-    (палитра → CSS-переменные на `:root[data-theme]`), `frontend/src/theme/fonts.css` (2 семейства через
-    @fontsource-variable), `frontend/src/theme/__tests__/palette.spec.ts`.
-  - Тест сначала: для каждой темы все пары «текст/фон» из явного списка `TEXT_ON_BG` ≥ 4,5:1, крупный текст ≥ 3:1;
-    `accentText` на `accent` ≥ 4,5:1; у каждой темы одинаковый набор ключей; ни один размер шрифта < 12 px.
-    Кандидаты из концепта (`#888`, `#1F9E8F`, `#E8590C` на белом) должны падать — проверяется отрицательным тестом
-    функции contrast.
-  - Готово, когда: тесты зелёные; `apply(palette.night)` ставит переменные; суммарный размер двух woff2 ≤ 150 КБ
-    (проверка скриптом в тесте по `node_modules/@fontsource-variable/*/files`, только latin + cyrillic subset).
+- [ ] T1 — Токены: экспорт переменных Figma → `palette.ts` + CSS-переменные, тест соответствия и контраста
+  - Файлы: `frontend/scripts/design/figma-tokens.json` (снимок Semantic × 3 режима + Layout + text/effect styles —
+    **уже снят оркестратором 2026-10-22**, задача его не меняет), `frontend/src/theme/palette.ts` (типизированный
+    объект `{ day, evening, night }` + `layout`, сгенерированный из снимка скриптом `frontend/scripts/gen-theme.mjs`),
+    `frontend/src/theme/tokens.css` (`:root[data-theme="day|evening|night"] { --bg-surface: … }` из того же снимка),
+    `frontend/src/theme/contrast.ts`, `frontend/src/theme/__tests__/palette.spec.ts`.
+  - Тест сначала: (1) `palette.ts` и `tokens.css` содержат ровно те имена, что в снимке Figma (ни больше, ни
+    меньше); (2) для каждой темы пары из явного списка `TEXT_ON_BG` (text/primary и text/secondary на bg/surface
+    и bg/surface-alt; text/on-accent на accent/primary; text/on-dark на chapter/techstack) ≥ 4,5:1 — те цифры,
+    что на странице Foundations; (3) `status/danger` в Night — ожидаемо проваливает и помечен `knownIssue`
+    (Specs §7), тест фиксирует текущее значение, а не «зелёнит» его; (4) ни один размер шрифта < 12.
+  - Готово, когда: тесты зелёные; `gen-theme.mjs` идемпотентен (повторный запуск не меняет файлы — проверка
+    в CI через `git diff --exit-code`).
   - Зависит от: —
 
-- [ ] T2 — Доступный каркас окна `Dialog` + общий шаблон окна главы (E2-T2, D9, D14, D10)
-  - Файлы: `frontend/src/ui/Dialog.vue` (native `<dialog>` + `showModal()`, Esc, возврат фокуса, `aria-labelledby`,
-    закрытие по кнопке и backdrop; ловушка фокуса — нативная у `showModal`), `frontend/src/ui/ChapterWindow.vue`
-    (каркас: шапка-«знак» с номером остановки и акцентом главы, сетка контента, блок «Proof & links», prev/next),
-    `frontend/src/ui/__tests__/Dialog.spec.ts`, `frontend/src/ui/__tests__/ChapterWindow.spec.ts`.
-  - Тест сначала (AC4 на уровне компонента): открытие ставит фокус внутрь; Esc закрывает и возвращает фокус на
-    кнопку-открыватель; `aria-modal`/`aria-labelledby` выставлены; prev/next эмитят события; при
-    `prefers-reduced-motion` у окна нет transition (проверка класса/переменной).
-  - Готово, когда: тесты зелёные; в прототипе (T4) окно открывается с клавиатуры и закрывается Esc.
-  - Зависит от: T1
+- [ ] T2 — Шрифты и типографика: self-hosted шрифты + классы текстовых стилей
+  - Файлы: `frontend/src/theme/fonts.css` (@fontsource-variable/bricolage-grotesque + @fontsource/ibm-plex-mono 400/700, только latin + cyrillic), `frontend/src/theme/
+    typography.css` (классы `.t-display-hero`, `.t-heading-window`, … — по 11 стилям Figma: размер, line-height,
+    letter-spacing, вес), `frontend/src/theme/__tests__/fonts.spec.ts`.
+  - Тест сначала: суммарный размер подключённых woff2 ≤ 150 КБ (читается из `node_modules/@fontsource-variable/
+    */files`, только latin/cyrillic-wght); в `typography.css` есть класс на каждый стиль из `figma-state.json
+    → textStyles`.
+  - Готово, когда: тесты зелёные; `npm run build` проходит, бюджет первого экрана (JS) не вырос.
+  - Зависит от: — (параллельно с T1)
 
-- [ ] T3 — Первый экран и нижняя панель (hero + 3 цифры + маршрут), адаптив (E2-T4, E2-T3 часть, D1, D2, D3, D5)
-  - Файлы: `frontend/src/ui/Hero.vue` (имя, роль, статус, формат, локация, EN/RU, CV, Contact, 3 цифры из контента),
-    `frontend/src/ui/BottomBar.vue` (профиль, 6 остановок с прогрессом, CTA Contact / 30-sec summary / Monitoring,
-    тема, язык; на < 768 — компактная карточка + выпадающий маршрут), `frontend/src/ui/__tests__/Hero.spec.ts`,
-    `BottomBar.spec.ts`; расширение `content/schema/content.schema.json` + `content/en.json`: `profile.location`,
-    `profile.highlights[3]` (значение + подпись), `experience[]` с датами для расчёта стажа (D21).
-  - Тест сначала: Hero рендерит имя, роль, статус, 3 цифры из контента и считает стаж из дат (а не строкой);
-    BottomBar: клик по остановке эмитит `open(stop)` **сразу** (без ожидания анимации — D5), активная остановка
-    помечена `aria-current`; все кнопки достижимы Tab (порядок в DOM).
-  - Готово, когда: тесты и валидатор контента зелёные; контент без `[ADD]`.
-  - Зависит от: T1 (параллельно с T2)
+- [ ] T3 — Базовые компоненты: Icon, Button (Primary/Secondary/Ghost/Icon), Tag/Chapter, Pill/Status
+  - Файлы: `frontend/src/ui/Icon.vue` + `icons/*.svg` (13 иконок, экспорт из Figma `get_design_context` узлов
+    Icon/*), `BaseButton.vue` (variant primary|secondary|ghost, size md|lg, disabled; стили только через
+    CSS-переменные из T1), `IconButton.vue` (44×44), `ChapterTag.vue`, `StatusPill.vue`;
+    тесты `frontend/src/ui/__tests__/{BaseButton,IconButton,ChapterTag,StatusPill}.spec.ts`.
+  - Тест сначала: BaseButton рендерит `<button>`, прокидывает `disabled` и `aria-*`, variant/size → классы;
+    IconButton требует `aria-label` (тест падает без него); ChapterTag ставит `--chapter` на нужную переменную
+    главы; focus-visible стиль присутствует (проверка класса/computed через jsdom не надёжна — проверяем, что
+    CSS содержит `:focus-visible` с `--focus-ring`).
+  - Готово, когда: тесты зелёные; в компонентах нет «голых» hex (тест-грепом по `src/ui/**/*.vue`: 0 совпадений
+    `#[0-9a-f]{3,6}`).
+  - Зависит от: T1, T2
 
-- [ ] T4 — HTML-прототипы четырёх брейкпоинтов + состояния + артефакт для утверждения (E2-T3, E2-T5, D4, D11)
-  - Файлы: `frontend/src/prototype/` — страница-прототип на Vue (роут или отдельный `prototype.html` в Vite
-    multi-page): первый экран, панель, одно окно главы (ProSpace) и одно «служебное» (Contact), 2D-режим
-    (статичная картинка-заглушка карты + список остановок), переключатель темы/языка; состояния: фокус, hover,
-    disabled, «сцена грузится», «API офлайн», reduced-motion; `frontend/scripts/shots.mjs` (Playwright **не
-    добавляем** — скриншоты через headless Chrome по `--screenshot`, 1440×900 / 1280×720 / 768×1024 / 390×844 ×
-    день/ночь); `docs/design/prototypes/README.md` с результатами.
-  - Тест сначала: n/a для визуала; smoke-тест Vitest, что страница прототипа монтируется в 3 темах без ошибок
-    консоли.
-  - Готово, когда: 8 скриншотов в `docs/design/prototypes/`; опубликован HTML-артефакт (одна страница, все
-    брейкпоинты в iframe/переключателем) — **пользователь утвердил** или дал правки (это шлюзовой критерий roadmap).
-  - Зависит от: T2, T3
+- [ ] T4 — Dialog + Window/Shell
+  - Файлы: `frontend/src/ui/Dialog.vue` (native `<dialog>` + `showModal()`, Esc, возврат фокуса,
+    `aria-labelledby`, backdrop, без transition при reduced-motion), `ChapterWindow.vue` (eyebrow с акцентом
+    главы, заголовок, подзаголовок, close, slot, футер Proof & links, prev/next; desktop ≤ `--size-window-max`,
+    mobile на весь экран), тесты `Dialog.spec.ts`, `ChapterWindow.spec.ts`.
+  - Тест сначала (AC4 на компоненте): open → фокус внутри; Esc → закрыто, фокус на открывателе; `aria-modal`,
+    `aria-labelledby` выставлены; prev/next эмитят; reduced-motion → нет класса анимации.
+  - Готово, когда: тесты зелёные.
+  - Зависит от: T3
 
-- [ ] T5 — Иконки, favicon, OG-превью, SEO-мета (E2-T6, D12)
-  - Файлы: `frontend/public/favicon.svg` (+ png 192/512, `site.webmanifest`), `frontend/public/og.png` 1200×630
-    (генерируется скриптом `frontend/scripts/og.mjs` из HTML-шаблона через headless Chrome — без новых пакетов),
-    `frontend/index.html` (title, description, OG/Twitter meta из контента, `theme-color` на тему),
-    `frontend/src/ui/icons/` (SVG-спрайт: ≤ 12 иконок, `aria-hidden`).
-  - Тест сначала: тест, что `index.html` после сборки содержит title/description/og:image/og:title и что `og.png`
-    существует и имеет размер 1200×630 (чтение заголовка PNG).
-  - Готово, когда: тесты зелёные; `npm run build` проходит; превью ссылки корректно показывается в
-    https://www.opengraph.xyz или аналоге (скриншот в PR).
-  - Зависит от: T1 (параллельно с T2–T4)
+- [ ] T5 — Route/Stop, BottomBar, Hero/FirstScreen, Card/Metric + расширение контента
+  - Файлы: `RouteStop.vue`, `BottomBar.vue` (desktop | compact; на < 768 — fixed, 72 px, номера с aria-label),
+    `HeroCard.vue` (desktop | mobile; стаж из дат), `MetricCard.vue`; `content/schema/content.schema.json` +
+    `content/en.json`: `profile.location`, `profile.highlights[3]`, `experience[]` с датами;
+    `frontend/src/content/experience.ts` (расчёт стажа); тесты на каждый компонент + `experience.spec.ts`.
+  - Тест сначала: клик по остановке эмитит `open(stop)` сразу (D5); активная — `aria-current="step"`; все
+    остановки достижимы Tab; Hero показывает имя, роль, статус, 3 метрики из контента; стаж считается из дат
+    (`2024-07-01` → `2026-10-22` = «2 yrs 3 mo»), не строкой; валидатор контента зелёный.
+  - Готово, когда: тесты зелёные; `npm run build` — Content OK.
+  - Зависит от: T3
 
-- [ ] T6 — Закрытие чек-листа design-review и правки по итогам утверждения
-  - Файлы: `docs/concept/design-review.md` (чек-лист: каждый D — закрыт / отложен с причиной и этапом),
-    правки компонентов по замечаниям пользователя к T4, `docs/design/architecture.md` §4 (если решения изменились),
-    `CLAUDE.md` (команда скриншотов).
-  - Тест сначала: n/a; регресс — полный прогон фронта.
-  - Готово, когда: в чек-листе нет незакрытых «блокер» и «важно» без причины; все проверки фронта зелёные.
+- [ ] T6 — Первый экран в приложении + 2D-режим + сверка с Figma
+  - Файлы: `frontend/src/App.vue` (HTML-слой: TopBar, Hero, BottomBar; слот сцены — пока заглушка с
+    `scene/sky` фоном), `frontend/src/fallback2d/StaticMap.vue` (картинка острова + 8 хотспотов-кнопок с
+    aria-label, координаты в %), `frontend/src/stores/ui.ts` (theme, lang, mode 2d/3d, activeStop,
+    openWindow), `frontend/scripts/shots.mjs` (headless Chrome: 1440×900, 1280×720, 768×1024, 390×844 × day/night
+    → `docs/design/shots/`), `frontend/src/__tests__/App.spec.ts` (расширение).
+  - Тест сначала: `shouldUse3D()` → false при ширине < 768 или без WebGL (мок); в 2D рендерится StaticMap с 8
+    кнопками; смена темы ставит `data-theme`; окно открывается по клику на остановку и на хотспот.
+  - Готово, когда: тесты зелёные; 8 скриншотов сняты; сравнение с Figma-экранами глазами (оркестратор смотрит
+    скриншоты рядом с экспортом из Figma `get_screenshot` 33:2, 33:246, 34:709, 56:1378) — расхождения
+    ≤ косметических, список в PR.
   - Зависит от: T4, T5
 
-Параллельно: T2 ∥ T3 ∥ T5 после T1 (разные папки: `ui/Dialog+ChapterWindow`, `ui/Hero+BottomBar`+content,
-`public`+`index.html`) — три implementer в worktree. T4 собирает T2+T3; T6 — после утверждения.
+- [ ] T7 — Иконки/favicon/OG/SEO-мета + закрытие чек-листа design-review
+  - Файлы: `frontend/public/favicon.svg` (+png 192/512, `site.webmanifest`), `frontend/public/og.png` 1200×630
+    (скрипт `frontend/scripts/og.mjs`, headless Chrome), `frontend/index.html` (title/description/OG/`theme-color`),
+    `docs/concept/design-review.md` (чек-лист: каждый D — закрыт / отложен с причиной), `CLAUDE.md` (команды
+    `gen-theme`, `shots`).
+  - Тест сначала: собранный `index.html` содержит title/description/og:image/og:title; `og.png` 1200×630 (заголовок PNG).
+  - Готово, когда: тесты зелёные; в чек-листе нет незакрытых «блокер»/«важно» без причины.
+  - Зависит от: T6
+
+Параллельно: T1 ∥ T2 (разные папки); после них T3; затем T4 ∥ T5 (разные файлы: `Dialog/ChapterWindow` vs
+`RouteStop/BottomBar/HeroCard/MetricCard` + content) — два implementer в worktree; T6, T7 — последовательно.
 
 ## Покрытие: требования → задачи
 | Требование / пункт | Задачи | Проверка на шлюзе |
 |---|---|---|
-| NFR3 контраст ≥ 4,5:1, фокус виден, reduced-motion | T1, T2 | тест palette.spec, Dialog.spec |
-| NFR1 шрифты ≤ 2 семейства ≤ 150 КБ | T1 | тест размера woff2 |
-| FR5 окна — модальные диалоги (AC4 на компоненте) | T2 | Dialog.spec |
-| FR1 первый экран без кликов; D2 цифры; D3 EN/RU и локация | T3 | Hero.spec + скриншоты 1280×720 и 390×844 |
-| FR4 панель; D5 окно сразу | T3 | BottomBar.spec |
-| FR7 темы из одной палитры (сцена + окна) | T1, T4 | скриншоты день/ночь |
-| FR10 2D-режим (макет) | T4 | скриншот 390 |
-| D1 адаптив 1440 / 1280×720 / 768 / 390 | T3, T4 | 8 скриншотов, утверждение |
-| D12 SEO/OG | T5 | тест index.html + og.png |
-| D21 стаж из дат | T3 | Hero.spec |
-| D9, D10, D11, D13, D14, D15 | T1, T2, T4 | чек-лист T6 |
-| D6, D20 (CV, `[ADD]`) — контент от пользователя | T3 (схема), T6 (чек-лист) | валидатор; отложено до этапа 3, если CV нет |
-| D18 (Monitoring), D17 (InstancedMesh) | — | этапы 5 и 3 соответственно, отмечается в T6 |
+| NFR3 контраст ≥ 4,5:1, фокус, reduced-motion | T1, T3, T4 | palette.spec, Dialog.spec, grep `:focus-visible` |
+| NFR1 шрифты ≤ 2 семейства, ≤ 150 КБ | T2 | fonts.spec |
+| FR5 окна — модальные диалоги (AC4 на компоненте) | T4 | Dialog.spec |
+| FR1 первый экран без кликов; D2 цифры; D3 EN/RU, локация | T5, T6 | Hero.spec + скриншоты 1280×720 и 390×844 |
+| FR4 панель; D5 окно сразу | T5 | BottomBar.spec |
+| FR7 темы из одной палитры | T1, T6 | tokens.css, скриншоты day/night |
+| FR10 2D-режим: панель + хотспоты, без списка глав | T6 | App.spec, скриншоты 768/390 |
+| D1 адаптив 1440 / 1280×720 / 768 / 390 | T5, T6 | 8 скриншотов vs Figma |
+| D12 SEO/OG | T7 | тест index.html + og.png |
+| D21 стаж из дат | T5 | experience.spec |
+| Figma = источник истины | T1, T2, T3 | тест имён токенов/стилей = ledger; 0 «голых» hex |
 
-## Шлюз этапа 2 (из roadmap)
-1. Все «блокер» и «важно» из design-review закрыты или осознанно отложены — чек-лист в design-review.md (T6).
-2. Токены в одном файле, все пары ≥ 4,5:1 — `palette.spec.ts`.
-3. Макеты 4 брейкпоинтов утверждены пользователем — артефакт T4 + ответ пользователя.
+## Шлюз этапа 2
+1. Все задачи T1–T7 с зелёными тестами; `npm run lint && format:check && typecheck && test && build` зелёные.
+2. Токены и стили в коде = Figma (тесты T1/T2); 0 «голых» цветов в `src/ui` (T3).
+3. 8 скриншотов первого экрана визуально совпадают с Figma-экранами (список расхождений в PR).
+4. Чек-лист design-review закрыт (T7).
 Затем `/verify` → `/review` → `/learn` → PR в main, тег `v0.2.0`.
 
-## Что нужно от пользователя (не блокирует старт)
-- Три цифры для hero (концепт: «1000+/day», «40 s → 2 s», стаж) — подтвердить или заменить; без подтверждения
-  в прототипе будут значения концепта с пометкой в чек-листе.
-- CV.pdf (D6) и `[ADD]`-пропуски (D20) — к этапу 3; в прототипе CV-кнопка ведёт на hh.ru как временный fallback.
-- Email для EN-версии (D25).
+## Что сознательно оставлено на потом (не блокирует)
+- Открытые решения Specs §7 — значения из Figma как есть; `status/danger` Night помечен knownIssue.
+- Контент окон 01–08 в коде — этап 3 (окна здесь только каркасом `ChapterWindow`).
+- Сцена TresJS и грузовик — этап 3; в T6 на месте сцены заглушка цвета `scene/sky` или статичная карта.
 
 ## Риски и откат
-- Шрифты latin + cyrillic не влезают в 150 КБ → один variable-шрифт для всего (моно только для чисел через
-  `font-variant-numeric: tabular-nums`); откат — системный стек, 0 КБ.
-- Native `<dialog>` и ловушка фокуса ведут себя по-разному в jsdom и браузере → в Vitest проверяем атрибуты и
-  события, фокус — в прототипе руками и скриншотом; при проблемах — явная ловушка фокуса (без зависимостей).
-- Пользователь не утверждает макеты с первого раза → T6 это и предполагает; больше 2 итераций — созвон/список
-  конкретных правок, а не новые варианты «на вкус».
-- Скриншоты headless Chrome на Windows нестабильны по шрифтам → `--font-render-hinting=none`, шрифты self-hosted;
-  скриншоты — артефакт для утверждения, не тест.
-- Любая задача ломает фронт → `git revert` коммита; прототип изолирован в `src/prototype` и не влияет на `App.vue`.
+- MCP Figma недоступен в сессии implementer (нужна авторизация) → оркестратор сам снимает `get_variable_defs`
+  и `get_design_context` в `frontend/scripts/figma-tokens.json` / SVG иконок и передаёт файлы задаче; тесты
+  работают от снимка, не от живого Figma.
+- Шрифты latin+cyrillic не влезают в 150 КБ → только `wght`-ось, без italic; откат — системный стек.
+- Native `<dialog>` в jsdom ограничен → в Vitest проверяем атрибуты/события/фокус через `HTMLDialogElement`
+  полифилл-минимум; реальное поведение — скриншоты и ручная проверка в T6.
+- Расхождения скриншотов с Figma > косметических → правим код, не Figma (Figma — источник истины); если
+  дизайн нереализуем (например, высота панели на 1280×720) — фиксируем в Specs §7 и спрашиваем пользователя.
+- Любая задача ломает фронт → `git revert` коммита.
