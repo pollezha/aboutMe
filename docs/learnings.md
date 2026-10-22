@@ -117,3 +117,12 @@
 - Урок: в условных подсхемах объявлять `properties` рядом с `required`; для глубокого копирования в скриптах —
   `JSON.parse(JSON.stringify())`. Даты в контенте — токены `{since}`/`{period}`/`{experience}`, которые
   подставляет код из `experience[]` (валидатор отклоняет неизвестные токены), а не готовые строки.
+
+## 2026-10-23 — этап 3, T7: spike сцены TresJS
+- Что случилось: TresJS v5 не пересчитывает фрустум ортокамеры при ресайзе (только aspect перспективной) —
+  left/right считаем от `useTres().sizes.aspectRatio`. У size-limit 14 при `gzip: false` включается brotli — для
+  raw-размера нужен ещё `brotli: false`. В `scene-layout.json` у плит/дорог `h` — глубина на плоскости, у зданий —
+  высота (плита сначала отрисовалась кубом). Тестам с fake timers нужен `await nextTick()` после mount.
+- Урок: бюджеты держать в `postbuild` (size-limit), чтобы `npm run build` падал сам; тест по
+  `dist/.vite/manifest.json` гарантирует, что three живёт только в ленивом чанке. Результат spike: main 61 КБ gzip,
+  сцена 858 КБ raw — откат на чистый three не нужен.

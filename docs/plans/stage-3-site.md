@@ -105,7 +105,7 @@ Roadmap: docs/plans/roadmap.md, этап 3 (E3-T1…T10) · ADR: 0003 (HTML по
   - Зависит от: T1, T5. **Если RU-тексты не готовы** к моменту задачи: интерфейс RU делаем (i18n), контент
     остаётся EN, `/ru/` не публикуется (hreflang только EN) — переносится в этап 7 (roadmap).
 
-- [ ] T7 — Spike сцены: TresJS, ленивый чанк, бюджет, загрузка с «Continue without 3D»
+- [x] T7 — Spike сцены: TresJS, ленивый чанк, бюджет, загрузка с «Continue without 3D»
   - Файлы: `frontend/src/scene/index.ts` (динамический импорт после `requestIdleCallback`), `scene/Scene.vue`
     (ортокамера, свет, остров-плита и вода из примитивов по `scene-layout.json`, цвета из `palette[theme].scene`),
     `ui/SceneLoading.vue` (Figma `Screen/State/Loading scene` 34:964: карточка не над Hero, кнопка «Continue
