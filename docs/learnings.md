@@ -62,3 +62,15 @@
   worktree (как и записано в /implement); правку хука делать так: сначала тест в `.test.js`, потом код,
   `node --test` до коммита.
 - Куда закреплено: REVIEW.md (severity без сценария → не major), /implement (worktree), тесты хука.
+
+## 2026-10-22 — этап 2, T1/T2: токены и шрифты из Figma
+- Что случилось: Bricolage Grotesque не имеет кириллицы (fontsource: latin/latin-ext/vietnamese) — RU-версия
+  уйдёт на system-ui; в Figma RU-макеты это не покажут. Vitest отдаёт CSS пустой строкой даже при `?raw` —
+  нужен `test.css.include`. Subset-css fontsource (`cyrillic-400.css`) без unicode-range: два subset через них
+  перекрывают друг друга — только свой @font-face. Prettier приводит hex к нижнему регистру. Worktree
+  implementer стартовал от старого main — агенту пришлось самому делать `merge --ff-only`.
+- Правило на будущее: выбирать шрифт с нужными subset ДО фиксации в Figma (проверять `npm view
+  @fontsource/<x>` → files); перед запуском implementer в worktree убедиться, что main запушен/актуален и
+  сказать агенту `git merge --ff-only main` первым шагом; генерируемые файлы прогонять через prettier в
+  генераторе, тесты сравнивать без учёта регистра hex.
+- Куда закреплено: fonts.spec (бюджет и subsets), palette.spec (имена = снимок), /implement (строка про ff-only).

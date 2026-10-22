@@ -24,7 +24,7 @@ danger в Night, 30-sec summary вне панели, дата стажа, пле
 ## Задачи
 Каждая задача: укладывается в половину контекста, даёт рабочее состояние, один коммит.
 
-- [ ] T1 — Токены: экспорт переменных Figma → `palette.ts` + CSS-переменные, тест соответствия и контраста
+- [x] T1 — Токены: экспорт переменных Figma → `palette.ts` + CSS-переменные, тест соответствия и контраста
   - Файлы: `frontend/scripts/design/figma-tokens.json` (снимок Semantic × 3 режима + Layout + text/effect styles —
     **уже снят оркестратором 2026-10-22**, задача его не меняет), `frontend/src/theme/palette.ts` (типизированный
     объект `{ day, evening, night }` + `layout`, сгенерированный из снимка скриптом `frontend/scripts/gen-theme.mjs`),
@@ -39,7 +39,7 @@ danger в Night, 30-sec summary вне панели, дата стажа, пле
     в CI через `git diff --exit-code`).
   - Зависит от: —
 
-- [ ] T2 — Шрифты и типографика: self-hosted шрифты + классы текстовых стилей
+- [x] T2 — Шрифты и типографика: self-hosted шрифты + классы текстовых стилей
   - Файлы: `frontend/src/theme/fonts.css` (@fontsource-variable/bricolage-grotesque + @fontsource/ibm-plex-mono 400/700, только latin + cyrillic), `frontend/src/theme/
     typography.css` (классы `.t-display-hero`, `.t-heading-window`, … — по 11 стилям Figma: размер, line-height,
     letter-spacing, вес), `frontend/src/theme/__tests__/fonts.spec.ts`.
@@ -131,6 +131,9 @@ danger в Night, 30-sec summary вне панели, дата стажа, пле
 Затем `/verify` → `/review` → `/learn` → PR в main, тег `v0.2.0`.
 
 ## Что сознательно оставлено на потом (не блокирует)
+- **Кириллица:** у Bricolage Grotesque нет cyrillic-subset — RU-тексты на `--font-text` рендерятся system-ui.
+  Решение пользователя: принять fallback / выбрать второй шрифт для RU (новая зависимость) / сменить семейство.
+  До решения — knownIssue в Specs §7; на EN-версию не влияет.
 - Открытые решения Specs §7 — значения из Figma как есть; `status/danger` Night помечен knownIssue.
 - Контент окон 01–08 в коде — этап 3 (окна здесь только каркасом `ChapterWindow`).
 - Сцена TresJS и грузовик — этап 3; в T6 на месте сцены заглушка цвета `scene/sky` или статичная карта.
