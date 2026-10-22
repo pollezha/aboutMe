@@ -22,12 +22,20 @@
     "qa/round-3-mask",
     "qa/round-4-2d-nav",
     "qa/round-5-phone-flow",
-    "qa/round-6-tablet-crop"
+    "qa/round-6-tablet-crop",
+    "fixes/tokens",
+    "fixes/components",
+    "fixes/screens",
+    "fixes/windows",
+    "fixes/specs",
+    "fixes/package-2-R1-R4"
   ],
   "nextSteps": [
-    "review by user",
+    "T1b: resync figma-tokens.json → palette/tokens.css (red/300, focus/ring, chapter/techstack Night, chapter/summary; pair ink/900 × chapter/techstack Night)",
     "export tokens to frontend/src/theme/palette.ts",
-    "fill [ADD] placeholders"
+    "fill [ADD] placeholders",
+    "OG 1200×630 mockup (UX #24, T7)",
+    "Evening differentiation (D17), racks dense layout (D13) — not done"
   ],
   "pages": {
     "📘 Cover": "6:113",
@@ -111,7 +119,15 @@
     "radius/full": "VariableID:6:96",
     "size/touch": "VariableID:6:97",
     "size/bottom-bar": "VariableID:6:98",
-    "size/window-max": "VariableID:6:99"
+    "size/window-max": "VariableID:6:99",
+    "red/300": "VariableID:71:2"
+  },
+  "tokenFixes2026-10-22": {
+    "focus/ring": "Day/Evening → ink/900 (2px + offset 2px; double ring on yellow Primary), Night = yellow/400",
+    "chapter/techstack": "Night → ink/300 (8.1:1 on surface); number on it ink/900 (9:1) — pair in palette.spec to change",
+    "status/danger": "Night → red/300 #F07070 (5.4:1 on night/800, 4.5:1 on night/700)",
+    "chapter/summary": "Day/Evening → ink/700, Night → ink/300 (yellow only for CTA)",
+    "Display/Number, Display/Number-sm": "letter-spacing 0 (D18)"
   },
   "textStyles": {
     "Display/Hero": "S:349894c7479982fdc188c0635739c4da87182a95,",
@@ -124,7 +140,8 @@
     "Body/Strong": "S:bbdfe0272108b76103dd9065a20119b55d137b0c,",
     "Body/Small": "S:b90ceeabdbf740eafe9527f5a56e6e953b659b80,",
     "Mono/Stack": "S:27c4e855b0e638e0570c3bccf03619afc5698ff0,",
-    "Display/Number-sm": "S:a5b3d0542282fadacfe2ee075aae478ef36e28dd,"
+    "Display/Number-sm": "S:a5b3d0542282fadacfe2ee075aae478ef36e28dd,",
+    "Label/Nav-xs": "S:362c33e329474b73b00349007d37dd4e3deb8148,"
   },
   "effectStyles": {
     "Elevation/Card": "S:f3300a280ff06fe1ba73be22b89285fffb8cc52e,",
@@ -170,8 +187,41 @@
     "Window/Shell": "23:498",
     "Window/Shell variants": {
       "desktop": "23:398",
-      "mobile": "23:450"
+      "mobile": "23:450",
+      "scrolled": "74:430"
     },
+    "Window/Shell props": {
+      "Sign": "Sign#80:0 (INSTANCE_SWAP, Icon/sign-*)",
+      "Eyebrow": "Eyebrow#23:8"
+    },
+    "Hero/FirstScreen variants": {
+      "desktop": "21:365",
+      "mobile": "21:418",
+      "laptop": "75:462"
+    },
+    "Tag/Text": "73:432",
+    "Pin/Compact": "75:515",
+    "Pin/Compact variants": {
+      "profile": "75:491",
+      "prospace": "75:494",
+      "timepath": "75:497",
+      "techstack": "75:500",
+      "education": "75:503",
+      "contact": "75:506",
+      "monitoring": "75:509",
+      "summary": "75:512"
+    },
+    "signIcons": {
+      "Icon/sign-licence": "80:487",
+      "Icon/sign-waybill": "80:491",
+      "Icon/sign-route": "80:496",
+      "Icon/sign-rack": "80:501",
+      "Icon/sign-diploma": "80:505",
+      "Icon/sign-envelope": "80:509",
+      "Icon/sign-summary": "80:513",
+      "Icon/sign-monitoring": "80:516"
+    },
+    "formStatesShowcase": "74:3442",
     "showcases": {
       "buttons": "14:106",
       "tagsStopsCards": "15:204",
@@ -204,7 +254,9 @@
     "Window/07 30-sec summary/Mobile": "31:1453",
     "Window/08 Monitoring/Desktop": "31:1577",
     "Window/08 Monitoring/Mobile": "31:1731",
-    "nightBackdrop": "31:2053"
+    "nightBackdrop": "31:2053",
+    "Window/04 Tech stack/Mobile · server bottom-sheet": "82:1875",
+    "Window/08 Monitoring/Desktop states row": "82:2112"
   },
   "screens": {
     "Screen/Desktop 1440×900/Day": "33:2",
@@ -217,7 +269,10 @@
     "Screen/State/Reduced motion": "34:1145",
     "Screen/Phone 390×844 · viewport (fold)": "56:1378",
     "Screen/Phone 390 · full page (2D)": "34:826",
-    "phoneFixedBar": "56:1408"
+    "phoneFixedBar": "56:1408",
+    "Screen/Desktop 1440×900/Day · RU": "79:1553",
+    "sceneCrop": "image-fill CROP region 1080×675 at (180,90) of the 1440×900 reference (k=4/3); laptop region x=162; masks Mask/top-right removed; pins remapped",
+    "pinsCompact": "Pin/Compact instances on 34:771 (tablet), 56:1398 and phone full page maps; Number prop Number#75:0"
   },
   "foundationsPage": {
     "root": "8:2",
@@ -234,10 +289,26 @@
     "icons": "10:70"
   },
   "contrastFindings": [
-    "status/danger Night: 2.8:1 vs bg/surface (text use fails)",
+    "status/danger Night: fixed 2026-10-22 → red/300 #F07070 5.4:1",
     "status/success Day: 4.4:1 vs bg/surface (borderline; use text/primary for pill text)",
-    "chapter/* are backgrounds only; text/primary on chapter/profile|contact|education|techstack(Day) < 4.5"
+    "chapter/* are backgrounds only; text/primary on chapter/profile|contact|education|techstack(Day) < 4.5; chapter/techstack Night = ink/300 → number ink/900 (9:1)",
+    "all chapter/* Night ≥ 4.07:1 vs bg/surface (lowest wine/300)"
   ],
+  "decisionsR1R4": {
+    "R1": "third Hero metric = IN PRODUCTION · 2+ yrs · since July 2024; стаж removed from Hero role row and BottomBar profile card",
+    "R2": "eyebrow = «Stop N of 6 · <sign> · <dates>» + Icon/sign-* 20×20 (Window/Shell prop Sign); 07 «Summary · 30 seconds», 08 «Monitoring · this site, live»",
+    "R3": "30-sec summary entry = deep-link #summary + ghost links in Contact body (under Good fit) and Monitoring footer; not in Hero/bar",
+    "R4": "prev/next linear 01→06 (01 no Prev, 06 no Next); 07/08 Close only"
+  },
+  "specsRowsAdded": {
+    "§1 Загрузка сцены": "83:2",
+    "§1 Tech stack < 768": "83:5",
+    "§1 30-sec summary (R3)": "83:8",
+    "§2 Пауза анимаций": "83:11",
+    "§7 R2": "83:14",
+    "§7 R4": "83:17",
+    "§7 open (visited, placement/ADR, OG)": "83:20"
+  },
   "decisions": [
     "BottomBar: 30-sec summary moved to Hero (does not fit 1376px)",
     "Pill/Status text uses text/primary (success text 4.4:1 in Day)",
@@ -292,5 +363,10 @@
     ],
     "round6": "Tablet 768: static map cropped to island (ref 340..1070 × 85..745), 736×666, hotspots remapped; frame = 768×1024 viewport, HTML/Page scrolls with paddingBottom 120, BottomBar 54:3491 fixed at viewport bottom"
   },
-  "sessionId": "da974e76-2eac-4a24-8e23-306f913cfb77"
+  "sessionId": "9effed8c-ff2c-4f1a-bf4b-0c505230928d",
+  "knownIssues": [
+    "RU screen 79:1553: Bricolage Grotesque has no Cyrillic — fallback font in Figma; system-ui acceptable on site",
+    "Reference PNG still carries baked Lab/Email/old pins and a sliver of the plane/bottle at the right edge (noted in on-screen note); not part of the design",
+    "Mobile Prev in Window/Shell is Button/Icon with arrow-right rotated 180° (no arrow-left icon); needs aria-label"
+  ]
 }
