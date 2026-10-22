@@ -39,7 +39,8 @@ export function toBox({ x, y, w, d, h = 0 }: Rect, base = 0, minHeight = 0): Box
 export const ISLAND_SIZE = layout.canvas.w / PX_PER_UNIT
 
 export const LAND_HEIGHT = 1.2
-const LAYER = 0.12
+/** Толщина плоских слоёв (плита, площадки, дороги). */
+export const LAYER = 0.12
 
 /** Плоский слой: у плит и дорог в концепте `h` — глубина по плоскости, а не высота. */
 function flat({ x, y, w, h }: { x: number; y: number; w: number; h: number }, thickness: number) {
@@ -54,19 +55,44 @@ export const island = {
 
 export const roads: Box[] = layout.roads.map((road) => flat(road, LAYER))
 
-export interface StopStub {
+/** Подпись висит над самой высокой коробкой остановки на этой высоте (units). */
+export const LABEL_CLEARANCE = 3
+
+export interface Stop {
   id: ChapterId
   pad: Box
+  /** Главное здание — первая коробка концепта. */
   building: Box
+  /** Все коробки остановки без точных дублей (в концепте дубль лишь перекрашивал крышу). */
+  boxes: Box[]
+  /** Точка подписи в мире: над якорем остановки, выше её крыши. */
+  label: [number, number, number]
 }
 
-/** По одной коробке-заглушке на остановку — главное здание; полноценные здания — T8. */
-export const stops: StopStub[] = layout.stops.map((stop) => {
-  const [main] = stop.buildings
+const STOP_BASE = LAND_HEIGHT + LAYER
+
+export const stops: Stop[] = layout.stops.map((stop) => {
+  const seen = new Set<string>()
+  const boxes = stop.buildings
+    .filter(({ x, y, w, d, h }) => {
+      const key = [x, y, w, d, h].join()
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+    .map((rect) => toBox(rect, STOP_BASE))
+  const [main] = boxes
   if (!main) throw new Error(`scene-layout: stop ${stop.id} has no buildings`)
+  const roof = Math.max(...boxes.map((box) => box.position[1] + box.size[1] / 2))
   return {
     id: stop.id as ChapterId,
     pad: toBox(stop.pad, LAND_HEIGHT, LAYER),
-    building: toBox(main, LAND_HEIGHT + LAYER),
+    building: main,
+    boxes,
+    label: [
+      (stop.anchor.x - HALF) / PX_PER_UNIT,
+      roof + LABEL_CLEARANCE,
+      (stop.anchor.y - HALF) / PX_PER_UNIT,
+    ],
   }
 })
