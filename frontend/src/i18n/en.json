@@ -2,5 +2,8 @@
   "hero": {
     "name": "Yakov Polezhaev",
     "role": ".NET Backend Developer"
+  },
+  "window": {
+    "stop": "Stop {n} of {total}"
   }
 }

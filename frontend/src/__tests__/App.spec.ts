@@ -172,8 +172,8 @@ describe('App', () => {
 
     const dialog = openDialog(wrapper)
     expect(dialog.exists()).toBe(true)
-    expect(dialog.get('h2').text()).toBe('ProSpace')
-    expect(dialog.get('.window__eyebrow').text()).toContain('02')
+    expect(dialog.get('h2').text()).toBe('ProSpace · OptiTrack')
+    expect(dialog.get('.window__eyebrow').text()).toMatch(/^Stop 2 of 6 · Waybill · Latest role · /)
     expect(ui.activeStop).toBe('prospace')
     expect(wrapper.findAll('.route-stop')[1]!.attributes('aria-current')).toBe('step')
     expect(location.hash).toBe('#prospace')
@@ -279,14 +279,14 @@ describe('App', () => {
     await openDialog(wrapper).get('.window__nav .btn--secondary').trigger('click')
     await flushPromises()
     expect(document.activeElement?.tagName).toBe('H2')
-    expect(document.activeElement?.textContent).toBe('Contact')
+    expect(document.activeElement?.textContent).toBe('Next stop: your team.')
 
     ui.openChapter('prospace')
     await flushPromises()
     await openDialog(wrapper).get('.window__nav .btn--ghost').trigger('click')
     await flushPromises()
     expect(document.activeElement?.tagName).toBe('H2')
-    expect(document.activeElement?.textContent).toBe('Profile')
+    expect(document.activeElement?.textContent).toBe('Yakov Polezhaev')
     expect(openDialog(wrapper).text()).not.toContain('←')
   })
 
@@ -396,7 +396,38 @@ describe('App', () => {
     const { wrapper } = mountApp()
     await flushPromises()
 
-    expect(openDialog(wrapper).get('h2').text()).toBe('Contact')
+    expect(openDialog(wrapper).get('h2').text()).toBe('Next stop: your team.')
+  })
+
+  it('opens the ProSpace window with its body, dates and proof links from the #prospace deep link', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(2026, 9, 23))
+    history.replaceState(null, '', '/#prospace')
+
+    const { wrapper } = mountApp()
+    await flushPromises()
+
+    const dialog = openDialog(wrapper)
+    expect(dialog.get('.window__eyebrow').text()).toBe(
+      'Stop 2 of 6 · Waybill · Latest role · Jan – Oct 2026',
+    )
+    expect(dialog.get('.window__eyebrow .icon').attributes('aria-hidden')).toBe('true')
+    expect(dialog.get('.window__subtitle').text()).toBe(
+      'Backend Developer (.NET) · TMS for large cargo owners',
+    )
+    expect(dialog.findAll('.key-results > li')).toHaveLength(5)
+    const proof = dialog.get('.window__links a')
+    expect(proof.text()).toBe('prospace.tech')
+    expect(proof.attributes('href')).toBe('https://prospace.tech')
+  })
+
+  it('shows windows outside the route without a Stop prefix', async () => {
+    history.replaceState(null, '', '/#monitoring')
+
+    const { wrapper } = mountApp()
+    await flushPromises()
+
+    expect(openDialog(wrapper).get('.window__eyebrow').text()).toBe('Monitoring · this site, live')
   })
 
   it('ignores an unknown hash', async () => {

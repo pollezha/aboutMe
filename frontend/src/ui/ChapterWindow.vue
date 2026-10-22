@@ -4,6 +4,7 @@ import BaseButton from './BaseButton.vue'
 import Dialog from './Dialog.vue'
 import Icon from './Icon.vue'
 import IconButton from './IconButton.vue'
+import type { IconName } from './icon-registry'
 import type { Chapter } from './ChapterTag.vue'
 
 interface ChapterLink {
@@ -16,6 +17,8 @@ const props = withDefaults(
     chapter: Chapter
     number: string
     eyebrow: string
+    /** Знак главы в строке eyebrow (Figma Icon/sign-*, 20 px); без него — точка цвета главы. */
+    sign?: IconName
     title: string
     subtitle?: string
     prev?: ChapterLink
@@ -27,6 +30,7 @@ const props = withDefaults(
   }>(),
   {
     subtitle: undefined,
+    sign: undefined,
     prev: undefined,
     next: undefined,
     closeLabel: 'Close',
@@ -76,7 +80,9 @@ function requestClose() {
     <article class="window">
       <header class="window__header">
         <div class="window__heading">
-          <p class="window__eyebrow t-label-eyebrow">{{ eyebrow }}</p>
+          <p class="window__eyebrow t-label-eyebrow" :class="{ 'window__eyebrow--sign': sign }">
+            <Icon v-if="sign" class="window__sign" :name="sign" />{{ eyebrow }}
+          </p>
           <h2 :id="titleId" ref="titleEl" tabindex="-1" class="window__title t-heading-window">
             {{ title }}
           </h2>
@@ -152,13 +158,17 @@ function requestClose() {
   color: var(--text-secondary);
 }
 
-.window__eyebrow::before {
+.window__eyebrow:not(.window__eyebrow--sign)::before {
   content: '';
   flex: none;
   width: var(--space-2);
   height: var(--space-2);
   border-radius: var(--radius-full);
   background: var(--chapter);
+}
+
+.window__sign {
+  --icon-size: var(--space-5);
 }
 
 .window__title,
