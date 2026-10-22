@@ -1,0 +1,31 @@
+/* GENERATED from figma-tokens.json by scripts/gen-theme.mjs — do not edit. */
+:root[data-theme='day'] {
+  --pin-ink-profile: var(--text-on-dark);
+  --pin-ink-prospace: var(--text-on-accent);
+  --pin-ink-timepath: var(--text-on-accent);
+  --pin-ink-techstack: var(--text-on-dark);
+  --pin-ink-education: var(--text-on-dark);
+  --pin-ink-contact: var(--text-on-dark);
+  --pin-ink-monitoring: var(--text-on-accent);
+  --pin-ink-summary: var(--text-on-dark);
+}
+:root[data-theme='evening'] {
+  --pin-ink-profile: var(--text-on-dark);
+  --pin-ink-prospace: var(--text-on-accent);
+  --pin-ink-timepath: var(--text-on-accent);
+  --pin-ink-techstack: var(--text-on-dark);
+  --pin-ink-education: var(--text-on-dark);
+  --pin-ink-contact: var(--text-on-dark);
+  --pin-ink-monitoring: var(--text-on-accent);
+  --pin-ink-summary: var(--text-on-dark);
+}
+:root[data-theme='night'] {
+  --pin-ink-profile: var(--text-on-accent);
+  --pin-ink-prospace: var(--text-on-accent);
+  --pin-ink-timepath: var(--text-on-accent);
+  --pin-ink-techstack: var(--text-on-accent);
+  --pin-ink-education: var(--text-on-accent);
+  --pin-ink-contact: var(--text-on-accent);
+  --pin-ink-monitoring: var(--text-on-accent);
+  --pin-ink-summary: var(--text-on-accent);
+}

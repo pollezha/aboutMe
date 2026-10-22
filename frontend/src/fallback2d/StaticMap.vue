@@ -62,7 +62,7 @@ function boxStyle(spot: Hotspot) {
     >
       <span
         class="pin t-mono-stack"
-        :style="`--chapter: var(--chapter-${spot.id})`"
+        :style="`--chapter: var(--chapter-${spot.id}); --pin-ink: var(--pin-ink-${spot.id})`"
         aria-hidden="true"
       >
         <template v-if="spot.index">{{ spot.index }}</template>
@@ -118,7 +118,7 @@ function boxStyle(spot: Hotspot) {
   outline-offset: 2px;
 }
 
-/* Pin/Compact (Figma 75:515): круг 36 цветом главы с номером. */
+/* Pin/Compact (Figma 75:515): круг 36 цветом главы с номером; цвет номера — theme/pins.css. */
 .pin {
   display: inline-flex;
   align-items: center;
@@ -126,7 +126,7 @@ function boxStyle(spot: Hotspot) {
   width: 36px;
   height: 36px;
   border-radius: var(--radius-full);
-  color: var(--text-on-dark);
+  color: var(--pin-ink);
   background: var(--chapter);
   box-shadow: var(--shadow-card);
   font-weight: 700;
@@ -140,7 +140,7 @@ function boxStyle(spot: Hotspot) {
 .pin__dot {
   width: var(--space-3);
   height: var(--space-3);
-  border: 2px solid var(--text-on-dark);
+  border: 2px solid var(--pin-ink);
   border-radius: var(--radius-full);
 }
 

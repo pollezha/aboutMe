@@ -38,11 +38,11 @@ describe('ChapterTag', () => {
     expect(wrapper.text()).toContain('Experience')
   })
 
-  it('uses on-accent ink for the yellow summary chapter and on-dark otherwise', () => {
+  it('takes the number ink from the per-theme --pin-ink-<chapter> token', () => {
     const summary = mount(ChapterTag, { props: { ...props, chapter: 'summary' } })
     const prospace = mount(ChapterTag, { props })
 
-    expect(summary.attributes('style')).toContain('--chapter-ink: var(--text-on-accent)')
-    expect(prospace.attributes('style')).toContain('--chapter-ink: var(--text-on-dark)')
+    expect(summary.attributes('style')).toContain('--chapter-ink: var(--pin-ink-summary)')
+    expect(prospace.attributes('style')).toContain('--chapter-ink: var(--pin-ink-prospace)')
   })
 })

@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import figma from '../../../scripts/design/figma-tokens.json'
 import tokensCss from '../tokens.css?raw'
+import pinsCss from '../pins.css?raw'
 import { contrastRatio } from '../contrast'
 import { layout, palette, type SemanticToken, type ThemeName } from '../palette'
+import { PIN_INK, type PinChapter } from '../pinInk'
 
 const THEMES: ThemeName[] = ['day', 'evening', 'night']
 const MODE_OF: Record<ThemeName, 'Day' | 'Evening' | 'Night'> = {
@@ -20,23 +22,54 @@ const TEXT_ON_BG: [SemanticToken, SemanticToken][] = [
   ['text/secondary', 'bg/surface'],
   ['text/secondary', 'bg/surface-alt'],
   ['text/on-accent', 'accent/primary'],
-  ['text/on-dark', 'chapter/techstack'],
+  // Было knownIssue (Specs §7, Night 2.8:1) — закрыто дизайном: Night = red/300 #F07070.
+  ['status/danger', 'bg/surface'],
 ]
 
-// knownIssue (Specs §7): текущее значение status/danger на bg/surface в Night.
-const KNOWN_NIGHT_DANGER_RATIO = 2.8
+// Текст на серверной (chapter/techstack): в Day/Evening она тёмная — светлый текст;
+// в Night светлая (ink/300) — text/primary #F3F5F8 на ней не читается, нужен тёмный ink/900.
+const TECHSTACK_INK: Record<ThemeName, SemanticToken> = {
+  day: 'text/on-dark',
+  evening: 'text/on-dark',
+  night: 'text/on-accent',
+}
+
+// Фоны, на которых может оказаться кольцо фокуса (WCAG 1.4.11: ≥ 3:1).
+const FOCUS_BACKGROUNDS: SemanticToken[] = [
+  'bg/surface',
+  'bg/surface-alt',
+  'bg/canvas',
+  'accent/primary',
+]
+
+const PIN_CHAPTERS = semanticNames
+  .filter((name) => name.startsWith('chapter/'))
+  .map((name) => name.slice('chapter/'.length)) as PinChapter[]
+
+// knownIssue: chapter/profile #2F6BFF в Day/Evening не даёт 4.5:1 ни со светлым (4.12), ни с тёмным
+// (3.83) номером на пине — нужен более тёмный синий в Figma. Зафиксировано текущее значение:
+// изменится цвет — тест упадёт, и knownIssue нужно будет закрыть или обновить.
+const KNOWN_PIN_ISSUES: Partial<Record<ThemeName, Partial<Record<PinChapter, number>>>> = {
+  day: { profile: 4.12 },
+  evening: { profile: 4.12 },
+}
 
 /** Объявления `--name: value` из единственного блока `:root` или `:root[data-theme=<theme>]`. */
-function declarations(theme?: ThemeName): [string, string][] {
+function declarations(theme?: ThemeName, css: string = tokensCss): [string, string][] {
   // Кавычки атрибута для CSS не важны (Prettier ставит одинарные).
   const selector = theme ? `:root\\[data-theme=['"]${theme}['"]\\]` : ':root'
-  const blocks = [...tokensCss.matchAll(new RegExp(`(?:^|\\n)${selector} \\{([^}]*)\\}`, 'g'))]
+  const blocks = [...css.matchAll(new RegExp(`(?:^|\\n)${selector} \\{([^}]*)\\}`, 'g'))]
   expect(blocks, `exactly one block for ${theme ?? ':root'}`).toHaveLength(1)
   const body = blocks[0]?.[1] ?? ''
   return [...body.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)].map((m) => [
     m[1] ?? '',
     (m[2] ?? '').trim(),
   ])
+}
+
+/** Ожидаемое CSS-значение Layout-токена: числа — px, строки — в одинарных кавычках. */
+function cssLayoutValue(token: { type: string; value: string | number }): string {
+  return token.type === 'FLOAT' ? `${token.value}px` : `'${token.value}'`
 }
 
 describe('palette.ts matches the Figma snapshot', () => {
@@ -56,10 +89,12 @@ describe('palette.ts matches the Figma snapshot', () => {
     }
   })
 
-  it('has exactly the Layout names with their css names', () => {
+  it('has exactly the Layout names with their css names and values', () => {
     expect(Object.keys(layout)).toEqual(Object.keys(figma.layout))
     for (const [name, token] of Object.entries(figma.layout)) {
-      expect(layout[name as keyof typeof layout].css).toBe(token.css)
+      const entry = layout[name as keyof typeof layout]
+      expect(entry.css, name).toBe(token.css)
+      expect(entry.value, name).toBe(cssLayoutValue(token))
     }
   })
 })
@@ -77,19 +112,21 @@ describe('tokens.css matches the Figma snapshot', () => {
     }
   })
 
-  it('declares Layout and effect variables once in :root with units and quoted strings', () => {
+  it('declares Layout and effect variables once in :root with their Figma values', () => {
     const decls = declarations()
     expect(decls.map(([name]) => name)).toEqual([
       ...Object.values(figma.layout).map((t) => t.css),
       ...Object.values(figma.effectStyles).map((t) => t.css),
     ])
     const values = new Map(decls)
+    for (const [name, token] of Object.entries(figma.layout)) {
+      expect(values.get(token.css), name).toBe(cssLayoutValue(token))
+    }
+    for (const [name, effect] of Object.entries(figma.effectStyles)) {
+      expect(values.get(effect.css), name).toBe(effect.value)
+    }
     expect(values.get('--space-1')).toBe('4px')
-    expect(values.get('--radius-lg')).toBe('22px')
-    expect(values.get('--radius-full')).toBe('999px')
-    expect(values.get('--size-window-max')).toBe('1120px')
     expect(values.get('--font-text')).toBe("'Bricolage Grotesque'")
-    expect(values.get('--shadow-card')).toBe(figma.effectStyles['Elevation/Card'].value)
   })
 
   it('is marked as generated', () => {
@@ -106,13 +143,79 @@ describe('contrast (NFR3)', () => {
     }
   }
 
-  // knownIssue, Specs §7: status/danger в Night не проходит 4.5:1 на bg/surface, решение открыто.
-  // Тест не «зеленит» проблему, а фиксирует текущее значение: изменится цвет в Figma — тест упадёт,
-  // и knownIssue нужно будет пересмотреть (закрыть или обновить значение).
-  it('knownIssue: night status/danger on bg/surface stays below 4.5:1 at its recorded value', () => {
-    const ratio = contrastRatio(palette.night['status/danger'], palette.night['bg/surface'])
-    expect(ratio).toBeLessThan(4.5)
-    expect(ratio).toBeCloseTo(KNOWN_NIGHT_DANGER_RATIO, 1)
+  for (const theme of THEMES) {
+    const ink = TECHSTACK_INK[theme]
+    it(`${theme}: ${ink} on chapter/techstack is at least 4.5:1`, () => {
+      expect(
+        contrastRatio(palette[theme][ink], palette[theme]['chapter/techstack']),
+      ).toBeGreaterThanOrEqual(4.5)
+    })
+  }
+})
+
+describe('focus ring (WCAG 1.4.11)', () => {
+  for (const theme of THEMES) {
+    for (const bg of FOCUS_BACKGROUNDS) {
+      if (theme === 'night' && bg === 'accent/primary') continue
+      it(`${theme}: focus/ring on ${bg} is at least 3:1`, () => {
+        expect(
+          contrastRatio(palette[theme]['focus/ring'], palette[theme][bg]),
+        ).toBeGreaterThanOrEqual(3)
+      })
+    }
+  }
+
+  // knownIssue: Night focus/ring = yellow/400 на жёлтой Primary-кнопке — 1:1.
+  // Night: focus на Primary-кнопке требует двойного кольца (surface 2px внутри) — реализовано в BaseButton.
+  it('knownIssue: night focus/ring on accent/primary is below 3:1 (double ring in BaseButton)', () => {
+    expect(
+      contrastRatio(palette.night['focus/ring'], palette.night['accent/primary']),
+    ).toBeLessThan(3)
+    // Внутреннее кольцо bg/surface отделяет жёлтое кольцо от жёлтой кнопки.
+    expect(
+      contrastRatio(palette.night['focus/ring'], palette.night['bg/surface']),
+    ).toBeGreaterThanOrEqual(3)
+  })
+})
+
+describe('pin ink (number on a chapter pin or tag)', () => {
+  it('covers every chapter in every theme', () => {
+    for (const theme of THEMES) {
+      expect(Object.keys(PIN_INK[theme])).toEqual(PIN_CHAPTERS)
+    }
+  })
+
+  for (const theme of THEMES) {
+    for (const chapter of PIN_CHAPTERS) {
+      const known = KNOWN_PIN_ISSUES[theme]?.[chapter]
+      const ratio = () =>
+        contrastRatio(
+          palette[theme][`text/${PIN_INK[theme][chapter]}`],
+          palette[theme][`chapter/${chapter}`],
+        )
+      if (known === undefined) {
+        it(`${theme}: pin ink on chapter/${chapter} is at least 4.5:1`, () => {
+          expect(ratio()).toBeGreaterThanOrEqual(4.5)
+        })
+      } else {
+        it(`knownIssue: ${theme} pin ink on chapter/${chapter} stays at ${known}:1`, () => {
+          expect(ratio()).toBeLessThan(4.5)
+          expect(ratio()).toBeCloseTo(known, 1)
+        })
+      }
+    }
+  }
+
+  it('pins.css maps --pin-ink-<chapter> to the PIN_INK text token in every theme', () => {
+    expect(pinsCss).toContain('GENERATED from figma-tokens.json')
+    for (const theme of THEMES) {
+      expect(declarations(theme, pinsCss)).toEqual(
+        PIN_CHAPTERS.map((chapter) => [
+          `--pin-ink-${chapter}`,
+          `var(--text-${PIN_INK[theme][chapter]})`,
+        ]),
+      )
+    }
   })
 })
 

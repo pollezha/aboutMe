@@ -39,7 +39,7 @@
   --border: #dde3ea;
   --accent: #ffd23f;
   --accent-shadow: #c9a21e;
-  --focus-ring: #ffd23f;
+  --focus-ring: #1b1b1b;
   --status-success: #1e8a4c;
   --status-danger: #c62828;
   --chapter-profile: #2f6bff;
@@ -49,7 +49,7 @@
   --chapter-education: #8b1e3f;
   --chapter-contact: #6d4aff;
   --chapter-monitoring: #1f9e8f;
-  --chapter-summary: #ffd23f;
+  --chapter-summary: #3a4352;
   --scene-sky: #5fb8e6;
   --scene-sea: #3c9bd6;
   --scene-ground: #8cc56b;
@@ -67,7 +67,7 @@
   --border: #e6dcc8;
   --accent: #ffd23f;
   --accent-shadow: #c9a21e;
-  --focus-ring: #ffd23f;
+  --focus-ring: #1b1b1b;
   --status-success: #1e8a4c;
   --status-danger: #c62828;
   --chapter-profile: #2f6bff;
@@ -77,7 +77,7 @@
   --chapter-education: #8b1e3f;
   --chapter-contact: #6d4aff;
   --chapter-monitoring: #1f9e8f;
-  --chapter-summary: #ffd23f;
+  --chapter-summary: #3a4352;
   --scene-sky: #f2a15a;
   --scene-sea: #c96f4a;
   --scene-ground: #a8b35c;
@@ -97,15 +97,15 @@
   --accent-shadow: #c9a21e;
   --focus-ring: #ffd23f;
   --status-success: #5ed38a;
-  --status-danger: #c62828;
+  --status-danger: #f07070;
   --chapter-profile: #6f9bff;
   --chapter-prospace: #ff8a4c;
   --chapter-timepath: #4fd1c0;
-  --chapter-techstack: #0b0f19;
+  --chapter-techstack: #b4bcc8;
   --chapter-education: #d4587e;
   --chapter-contact: #a48bff;
   --chapter-monitoring: #4fd1c0;
-  --chapter-summary: #ffd23f;
+  --chapter-summary: #b4bcc8;
   --scene-sky: #0e1a33;
   --scene-sea: #0a1428;
   --scene-ground: #2d4a33;

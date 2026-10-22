@@ -54,6 +54,16 @@ describe('StaticMap', () => {
     expect(pin.attributes('style')).toContain('--chapter-techstack')
   })
 
+  it('draws the pin number and dot in the per-theme --pin-ink-<chapter> token', () => {
+    const wrapper = mount(StaticMap, { props: { variant: 'tablet' } })
+
+    const pin = wrapper.get('button[aria-label="ProSpace · Latest role"] .pin')
+    expect(pin.attributes('style')).toContain('--pin-ink: var(--pin-ink-prospace)')
+    expect(source).toMatch(/\.pin\s*\{[^}]*color:\s*var\(--pin-ink\)/)
+    expect(source).toMatch(/\.pin__dot\s*\{[^}]*border:[^;]*var\(--pin-ink\)/)
+    expect(source).not.toContain('--text-on-dark')
+  })
+
   it('keeps hotspots at least 44×44', () => {
     expect(source).toMatch(/\.hotspot\s*\{[^}]*min-width:\s*var\(--size-touch\)/)
     expect(source).toMatch(/\.hotspot\s*\{[^}]*min-height:\s*var\(--size-touch\)/)

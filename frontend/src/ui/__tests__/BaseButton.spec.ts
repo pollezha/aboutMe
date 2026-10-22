@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import BaseButton from '../BaseButton.vue'
+import source from '../BaseButton.vue?raw'
 
 describe('BaseButton', () => {
   it('renders a <button type="button"> with primary/md classes by default', () => {
@@ -81,5 +82,14 @@ describe('BaseButton', () => {
     expect(wrapper.get('a').attributes('rel')?.split(' ')).toEqual(
       expect.arrayContaining(['me', 'noopener']),
     )
+  })
+
+  // Night: кольцо фокуса жёлтое, как и Primary (1:1) — между ними 2px bg/surface (WCAG 1.4.11).
+  it('separates the focus ring from the yellow primary button with an inner surface ring', () => {
+    const rule = /\.btn--primary:focus-visible\s*\{([^}]*)\}/.exec(source)?.[1] ?? ''
+
+    expect(rule).toMatch(/outline:\s*2px solid var\(--focus-ring\)/)
+    expect(rule).toMatch(/outline-offset:\s*2px/)
+    expect(rule).toMatch(/box-shadow:[^;]*0 0 0 2px var\(--bg-surface\)/)
   })
 })

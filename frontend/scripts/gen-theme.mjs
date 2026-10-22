@@ -1,9 +1,11 @@
-// Генерирует src/theme/palette.ts и src/theme/tokens.css из снимка Figma scripts/design/figma-tokens.json.
+// Генерирует src/theme/palette.ts, src/theme/tokens.css, src/theme/pinInk.ts и src/theme/pins.css
+// из снимка Figma scripts/design/figma-tokens.json.
 // Детерминирован: порядок ключей = порядок в JSON, вывод прогоняется через Prettier проекта,
 // поэтому повторный запуск не меняет файлы (CI: `npm run gen:theme && git diff --exit-code`).
 import { readFile, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { format, resolveConfig } from 'prettier'
+import { contrastRatio } from '../src/theme/contrast.ts'
 
 const root = new URL('../', import.meta.url)
 const tokens = JSON.parse(await readFile(new URL('scripts/design/figma-tokens.json', root), 'utf8'))
@@ -21,6 +23,18 @@ const themes = tokens.modes.map((mode) => ({ mode, name: mode.toLowerCase() }))
 const semantic = Object.entries(tokens.semantic)
 const layout = Object.entries(tokens.layout)
 const effects = Object.entries(tokens.effectStyles)
+
+// Цвет номера на пине/метке главы: из двух текстовых токенов — тот, что контрастнее на цвете главы
+// в данной теме. Считается по снимку, а не в рантайме: тема переключается атрибутом data-theme.
+const PIN_INKS = ['on-dark', 'on-accent']
+const chapters = semantic
+  .filter(([key]) => key.startsWith('chapter/'))
+  .map(([key, t]) => ({ id: key.slice('chapter/'.length), token: t }))
+
+function pinInk(mode, chapterToken) {
+  const ratio = (ink) => contrastRatio(tokens.semantic[`text/${ink}`][mode], chapterToken[mode])
+  return PIN_INKS.reduce((best, ink) => (ratio(ink) > ratio(best) ? ink : best))
+}
 
 function paletteTs() {
   const themeObjects = themes.map(({ mode, name }) => {
@@ -54,6 +68,30 @@ function tokensCss() {
   return [`/* ${HEADER} */`, ...blocks, ''].join('\n')
 }
 
+function pinInkTs() {
+  const themeObjects = themes.map(({ mode, name }) => {
+    const entries = chapters.map(({ id, token }) => `${id}: ${JSON.stringify(pinInk(mode, token))}`)
+    return `${name}: { ${entries.join(', ')} }`
+  })
+  return [
+    `// ${HEADER}`,
+    '// Текстовый токен номера на пине/метке главы (text/<ink>), контрастнее на цвете главы.',
+    `export const PIN_INK = { ${themeObjects.join(', ')} } as const`,
+    'export type PinChapter = keyof typeof PIN_INK.day',
+    '',
+  ].join('\n')
+}
+
+function pinsCss() {
+  const blocks = themes.map(({ mode, name }) => {
+    const decls = chapters.map(
+      ({ id, token }) => `--pin-ink-${id}: var(--text-${pinInk(mode, token)});`,
+    )
+    return `:root[data-theme="${name}"] { ${decls.join(' ')} }`
+  })
+  return [`/* ${HEADER} */`, ...blocks, ''].join('\n')
+}
+
 async function emit(relativePath, source, parser) {
   const url = new URL(relativePath, root)
   const config = await resolveConfig(fileURLToPath(url))
@@ -63,3 +101,5 @@ async function emit(relativePath, source, parser) {
 
 await emit('src/theme/palette.ts', paletteTs(), 'typescript')
 await emit('src/theme/tokens.css', tokensCss(), 'css')
+await emit('src/theme/pinInk.ts', pinInkTs(), 'typescript')
+await emit('src/theme/pins.css', pinsCss(), 'css')

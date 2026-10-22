@@ -115,6 +115,15 @@ const classes = computed(() => [
   outline-offset: 2px;
 }
 
+/* Двойное кольцо: в Night --focus-ring жёлтый, как и кнопка (1:1), — 2px surface внутри отделяет их. */
+.btn--primary:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  box-shadow:
+    var(--shadow-pressed),
+    0 0 0 2px var(--bg-surface);
+}
+
 .btn:disabled {
   opacity: 0.45;
   pointer-events: none;

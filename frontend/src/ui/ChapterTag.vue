@@ -22,11 +22,11 @@ const props = withDefaults(
   { subtitle: undefined, as: 'button' },
 )
 
-// Жёлтая глава summary залита --accent-цветом: тёмный номер на ней — --text-on-accent.
+// Цвет номера — контрастный к цвету главы в текущей теме (theme/pins.css, генерируется gen-theme).
 const style = computed(
   () =>
     `--chapter: var(--chapter-${props.chapter}); ` +
-    `--chapter-ink: var(${props.chapter === 'summary' ? '--text-on-accent' : '--text-on-dark'})`,
+    `--chapter-ink: var(--pin-ink-${props.chapter})`,
 )
 </script>
 
