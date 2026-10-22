@@ -7,10 +7,20 @@
     "role": ".NET Backend Developer",
     "status": "Open to work",
     "workFormat": "Remote / relocation",
+    "location": "Based in Serbia · CET (UTC+1)",
+    "highlights": [
+      { "label": "SHIPMENTS / DAY", "value": "1000+", "note": "through my last module" },
+      { "label": "FILTER PAGE", "value": "40 s → 2 s", "note": "after moving filters to SQL" },
+      { "kind": "experience", "label": "IN PRODUCTION" }
+    ],
     "links": [
       { "kind": "github", "label": "GitHub", "href": "https://github.com/pollezha" },
       { "kind": "telegram", "label": "Telegram", "href": "https://t.me/poll_ezha" },
       { "kind": "hh", "label": "hh.ru", "href": "https://hh.ru/resume/28e123adff10fa48aa0039ed1f7a63354f3842" }
     ]
-  }
+  },
+  "experience": [
+    { "id": "timepath", "company": "TimePath", "role": "Backend Developer (.NET)", "from": "2024-07", "to": "2025-12" },
+    { "id": "prospace", "company": "ProSpace · OptiTrack", "role": "Backend Developer (.NET)", "from": "2026-01", "to": null }
+  ]
 }

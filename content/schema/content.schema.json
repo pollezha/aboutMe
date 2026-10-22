@@ -5,7 +5,7 @@
   "description": "Source of truth for site texts (ADR-0004). Chapters and skills are added in stage 3.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["contentVersion", "lang", "profile"],
+  "required": ["contentVersion", "lang", "profile", "experience"],
   "properties": {
     "$schema": { "type": "string" },
     "contentVersion": {
@@ -17,19 +17,43 @@
     "profile": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "role", "status", "workFormat", "links"],
+      "required": ["name", "role", "status", "workFormat", "location", "highlights", "links"],
       "properties": {
         "name": { "$ref": "#/$defs/text" },
-        "role": { "$ref": "#/$defs/text" },
+        "role": {
+          "description": "Job title only, without years of experience (experience is shown once, in highlights)",
+          "$ref": "#/$defs/text"
+        },
         "status": { "$ref": "#/$defs/text" },
         "workFormat": { "$ref": "#/$defs/text" },
-        "location": { "$ref": "#/$defs/text" },
+        "location": {
+          "description": "Where I am and my time zone, e.g. \"Based in Serbia · CET (UTC+1)\"",
+          "$ref": "#/$defs/text"
+        },
+        "highlights": {
+          "description": "Exactly three first-screen metrics (MetricCard). A metric is either static {label, value, note} or computed {kind: \"experience\", label}: its value (\"2+ yrs\") and note (\"since July 2024\") are derived from experience[] at render time and never stored as text",
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "oneOf": [
+              { "$ref": "#/$defs/staticHighlight" },
+              { "$ref": "#/$defs/experienceHighlight" }
+            ]
+          }
+        },
         "links": {
           "type": "array",
           "minItems": 1,
           "items": { "$ref": "#/$defs/link" }
         }
       }
+    },
+    "experience": {
+      "description": "Work history used to compute total experience. Months are inclusive: from \"2024-07\" to \"2025-12\" covers July 2024 through December 2025; to: null marks the current role (counted up to the current month)",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/experience" }
     }
   },
   "$defs": {
@@ -44,6 +68,46 @@
         },
         "label": { "$ref": "#/$defs/text" },
         "href": { "type": "string", "pattern": "^(https://|mailto:|/)" }
+      }
+    },
+    "yearMonth": {
+      "description": "Calendar month, YYYY-MM",
+      "type": "string",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"
+    },
+    "staticHighlight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "value", "note"],
+      "properties": {
+        "label": { "$ref": "#/$defs/text" },
+        "value": { "$ref": "#/$defs/text" },
+        "note": { "$ref": "#/$defs/text" }
+      }
+    },
+    "experienceHighlight": {
+      "description": "Total experience computed from experience[]",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "label"],
+      "properties": {
+        "kind": { "const": "experience" },
+        "label": { "$ref": "#/$defs/text" }
+      }
+    },
+    "experience": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "company", "role", "from", "to"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "company": { "$ref": "#/$defs/text" },
+        "role": { "$ref": "#/$defs/text" },
+        "from": { "$ref": "#/$defs/yearMonth" },
+        "to": {
+          "description": "Last month in the role (inclusive) or null for the current role",
+          "oneOf": [{ "$ref": "#/$defs/yearMonth" }, { "type": "null" }]
+        }
       }
     }
   }

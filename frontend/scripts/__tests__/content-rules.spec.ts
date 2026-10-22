@@ -12,8 +12,15 @@ function validContent() {
       role: '.NET Backend Developer',
       status: 'Open to work',
       workFormat: 'Remote / relocation',
+      location: 'Based in Serbia',
+      highlights: [
+        { label: 'A', value: '1', note: 'a' },
+        { label: 'B', value: '2', note: 'b' },
+        { kind: 'experience', label: 'C' },
+      ],
       links: [{ kind: 'github', label: 'GitHub', href: 'https://github.com/pollezha' }],
     },
+    experience: [{ id: 'a', company: 'A', role: 'R', from: '2024-07', to: null }],
   }
 }
 
