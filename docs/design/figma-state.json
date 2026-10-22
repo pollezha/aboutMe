@@ -272,7 +272,8 @@
     "phoneFixedBar": "56:1408",
     "Screen/Desktop 1440×900/Day · RU": "79:1553",
     "sceneCrop": "image-fill CROP region 1080×675 at (180,90) of the 1440×900 reference (k=4/3); laptop region x=162; masks Mask/top-right removed; pins remapped",
-    "pinsCompact": "Pin/Compact instances on 34:771 (tablet), 56:1398 and phone full page maps; Number prop Number#75:0"
+    "pinsCompact": "Pin/Compact instances on 34:771 (tablet), 56:1398 and phone full page maps; Number prop Number#75:0",
+    "sceneNotes": "moved outside frames (y = frame.y + height + 12): 78:1346 (33:2), 78:1347 (33:461), 78:1348 (33:478), 78:1349 (34:964), 78:1350 (34:1125), 78:1351 (34:1145), 78:1352 (33:246), 79:1567 (RU)"
   },
   "foundationsPage": {
     "root": "8:2",
