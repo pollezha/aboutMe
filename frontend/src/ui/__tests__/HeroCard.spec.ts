@@ -71,6 +71,16 @@ describe('HeroCard', () => {
     expect(wrapper.find('a[href="https://t.me/poll_ezha"]').exists()).toBe(true)
   })
 
+  it('styles CV and Telegram links as buttons and opens Telegram safely', () => {
+    const wrapper = mountHero()
+
+    expect(wrapper.get('a[href="/cv.pdf"]').classes()).toContain('btn--secondary')
+    const telegram = wrapper.get('a[href="https://t.me/poll_ezha"]')
+    expect(telegram.classes()).toContain('btn--ghost')
+    expect(telegram.attributes('target')).toBe('_blank')
+    expect(telegram.attributes('rel')).toContain('noopener')
+  })
+
   it('shows Monitoring only on mobile and emits monitoring', async () => {
     expect(mountHero({ variant: 'desktop' }).find('.hero__monitoring').exists()).toBe(false)
 

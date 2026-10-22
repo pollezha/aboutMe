@@ -1,0 +1,156 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import map from '../../scripts/design/figma-2d-map.json'
+import type { ChapterId } from '../content/chapters'
+
+// 2D-режим (FR10): статичная картинка острова + кнопки-хотспоты поверх (Figma Tablet 34:771, Phone 56:1398).
+// Геометрия — проценты от рамки карты, снимок figma-2d-map.json.
+
+interface Hotspot {
+  id: ChapterId
+  index: string
+  label: string
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
+const props = withDefaults(
+  defineProps<{
+    variant: 'tablet' | 'phone'
+    /** Рендер острова (этап 3); пока файла нет — видна заливка моря. */
+    src?: string
+    alt?: string
+  }>(),
+  { src: '/img/island-day.webp', alt: 'Isometric island: each building is a chapter of the CV' },
+)
+
+const emit = defineEmits<{ open: [id: ChapterId] }>()
+
+const hotspots = computed(() => map.hotspots[props.variant] as Hotspot[])
+const imageFailed = ref(false)
+
+function boxStyle(spot: Hotspot) {
+  return {
+    left: `${spot.left}%`,
+    top: `${spot.top}%`,
+    width: `${spot.width}%`,
+    height: `${spot.height}%`,
+  }
+}
+</script>
+
+<template>
+  <div class="static-map" :class="`static-map--${variant}`">
+    <img
+      v-if="!imageFailed"
+      class="static-map__image"
+      :src="src"
+      :alt="alt"
+      fetchpriority="high"
+      @error="imageFailed = true"
+    />
+    <button
+      v-for="spot in hotspots"
+      :key="spot.id"
+      type="button"
+      class="hotspot"
+      :aria-label="spot.label"
+      :style="boxStyle(spot)"
+      @click="emit('open', spot.id)"
+    >
+      <span
+        class="pin t-mono-stack"
+        :style="`--chapter: var(--chapter-${spot.id})`"
+        aria-hidden="true"
+      >
+        <template v-if="spot.index">{{ spot.index }}</template>
+        <span v-else class="pin__dot"></span>
+      </span>
+    </button>
+  </div>
+</template>
+
+<style scoped>
+.static-map {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  border-radius: var(--radius-lg);
+  background: var(--scene-sea);
+  box-shadow: var(--shadow-card);
+}
+
+.static-map--tablet {
+  aspect-ratio: 736 / 666;
+}
+
+.static-map--phone {
+  aspect-ratio: 1 / 1;
+}
+
+.static-map__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hotspot {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: var(--size-touch);
+  min-height: var(--size-touch);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+}
+
+.hotspot:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Pin/Compact (Figma 75:515): круг 36 цветом главы с номером. */
+.pin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  color: var(--text-on-dark);
+  background: var(--chapter);
+  box-shadow: var(--shadow-card);
+  font-weight: 700;
+  transition: transform 0.12s ease;
+}
+
+.hotspot:hover .pin {
+  transform: scale(1.08);
+}
+
+.pin__dot {
+  width: var(--space-3);
+  height: var(--space-3);
+  border: 2px solid var(--text-on-dark);
+  border-radius: var(--radius-full);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pin {
+    transition: none;
+  }
+
+  .hotspot:hover .pin {
+    transform: none;
+  }
+}
+</style>

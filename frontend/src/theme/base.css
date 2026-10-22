@@ -1,0 +1,11 @@
+/* Base document styles: page background follows the theme (tokens.css). */
+html,
+body {
+  margin: 0;
+  background: var(--bg-canvas);
+}
+
+body {
+  font-family: var(--font-text), system-ui, sans-serif;
+  color: var(--text-primary);
+}

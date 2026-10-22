@@ -17,6 +17,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "gen:theme": "node scripts/gen-theme.mjs",
+    "shots": "node scripts/shots.mjs",
     "test": "vitest run"
   },
   "dependencies": {

@@ -59,10 +59,10 @@ const emit = defineEmits<{ contact: []; monitoring: [] }>()
 
     <div class="hero__actions">
       <BaseButton variant="primary" @click="emit('contact')">{{ contactLabel }}</BaseButton>
-      <a v-if="links.cv" class="hero__link hero__link--secondary t-label-caption" :href="links.cv">
+      <BaseButton v-if="links.cv" as="a" variant="secondary" :href="links.cv">
         {{ cvLabel }}
-        <Icon name="download" class="hero__link-icon" />
-      </a>
+        <template #icon><Icon name="download" /></template>
+      </BaseButton>
       <template v-if="links.telegram">
         <a
           v-if="variant === 'mobile'"
@@ -74,16 +74,17 @@ const emit = defineEmits<{ contact: []; monitoring: [] }>()
         >
           <Icon name="telegram" />
         </a>
-        <a
+        <BaseButton
           v-else
-          class="hero__link t-label-caption"
+          as="a"
+          variant="ghost"
           :href="links.telegram"
           target="_blank"
-          rel="noopener noreferrer"
+          rel="noreferrer"
         >
           {{ telegramLabel }}
-          <Icon name="external" class="hero__link-icon" />
-        </a>
+          <template #icon><Icon name="external" /></template>
+        </BaseButton>
       </template>
     </div>
 
@@ -164,35 +165,7 @@ const emit = defineEmits<{ contact: []; monitoring: [] }>()
   gap: var(--space-2);
 }
 
-/* Ссылки в виде кнопок: те же размеры и состояния, что у BaseButton (secondary / ghost) и IconButton. */
-.hero__link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  box-sizing: border-box;
-  height: var(--size-touch);
-  padding: var(--space-3) var(--space-5);
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  background: transparent;
-  text-decoration: none;
-}
-
-.hero__link--secondary {
-  border-color: var(--border);
-  background: var(--bg-surface);
-}
-
-.hero__link:hover {
-  background: var(--bg-surface-alt);
-}
-
-.hero__link-icon {
-  --icon-size: var(--space-5);
-}
-
+/* Иконка-ссылка Telegram на mobile: те же размеры и цвета, что у IconButton. */
 .hero__icon-link {
   display: inline-flex;
   align-items: center;
@@ -207,7 +180,6 @@ const emit = defineEmits<{ contact: []; monitoring: [] }>()
   --icon-size: var(--space-5);
 }
 
-.hero__link:focus-visible,
 .hero__icon-link:focus-visible {
   outline: 3px solid var(--focus-ring);
   outline-offset: 2px;

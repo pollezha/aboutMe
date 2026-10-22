@@ -48,4 +48,38 @@ describe('BaseButton', () => {
 
     expect(wrapper.get('button').attributes('aria-describedby')).toBe('hint')
   })
+
+  it('renders a link with the same classes when as="a"', () => {
+    const wrapper = mount(BaseButton, {
+      props: { as: 'a', href: '/cv.pdf', variant: 'secondary' },
+      slots: { default: 'CV (PDF)' },
+    })
+
+    const link = wrapper.get('a')
+    expect(wrapper.find('button').exists()).toBe(false)
+    expect(link.attributes('href')).toBe('/cv.pdf')
+    expect(link.attributes('type')).toBeUndefined()
+    expect(link.classes()).toEqual(expect.arrayContaining(['btn', 'btn--secondary', 'btn--md']))
+    expect(link.text()).toContain('CV (PDF)')
+  })
+
+  it('adds rel=noopener to links opened in a new tab', () => {
+    const wrapper = mount(BaseButton, {
+      props: { as: 'a', href: 'https://t.me/x', target: '_blank' },
+    })
+
+    const link = wrapper.get('a')
+    expect(link.attributes('target')).toBe('_blank')
+    expect(link.attributes('rel')).toContain('noopener')
+  })
+
+  it('keeps an explicit rel and still adds noopener for _blank', () => {
+    const wrapper = mount(BaseButton, {
+      props: { as: 'a', href: 'https://t.me/x', target: '_blank', rel: 'me' },
+    })
+
+    expect(wrapper.get('a').attributes('rel')?.split(' ')).toEqual(
+      expect.arrayContaining(['me', 'noopener']),
+    )
+  })
 })

@@ -1,24 +1,54 @@
 <script setup lang="ts">
-withDefaults(
+import { computed } from 'vue'
+
+const props = withDefaults(
   defineProps<{
     variant?: 'primary' | 'secondary' | 'ghost'
     size?: 'md' | 'lg'
     disabled?: boolean
     type?: 'button' | 'submit' | 'reset'
+    /** 'a' — ссылка с теми же стилями (CV, Telegram). */
+    as?: 'button' | 'a'
+    href?: string
+    target?: string
+    rel?: string
   }>(),
-  { variant: 'primary', size: 'md', disabled: false, type: 'button' },
+  {
+    variant: 'primary',
+    size: 'md',
+    disabled: false,
+    type: 'button',
+    as: 'button',
+    href: undefined,
+    target: undefined,
+    rel: undefined,
+  },
 )
+
+// Новая вкладка без доступа к window.opener.
+const linkRel = computed(() => {
+  const parts = new Set((props.rel ?? '').split(/\s+/).filter(Boolean))
+  if (props.target === '_blank') parts.add('noopener')
+  return parts.size > 0 ? [...parts].join(' ') : undefined
+})
+
+const classes = computed(() => [
+  'btn',
+  `btn--${props.variant}`,
+  `btn--${props.size}`,
+  props.size === 'lg' ? 't-body-strong' : 't-label-caption',
+])
 </script>
 
 <template>
+  <a v-if="as === 'a'" :class="classes" :href="href" :target="target" :rel="linkRel">
+    <span class="btn__label"><slot /></span>
+    <span v-if="$slots.icon" class="btn__icon"><slot name="icon" /></span>
+  </a>
   <button
+    v-else
     :type="type"
-    class="btn"
-    :class="[
-      `btn--${variant}`,
-      `btn--${size}`,
-      size === 'lg' ? 't-body-strong' : 't-label-caption',
-    ]"
+    :class="classes"
     :disabled="disabled"
     :aria-disabled="disabled ? 'true' : undefined"
   >
@@ -33,11 +63,13 @@ withDefaults(
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
+  box-sizing: border-box;
   padding: var(--space-3) var(--space-5);
   border: 1px solid transparent;
   border-radius: var(--radius-md);
   color: var(--text-primary);
   background: transparent;
+  text-decoration: none;
   cursor: pointer;
   transition:
     transform 0.12s ease,

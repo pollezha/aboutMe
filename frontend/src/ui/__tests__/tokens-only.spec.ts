@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-const sources = import.meta.glob<string>('../**/*.vue', {
-  query: '?raw',
-  import: 'default',
-  eager: true,
-})
+const sources = import.meta.glob<string>(
+  ['../**/*.vue', '../../fallback2d/**/*.vue', '../../App.vue'],
+  {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  },
+)
 const files = Object.keys(sources)
 
 function styleFor(file: string): string {
