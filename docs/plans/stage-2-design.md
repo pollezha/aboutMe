@@ -96,7 +96,7 @@ danger в Night, 30-sec summary вне панели, дата стажа, пле
     ≤ косметических, список в PR.
   - Зависит от: T4, T5
 
-- [ ] T7 — Иконки/favicon/OG/SEO-мета + закрытие чек-листа design-review
+- [x] T7 — Иконки/favicon/OG/SEO-мета + закрытие чек-листа design-review
   - Файлы: `frontend/public/favicon.svg` (+png 192/512, `site.webmanifest`), `frontend/public/og.png` 1200×630
     (скрипт `frontend/scripts/og.mjs`, headless Chrome), `frontend/index.html` (title/description/OG/`theme-color`),
     `docs/concept/design-review.md` (чек-лист: каждый D — закрыт / отложен с причиной), `CLAUDE.md` (команды

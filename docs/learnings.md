@@ -89,3 +89,11 @@
 - Правило на будущее: скриншоты узких вьюпортов — через DevTools Protocol (`Emulation.setDeviceMetricsOverride`),
   Chrome запускать асинхронно; брейкпоинты фиксировать в одном месте (`useBreakpoint`) и сверять с Figma.
 - Куда закреплено: `frontend/scripts/shots.mjs`, `src/ui/useBreakpoint.ts`, App.spec (tablet-кейс).
+
+## 2026-10-22 — этап 2, T7: OG и favicon через headless Chrome
+- Что случилось: `Page.setDocumentContent` не грузит file://-ресурсы — шрифты для OG-рендера пришлось встраивать
+  data:-URL; неиспользуемый @font-face в CDP остаётся «unloaded», строгая проверка «все loaded» ложно падает;
+  prettier переносит длинные `<meta>` на несколько строк — тесты по HTML гонять после схлопывания пробелов.
+- Правило на будущее: в генераторах картинок объявлять только используемые начертания; CDP-клиент вынести в
+  общий `scripts/cdp.mjs` (сейчас продублирован в shots.mjs и og.mjs).
+- Куда закреплено: seo-assets.spec; TODO в плане этапа 3 — общий cdp.mjs.
