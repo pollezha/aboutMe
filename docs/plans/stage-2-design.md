@@ -49,7 +49,7 @@ danger в Night, 30-sec summary вне панели, дата стажа, пле
   - Готово, когда: тесты зелёные; `npm run build` проходит, бюджет первого экрана (JS) не вырос.
   - Зависит от: — (параллельно с T1)
 
-- [ ] T3 — Базовые компоненты: Icon, Button (Primary/Secondary/Ghost/Icon), Tag/Chapter, Pill/Status
+- [x] T3 — Базовые компоненты: Icon, Button (Primary/Secondary/Ghost/Icon), Tag/Chapter, Pill/Status
   - Файлы: `frontend/src/ui/Icon.vue` + `icons/*.svg` (13 иконок, экспорт из Figma `get_design_context` узлов
     Icon/*), `BaseButton.vue` (variant primary|secondary|ghost, size md|lg, disabled; стили только через
     CSS-переменные из T1), `IconButton.vue` (44×44), `ChapterTag.vue`, `StatusPill.vue`;
@@ -131,6 +131,9 @@ danger в Night, 30-sec summary вне панели, дата стажа, пле
 Затем `/verify` → `/review` → `/learn` → PR в main, тег `v0.2.0`.
 
 ## Что сознательно оставлено на потом (не блокирует)
+- **Контраст номера в ChapterTag (Night):** светлые акценты (prospace #FF8A4C, timepath #4FD1C0) с номером
+  `text/on-dark` могут быть < 4,5:1 — проверить в T6 расширением palette.spec (пары on-dark × chapter/* по темам);
+  при провале — тёмный номер для светлых акцентов.
 - **Кириллица:** у Bricolage Grotesque нет cyrillic-subset — RU-тексты на `--font-text` рендерятся system-ui.
   Решение пользователя: принять fallback / выбрать второй шрифт для RU (новая зависимость) / сменить семейство.
   До решения — knownIssue в Specs §7; на EN-версию не влияет.
