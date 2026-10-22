@@ -1,10 +1,29 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { nextTick } from 'vue'
+import { defineComponent, h, nextTick, onMounted } from 'vue'
 import App from '../App.vue'
 import { createAppI18n } from '../i18n'
+import { loadSceneWhenIdle } from '../scene'
 import { useUiStore } from '../stores/ui'
+
+// three/WebGL в jsdom не рендерим: чанк сцены — заглушка, которая по флагу «рисует первый кадр».
+const sceneStub = vi.hoisted(() => ({ drawsFirstFrame: false }))
+vi.mock('../scene/Scene.vue', () => ({
+  default: defineComponent({
+    emits: ['ready'],
+    setup(_, { emit }) {
+      onMounted(() => {
+        if (sceneStub.drawsFirstFrame) emit('ready')
+      })
+      return () => h('div', { class: 'scene-stub' })
+    },
+  }),
+}))
+vi.mock('../scene', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../scene')>()
+  return { ...original, loadSceneWhenIdle: vi.fn(original.loadSceneWhenIdle) }
+})
 
 // jsdom: нет matchMedia, WebGL и showModal() — минимальные подмены.
 function setViewport(width: number) {
@@ -49,6 +68,9 @@ afterEach(() => {
   wrapper?.unmount()
   wrapper = undefined
   vi.restoreAllMocks()
+  vi.mocked(loadSceneWhenIdle).mockClear()
+  vi.useRealTimers()
+  sceneStub.drawsFirstFrame = false
   dialogProto.showModal = originalDialog.showModal
   dialogProto.close = originalDialog.close
 })
@@ -395,5 +417,87 @@ describe('App', () => {
 
     expect(ui.motionPaused).toBe(true)
     expect(pause.attributes('aria-pressed')).toBe('true')
+  })
+
+  describe('3D scene loading', () => {
+    beforeEach(() => {
+      vi.useFakeTimers()
+    })
+
+    it('shows a loading card with Continue without 3D outside the hero while the scene loads', async () => {
+      const { wrapper, ui } = mountApp()
+      await nextTick()
+
+      expect(ui.sceneState).toBe('loading')
+      const card = wrapper.get('.scene-loading')
+      expect(card.attributes('role')).toBe('status')
+      expect(card.text()).toContain('Loading the 3D island')
+      expect(card.get('button.btn--secondary').text()).toBe('Continue without 3D')
+      expect(wrapper.get('.hero').element.contains(card.element)).toBe(false)
+    })
+
+    it('loads the scene chunk only in 3D mode', () => {
+      setViewport(390)
+      mountApp()
+
+      expect(loadSceneWhenIdle).not.toHaveBeenCalled()
+    })
+
+    it('marks scene_ready and replaces the placeholder once the first frame is drawn', async () => {
+      sceneStub.drawsFirstFrame = true
+      const mark = vi.spyOn(performance, 'mark')
+      const { wrapper, ui } = mountApp()
+
+      await vi.advanceTimersByTimeAsync(2000)
+
+      expect(loadSceneWhenIdle).toHaveBeenCalledTimes(1)
+      expect(mark).toHaveBeenCalledWith('scene_ready')
+      expect(ui.sceneState).toBe('ready')
+      expect(wrapper.find('.scene-stub').exists()).toBe(true)
+      expect(wrapper.find('.scene-loading').exists()).toBe(false)
+
+      await vi.advanceTimersByTimeAsync(10_000)
+      expect(ui.mode).toBe('3d')
+    })
+
+    it('falls back to the 2D map with a dismissible banner when the scene is not ready in 8 s', async () => {
+      const { wrapper, ui } = mountApp()
+
+      await vi.advanceTimersByTimeAsync(7999)
+      expect(ui.mode).toBe('3d')
+
+      await vi.advanceTimersByTimeAsync(1)
+      expect(ui.mode).toBe('2d')
+      expect(wrapper.find('.scene-loading').exists()).toBe(false)
+      expect(wrapper.find('.scene-stub').exists()).toBe(false)
+      expect(wrapper.findAll('.static-map button.hotspot')).toHaveLength(7)
+      const banner = wrapper.get('.scene-banner')
+      expect(banner.attributes('role')).toBe('status')
+      expect(banner.text()).toContain("3D scene didn't load — showing the map")
+      expect(localStorage.getItem('aboutme.sceneChoice')).toBeNull()
+
+      await banner.get('button[aria-label="Dismiss"]').trigger('click')
+      expect(wrapper.find('.scene-banner').exists()).toBe(false)
+    })
+
+    it('remembers Continue without 3D and starts in 2D on the next visit', async () => {
+      const first = mountApp()
+      await nextTick()
+
+      await first.wrapper.get('.scene-loading button').trigger('click')
+
+      expect(first.ui.mode).toBe('2d')
+      expect(first.wrapper.find('.scene-loading').exists()).toBe(false)
+      expect(localStorage.getItem('aboutme.sceneChoice')).toBe('2d')
+      await vi.advanceTimersByTimeAsync(10_000)
+      expect(first.wrapper.find('.scene-banner').exists()).toBe(false)
+      first.wrapper.unmount()
+      vi.mocked(loadSceneWhenIdle).mockClear()
+
+      const next = mountApp()
+
+      expect(next.ui.mode).toBe('2d')
+      expect(loadSceneWhenIdle).not.toHaveBeenCalled()
+    })
   })
 })

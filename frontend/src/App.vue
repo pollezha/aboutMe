@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, shallowRef, watch, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
 import en from '../../content/en.json'
 import {
@@ -13,12 +13,15 @@ import { resolveHighlights } from './content/experience'
 import type { ContentBundle } from './content/types'
 import StaticMap from './fallback2d/StaticMap.vue'
 import { useLocaleSync } from './i18n'
+import { SCENE_TIMEOUT_MS, loadSceneWhenIdle, type SceneLoad } from './scene'
 import { MIN_3D_WIDTH, detectWebGL2, shouldUse3D } from './scene/shouldUse3D'
 import { isTheme, useUiStore, type Theme } from './stores/ui'
 import BottomBar, { type BottomBarStop } from './ui/BottomBar.vue'
 import ChapterWindow from './ui/ChapterWindow.vue'
 import HeroCard from './ui/HeroCard.vue'
 import IconButton from './ui/IconButton.vue'
+import SceneFallbackBanner from './ui/SceneFallbackBanner.vue'
+import SceneLoading from './ui/SceneLoading.vue'
 import { useBreakpoint } from './ui/useBreakpoint'
 
 useLocaleSync()
@@ -44,20 +47,82 @@ function isWide() {
   return window.matchMedia(`(min-width: ${MIN_3D_WIDTH}px)`).matches
 }
 
+// Сцена не загрузилась в этом визите — до перезагрузки страницы в 3D не возвращаемся (и при смене ширины).
+let sceneFailed = false
+
 function detectMode() {
   if (typeof window === 'undefined') return
   const nav = navigator as Navigator & { deviceMemory?: number }
-  const use3D = shouldUse3D({
-    width: isWide() ? MIN_3D_WIDTH : 0,
-    webgl: detectWebGL2(),
-    deviceMemory: nav.deviceMemory,
-    userChoice: null,
-  })
+  const use3D =
+    !sceneFailed &&
+    shouldUse3D({
+      width: isWide() ? MIN_3D_WIDTH : 0,
+      webgl: detectWebGL2(),
+      deviceMemory: nav.deviceMemory,
+      userChoice: ui.userChoice,
+    })
   ui.setMode(use3D ? '3d' : '2d')
 }
 
 detectMode()
 watch(breakpoint, detectMode)
+
+// Сцена: ленивый чанк после простоя, таймаут → 2D с баннером (design §4 «Загрузка», UX9).
+const sceneComponent = shallowRef<Component>()
+let sceneLoad: SceneLoad | null = null
+let sceneTimer: ReturnType<typeof setTimeout> | undefined
+
+function stopSceneLoading() {
+  sceneLoad?.cancel()
+  sceneLoad = null
+  clearTimeout(sceneTimer)
+}
+
+function startScene() {
+  if (ui.mode !== '3d' || ui.sceneState === 'loading' || ui.sceneState === 'ready') return
+  ui.setSceneState('loading')
+  sceneTimer = setTimeout(failScene, SCENE_TIMEOUT_MS)
+  if (sceneComponent.value) return
+  const load = loadSceneWhenIdle()
+  sceneLoad = load
+  load.promise.then(
+    (component) => {
+      if (sceneLoad === load) sceneComponent.value = component
+    },
+    () => {
+      if (sceneLoad === load) failScene()
+    },
+  )
+}
+
+function failScene() {
+  if (ui.sceneState !== 'loading') return
+  stopSceneLoading()
+  sceneFailed = true
+  ui.sceneTimedOut()
+}
+
+function onSceneReady() {
+  if (ui.sceneState !== 'loading') return
+  clearTimeout(sceneTimer)
+  sceneLoad = null
+  performance.mark?.('scene_ready')
+  ui.setSceneState('ready')
+}
+
+function continueWithout3D() {
+  stopSceneLoading()
+  ui.continueWithout3D()
+}
+
+watch(
+  () => ui.mode,
+  (mode) => {
+    if (mode === '3d') return startScene()
+    stopSceneLoading()
+    if (ui.sceneState !== 'failed') ui.setSceneState('idle')
+  },
+)
 
 // overlay — Hero и бар поверх сцены (Figma Desktop 33:2, Laptop 33:246);
 // stacked — колонка TopBar → Hero → карта, бар закреплён внизу (Figma Tablet 34:709, Phone 56:1378).
@@ -164,12 +229,14 @@ function syncFromLocation() {
 }
 
 onMounted(() => {
+  startScene()
   syncFromLocation()
   window.addEventListener('popstate', syncFromLocation)
   window.addEventListener('hashchange', syncFromLocation)
 })
 
 onBeforeUnmount(() => {
+  stopSceneLoading()
   window.removeEventListener('popstate', syncFromLocation)
   window.removeEventListener('hashchange', syncFromLocation)
 })
@@ -181,9 +248,22 @@ onBeforeUnmount(() => {
     :class="[`app--${ui.mode}`, `app--${layout}`, `app--${breakpoint}`]"
     :data-theme="ui.theme"
   >
-    <div v-if="ui.mode === '3d'" class="scene-placeholder" aria-hidden="true">
-      <span class="scene-placeholder__caption t-mono-stack">3D scene — stage 3</span>
+    <div v-if="ui.mode === '3d' && sceneComponent" class="scene-layer">
+      <component :is="sceneComponent" @ready="onSceneReady" />
     </div>
+    <!-- Заглушка под сценой: плавно уходит, когда сцена нарисовала первый кадр. -->
+    <Transition name="scene-fade">
+      <div
+        v-if="ui.mode === '3d' && ui.sceneState !== 'ready'"
+        class="scene-placeholder"
+        aria-hidden="true"
+      />
+    </Transition>
+    <SceneLoading
+      v-if="ui.mode === '3d' && ui.sceneState === 'loading'"
+      class="app__scene-loading"
+      @skip="continueWithout3D"
+    />
 
     <header class="top-bar">
       <span v-if="layout === 'stacked'" class="top-bar__brand t-label-caption">
@@ -215,6 +295,11 @@ onBeforeUnmount(() => {
     </header>
 
     <main class="app__main">
+      <SceneFallbackBanner
+        v-if="ui.sceneState === 'failed'"
+        class="app__scene-banner"
+        @dismiss="ui.dismissSceneBanner()"
+      />
       <HeroCard
         class="app__hero"
         :variant="heroVariant"
@@ -270,19 +355,38 @@ onBeforeUnmount(() => {
   background: var(--bg-canvas);
 }
 
-/* Заглушка сцены под HTML-слоем (этап 3 — TresJS). */
+/* Сцена и заглушка под HTML-слоем; заглушка (небо темы) уходит после первого кадра сцены. */
+.scene-layer,
 .scene-placeholder {
   position: fixed;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+}
+
+.scene-placeholder {
   background: var(--scene-sky);
 }
 
-.scene-placeholder__caption {
-  color: var(--text-primary);
-  opacity: 0.6;
+.scene-fade-leave-active {
+  transition: opacity 0.4s ease;
+}
+
+.scene-fade-leave-to {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-fade-leave-active {
+    transition: none;
+  }
+}
+
+/* Figma LoadingCard 34:1119: справа внизу над баром, не над Hero. */
+.app__scene-loading {
+  position: fixed;
+  right: var(--edge);
+  bottom: calc(var(--size-bottom-bar) + var(--space-8));
+  z-index: 2;
+  max-width: calc(100vw - 2 * var(--edge));
 }
 
 .top-bar {
@@ -367,6 +471,7 @@ onBeforeUnmount(() => {
 }
 
 .app--stacked .top-bar,
+.app--stacked .app__scene-banner,
 .app--stacked .app__hero,
 .app--stacked .app__map {
   position: relative;
