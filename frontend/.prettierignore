@@ -2,3 +2,5 @@ dist/
 coverage/
 node_modules/
 package-lock.json
+# Снимок Figma: экспортируется как есть и вручную не правится (источник истины для gen-theme)
+scripts/design/figma-tokens.json
