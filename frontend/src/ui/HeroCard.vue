@@ -5,6 +5,7 @@ export interface HeroProfile {
   role: string
   status: string
   workFormat: string
+  /** Короткая локация для строки-меты: «Serbia · CET». */
   location: string
 }
 
@@ -21,12 +22,15 @@ export interface HeroLinks {
 </script>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import BaseButton from './BaseButton.vue'
 import Icon from './Icon.vue'
-import MetricCard from './MetricCard.vue'
+import IconButton from './IconButton.vue'
 import StatusPill from './StatusPill.vue'
 
-withDefaults(
+// Hero не закрывает сцену (figma-brief): на desktop/laptop — компактная карточка 400/360 с метриками
+// в одну строку; на телефоне — без метрик, чтобы карта целиком вошла в первый экран.
+const props = withDefaults(
   defineProps<{
     variant?: 'desktop' | 'laptop' | 'mobile'
     profile: HeroProfile
@@ -36,26 +40,30 @@ withDefaults(
     contactLabel?: string
     cvLabel?: string
     telegramLabel?: string
-    monitoringLabel?: string
   }>(),
   {
     variant: 'desktop',
     contactLabel: 'Contact',
     cvLabel: 'CV (PDF)',
     telegramLabel: 'Telegram',
-    monitoringLabel: 'Monitoring · this site, live →',
   },
 )
 
-const emit = defineEmits<{ contact: []; monitoring: [] }>()
+const emit = defineEmits<{ contact: [] }>()
+
+const compact = computed(() => props.variant !== 'mobile')
 </script>
 
 <template>
-  <section class="hero" :class="`hero--${variant}`">
+  <section class="hero" :class="[`hero--${variant}`, { 'hero--compact': compact }]">
     <StatusPill>{{ profile.status }}</StatusPill>
-    <h1 class="hero__name t-display-hero">{{ profile.name }}</h1>
-    <p class="hero__role t-heading-section">{{ profile.role }}</p>
-    <p class="hero__where t-body-small">{{ profile.workFormat }} · {{ profile.location }}</p>
+    <div class="hero__identity">
+      <h1 class="hero__name t-display-hero-sm">{{ profile.name }}</h1>
+      <p class="hero__role" :class="compact ? 't-heading-section' : 't-label-caption'">
+        {{ profile.role }}
+      </p>
+      <p class="hero__where t-body-small">{{ profile.workFormat }} · {{ profile.location }}</p>
+    </div>
 
     <div class="hero__actions">
       <BaseButton variant="primary" @click="emit('contact')">{{ contactLabel }}</BaseButton>
@@ -63,50 +71,23 @@ const emit = defineEmits<{ contact: []; monitoring: [] }>()
         {{ cvLabel }}
         <template #icon><Icon name="download" /></template>
       </BaseButton>
-      <template v-if="links.telegram">
-        <a
-          v-if="variant === 'mobile'"
-          class="hero__icon-link"
-          :href="links.telegram"
-          :aria-label="telegramLabel"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Icon name="telegram" />
-        </a>
-        <BaseButton
-          v-else
-          as="a"
-          variant="ghost"
-          :href="links.telegram"
-          target="_blank"
-          rel="noreferrer"
-        >
-          {{ telegramLabel }}
-          <template #icon><Icon name="external" /></template>
-        </BaseButton>
-      </template>
-    </div>
-
-    <div class="hero__metrics">
-      <MetricCard
-        v-for="metric in highlights"
-        :key="metric.label"
-        size="sm"
-        :label="metric.label"
-        :value="metric.value"
-        :note="metric.note"
+      <IconButton
+        v-if="links.telegram"
+        as="a"
+        icon="telegram"
+        :label="telegramLabel"
+        :href="links.telegram"
+        target="_blank"
+        rel="noreferrer"
       />
     </div>
 
-    <BaseButton
-      v-if="variant === 'mobile'"
-      variant="ghost"
-      class="hero__monitoring"
-      @click="emit('monitoring')"
-    >
-      {{ monitoringLabel }}
-    </BaseButton>
+    <ul v-if="compact" class="hero__metrics">
+      <li v-for="metric in highlights" :key="metric.label" class="hero__metric">
+        <span class="hero__metric-value t-display-number-sm">{{ metric.value }}</span>
+        <span class="hero__metric-label t-label-tag-xs">{{ metric.label }}</span>
+      </li>
+    </ul>
   </section>
 </template>
 
@@ -115,43 +96,45 @@ const emit = defineEmits<{ contact: []; monitoring: [] }>()
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--space-4);
+  gap: var(--space-3);
   box-sizing: border-box;
-  width: 520px;
   max-width: 100%;
-  padding: var(--space-6);
+  padding: var(--space-4);
   border-radius: var(--radius-lg);
   color: var(--text-primary);
   background: var(--bg-surface);
   box-shadow: var(--shadow-card);
 }
 
+.hero--desktop {
+  width: 400px;
+}
+
 .hero--laptop {
-  width: 440px;
-  gap: var(--space-2);
-  padding: var(--space-4);
+  width: 360px;
 }
 
 .hero--mobile {
   width: 358px;
-  gap: var(--space-3);
-  padding: var(--space-4);
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+}
+
+.hero__identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* Телефон: Hero ≤ 190 px, чтобы карта-квадрат целиком помещалась над фикс-баром. */
+.hero--mobile .hero__identity {
+  gap: 0;
 }
 
 .hero__name,
 .hero__role,
 .hero__where {
   margin: 0;
-}
-
-.hero--laptop .hero__name {
-  font-size: var(--font-size-xl);
-  line-height: 1.15;
-  letter-spacing: -0.005em;
-}
-
-.hero--mobile .hero__name {
-  font-size: 32px;
 }
 
 .hero__where {
@@ -165,42 +148,28 @@ const emit = defineEmits<{ contact: []; monitoring: [] }>()
   gap: var(--space-2);
 }
 
-/* Иконка-ссылка Telegram на mobile: те же размеры и цвета, что у IconButton. */
-.hero__icon-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  width: var(--size-touch);
-  height: var(--size-touch);
-  border-radius: var(--radius-full);
-  color: var(--bg-surface);
-  background: var(--text-primary);
-
-  --icon-size: var(--space-5);
-}
-
-.hero__icon-link:focus-visible {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 2px;
-}
-
 .hero__metrics {
   display: flex;
-  gap: var(--space-2);
-  align-self: stretch;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.hero__metrics > * {
-  flex: 1 0 0;
+.hero--laptop .hero__metrics {
+  gap: var(--space-3);
 }
 
-.hero--laptop .hero__metrics > *,
-.hero--mobile .hero__metrics > * {
-  min-width: 0;
+.hero__metric {
+  display: flex;
+  flex-direction: column;
 }
 
-.hero--mobile .hero__metrics {
-  flex-wrap: wrap;
+.hero__metric-value {
+  white-space: nowrap;
+}
+
+.hero__metric-label {
+  color: var(--text-secondary);
 }
 </style>

@@ -82,7 +82,7 @@ const profile = computed(() => ({
   role: t('hero.role'),
   status: content.profile.status,
   workFormat: content.profile.workFormat,
-  location: content.profile.location,
+  location: content.profile.locationShort,
 }))
 const highlights = resolveHighlights(content)
 const links = {
@@ -222,7 +222,6 @@ onBeforeUnmount(() => {
         :highlights="highlights"
         :links="links"
         @contact="ui.openChapter('contact')"
-        @monitoring="ui.openChapter('monitoring')"
       />
       <StaticMap v-if="ui.mode === '2d'" class="app__map" :variant="mapVariant" @open="open" />
     </main>

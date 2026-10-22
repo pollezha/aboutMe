@@ -8,6 +8,7 @@
     "status": "Open to work",
     "workFormat": "Remote / relocation",
     "location": "Based in Serbia · CET (UTC+1)",
+    "locationShort": "Serbia · CET",
     "highlights": [
       { "label": "SHIPMENTS / DAY", "value": "1000+", "note": "through my last module" },
       { "label": "FILTER PAGE", "value": "40 s → 2 s", "note": "after moving filters to SQL" },
@@ -16,6 +17,8 @@
     "links": [
       { "kind": "github", "label": "GitHub", "href": "https://github.com/pollezha" },
       { "kind": "telegram", "label": "Telegram", "href": "https://t.me/poll_ezha" },
+      { "kind": "email", "label": "Email", "href": "mailto:polezhaev.yasha@gmail.com" },
+      { "kind": "cv", "label": "CV (PDF)", "href": "/cv/Yakov_Polezhaev_CV_EN.pdf" },
       { "kind": "hh", "label": "hh.ru", "href": "https://hh.ru/resume/28e123adff10fa48aa0039ed1f7a63354f3842" }
     ]
   },

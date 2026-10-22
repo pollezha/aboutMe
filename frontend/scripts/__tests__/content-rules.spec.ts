@@ -13,6 +13,7 @@ function validContent() {
       status: 'Open to work',
       workFormat: 'Remote / relocation',
       location: 'Based in Serbia',
+      locationShort: 'Serbia',
       highlights: [
         { label: 'A', value: '1', note: 'a' },
         { label: 'B', value: '2', note: 'b' },

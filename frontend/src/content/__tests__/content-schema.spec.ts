@@ -27,6 +27,23 @@ describe('content schema: first-screen fields', () => {
     })
   })
 
+  it('requires profile.locationShort for the first-screen meta line', () => {
+    const c = content()
+    delete c.profile.locationShort
+
+    expect(validateContent(c, schema)).toContainEqual({
+      path: '/profile',
+      message: "must have required property 'locationShort'",
+    })
+  })
+
+  it('publishes CV and email links', () => {
+    const kinds = en.profile.links.map((link) => link.kind)
+
+    expect(kinds).toContain('cv')
+    expect(kinds).toContain('email')
+  })
+
   it('requires exactly three highlights', () => {
     const c = content()
     c.profile.highlights.pop()

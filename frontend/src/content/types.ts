@@ -31,6 +31,8 @@ export interface Profile {
   status: string
   workFormat: string
   location: string
+  /** Короткая локация для строки-меты Hero: «Serbia · CET». */
+  locationShort: string
   highlights: Highlight[]
   links: ContentLink[]
 }
@@ -51,7 +53,7 @@ export interface ContentBundle {
   experience: ExperienceEntry[]
 }
 
-/** Метрика, готовая к показу в MetricCard. */
+/** Метрика, готовая к показу (строка метрик HeroCard, MetricCard). */
 export interface Metric {
   label: string
   value: string

@@ -10,20 +10,23 @@ CV (Secondary), Telegram (Ghost), 3 цифры. **Стаж — один раз: 
 July 2024» (R1), в строке роли и в баре стажа нет.** Тема/язык — только в BottomBar/TopBar. 30-sec summary —
 не в Hero (R3).
 
+Компактный Hero (решение 2026-10-22, figma-brief «Hero не должен закрывать сцену» / «Телефон: карта на первом
+экране»; эталоны A / phone-A):
+
 | | desktop | laptop (1280×720) | mobile (< 768) |
 |---|---|---|---|
-| ширина | 520 | 440 | 358 (= 390 − 2×16) |
-| padding / gap | `--space-6` / `--space-4` | 16 / 8 | `--space-4` / `--space-3` |
-| имя | `.t-display-hero` (40) | 28 px / 1.15 / −0.5% | 32 px (override) |
-| | | | |
+| ширина | 400 (`hero--compact`) | 360 (`hero--compact`) | 358 (= 390 − 2×16), высота ≤ 190 |
+| padding / gap | `--space-4` / `--space-3` | `--space-4` / `--space-3` | `--space-3` `--space-4` / `--space-2` |
+| имя | `.t-display-hero-sm` (32) | `.t-display-hero-sm` (32) | `.t-display-hero-sm` (32) |
+| роль | `.t-heading-section` | `.t-heading-section` | `.t-label-caption` |
 
-Структура (сверху вниз): `StatusPill` «Open to work · remote / relocation» (mobile: «Open to work · remote») →
-имя (h1) → роль `.t-heading-section` «.NET Backend Developer» (без стажа) → `.t-body-small --text-secondary`
-«Remote or relocation in Europe · Based in Serbia · CET (UTC+1)» → CTA row (gap 8, wrap): `BaseButton primary`
-«Contact», `BaseButton secondary` «CV (PDF)» + icon download, `BaseButton ghost` «Telegram» + icon external
-(mobile: Telegram — `IconButton` telegram) → Metrics row (gap 8; desktop 3 × `MetricCard size=sm` flex 1 0 0;
-laptop 3 × 133 px; mobile 3 в ряд по ~106 px или 155 px при переносе) → mobile: ghost «Monitoring · this site,
-live →» (R-UX3). Фон `--bg-surface`, radius `--radius-lg`, shadow `--shadow-card`.
+Структура (сверху вниз): `StatusPill` → имя (h1) → роль (без стажа) → `.t-body-small --text-secondary`
+«workFormat · locationShort» («Remote / relocation · Serbia · CET») → CTA row (gap 8, wrap): `BaseButton primary`
+«Contact», `BaseButton secondary as=a` «CV (PDF)» + icon download (только при link kind=cv), `IconButton as=a`
+telegram → desktop/laptop: метрики одной строкой без карточек (gap `--space-4`, laptop `--space-3`): значение
+`.t-display-number-sm` + подпись `.t-label-tag-xs` `--text-secondary`. На mobile метрик и ghost «Monitoring» нет:
+карта-квадрат целиком над фикс-баром, Monitoring — пин на карте и кнопка бара; метрики — в окне Profile (этап 3).
+Фон `--bg-surface`, radius `--radius-lg`, shadow `--shadow-card`.
 
 Метрики по умолчанию: «SHIPMENTS / DAY · 1000+ · through my last module»; «FILTER PAGE · 40 s → 2 s · after
 moving filters to SQL»; «IN PRODUCTION · 2+ yrs · since July 2024» (значение «2+ yrs» и «since …» считаются из

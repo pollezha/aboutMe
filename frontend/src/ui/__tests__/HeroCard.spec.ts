@@ -4,7 +4,6 @@ import en from '../../../../content/en.json'
 import { resolveHighlights } from '../../content/experience'
 import type { ContentBundle } from '../../content/types'
 import HeroCard from '../HeroCard.vue'
-import MetricCard from '../MetricCard.vue'
 
 const content = en as ContentBundle
 const highlights = resolveHighlights(content, new Date(2026, 9, 22))
@@ -13,7 +12,7 @@ const profile = {
   role: content.profile.role,
   status: content.profile.status,
   workFormat: content.profile.workFormat,
-  location: content.profile.location,
+  location: content.profile.locationShort,
 }
 const links = { cv: '/cv.pdf', telegram: 'https://t.me/poll_ezha' }
 
@@ -22,20 +21,21 @@ function mountHero(extra: Record<string, unknown> = {}) {
 }
 
 describe('HeroCard', () => {
-  it('shows the name as the page heading', () => {
+  it('shows the name as the page heading in the compact display style', () => {
     const h1 = mountHero().get('h1')
 
     expect(h1.text()).toBe('Yakov Polezhaev')
-    expect(h1.classes()).toContain('t-display-hero')
+    expect(h1.classes()).toContain('t-display-hero-sm')
   })
 
-  it('shows role, status, work format and location without clicks', () => {
-    const text = mountHero().text()
+  it('shows role, status and a one-line meta: work format · short location', () => {
+    const wrapper = mountHero()
 
-    expect(text).toContain('.NET Backend Developer')
-    expect(text).toContain('Open to work')
-    expect(text).toContain('Remote / relocation')
-    expect(text).toContain('Based in Serbia · CET (UTC+1)')
+    expect(wrapper.text()).toContain('.NET Backend Developer')
+    expect(wrapper.text()).toContain('Open to work')
+    const meta = wrapper.get('.hero__where')
+    expect(meta.text()).toBe('Remote / relocation · Serbia · CET')
+    expect(meta.classes()).toContain('t-body-small')
   })
 
   it('does not put years of experience into the role line', () => {
@@ -45,15 +45,29 @@ describe('HeroCard', () => {
     expect(role.text()).not.toMatch(/\d/)
   })
 
-  it('renders the three metrics, the third computed from experience dates', () => {
-    const cards = mountHero().findAllComponents(MetricCard)
+  it.each(['desktop', 'laptop'] as const)('is a compact card on %s', (variant) => {
+    expect(mountHero({ variant }).classes()).toContain('hero--compact')
+  })
 
-    expect(cards).toHaveLength(3)
-    expect(cards.every((card) => card.props('size') === 'sm')).toBe(true)
-    expect(cards[0]!.text()).toContain('1000+')
-    expect(cards[2]!.text()).toContain('IN PRODUCTION')
-    expect(cards[2]!.text()).toContain('2+ yrs')
-    expect(cards[2]!.text()).toContain('since July 2024')
+  it('renders the three metrics as one line of value + caption, not as cards', () => {
+    const wrapper = mountHero()
+
+    expect(wrapper.find('.metric').exists()).toBe(false)
+    const items = wrapper.findAll('.hero__metric')
+    expect(items).toHaveLength(3)
+    const values = items.map((item) => item.get('.t-display-number-sm').text())
+    expect(values).toEqual(highlights.map((metric) => metric.value))
+    expect(values[0]).toBe('1000+')
+    expect(values[2]).toBe('2+ yrs')
+    expect(items[2]!.get('.t-label-tag-xs').text()).toBe('IN PRODUCTION')
+  })
+
+  it('shows no metrics and no Monitoring link on mobile', () => {
+    const mobile = mountHero({ variant: 'mobile' })
+
+    expect(mobile.find('.hero__metrics').exists()).toBe(false)
+    expect(mobile.text()).not.toContain('1000+')
+    expect(mobile.text()).not.toContain('Monitoring')
   })
 
   it('emits contact from the primary button', async () => {
@@ -64,37 +78,29 @@ describe('HeroCard', () => {
     expect(wrapper.emitted('contact')).toHaveLength(1)
   })
 
-  it('links CV and Telegram', () => {
-    const wrapper = mountHero()
+  it.each(['desktop', 'mobile'] as const)('links the CV as a secondary button on %s', (variant) => {
+    const cv = mountHero({ variant }).get('a[href="/cv.pdf"]')
 
-    expect(wrapper.get('a[href="/cv.pdf"]').text()).toContain('CV')
-    expect(wrapper.find('a[href="https://t.me/poll_ezha"]').exists()).toBe(true)
+    expect(cv.text()).toContain('CV (PDF)')
+    expect(cv.classes()).toContain('btn--secondary')
   })
 
-  it('styles CV and Telegram links as buttons and opens Telegram safely', () => {
-    const wrapper = mountHero()
+  it('hides the CV button when there is no CV link', () => {
+    const wrapper = mountHero({ links: { telegram: links.telegram } })
 
-    expect(wrapper.get('a[href="/cv.pdf"]').classes()).toContain('btn--secondary')
-    const telegram = wrapper.get('a[href="https://t.me/poll_ezha"]')
-    expect(telegram.classes()).toContain('btn--ghost')
-    expect(telegram.attributes('target')).toBe('_blank')
-    expect(telegram.attributes('rel')).toContain('noopener')
+    expect(wrapper.text()).not.toContain('CV')
   })
 
-  it('shows Monitoring only on mobile and emits monitoring', async () => {
-    expect(mountHero({ variant: 'desktop' }).find('.hero__monitoring').exists()).toBe(false)
+  it.each(['desktop', 'mobile'] as const)(
+    'links Telegram as a named icon link on %s, opened safely',
+    (variant) => {
+      const telegram = mountHero({ variant }).get('a[href="https://t.me/poll_ezha"]')
 
-    const mobile = mountHero({ variant: 'mobile' })
-    const monitoring = mobile.get('button.hero__monitoring')
-    await monitoring.trigger('click')
-
-    expect(monitoring.text()).toContain('Monitoring')
-    expect(mobile.emitted('monitoring')).toHaveLength(1)
-  })
-
-  it('names the icon-only Telegram link on mobile', () => {
-    const link = mountHero({ variant: 'mobile' }).get('a[href="https://t.me/poll_ezha"]')
-
-    expect(link.attributes('aria-label')).toBe('Telegram')
-  })
+      expect(telegram.classes()).toContain('icon-btn')
+      expect(telegram.attributes('aria-label')).toBe('Telegram')
+      expect(telegram.text()).toBe('')
+      expect(telegram.attributes('target')).toBe('_blank')
+      expect(telegram.attributes('rel')).toContain('noopener')
+    },
+  )
 })

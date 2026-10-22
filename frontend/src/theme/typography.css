@@ -7,6 +7,14 @@
   letter-spacing: -0.01em;
 }
 
+.t-display-hero-sm {
+  font-family: var(--font-text);
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
 .t-display-number {
   font-family: var(--font-mono);
   font-weight: 700;
@@ -46,6 +54,14 @@
   line-height: 1.2;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.t-label-tag-xs {
+  font-family: var(--font-text);
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
 }
 
 .t-label-caption {

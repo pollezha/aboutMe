@@ -17,7 +17,16 @@
     "profile": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "role", "status", "workFormat", "location", "highlights", "links"],
+      "required": [
+        "name",
+        "role",
+        "status",
+        "workFormat",
+        "location",
+        "locationShort",
+        "highlights",
+        "links"
+      ],
       "properties": {
         "name": { "$ref": "#/$defs/text" },
         "role": {
@@ -30,8 +39,12 @@
           "description": "Where I am and my time zone, e.g. \"Based in Serbia · CET (UTC+1)\"",
           "$ref": "#/$defs/text"
         },
+        "locationShort": {
+          "description": "Short location for the first-screen meta line, e.g. \"Serbia · CET\"",
+          "$ref": "#/$defs/text"
+        },
         "highlights": {
-          "description": "Exactly three first-screen metrics (MetricCard). A metric is either static {label, value, note} or computed {kind: \"experience\", label}: its value (\"2+ yrs\") and note (\"since July 2024\") are derived from experience[] at render time and never stored as text",
+          "description": "Exactly three first-screen metrics (one line in HeroCard). A metric is either static {label, value, note} or computed {kind: \"experience\", label}: its value (\"2+ yrs\") and note (\"since July 2024\") are derived from experience[] at render time and never stored as text",
           "type": "array",
           "minItems": 3,
           "maxItems": 3,

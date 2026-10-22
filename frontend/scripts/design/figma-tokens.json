@@ -59,11 +59,13 @@
   },
   "textStyles": {
     "Display/Hero":      { "family": "Bricolage Grotesque", "weight": 800, "size": 40, "lineHeight": 1.10, "letterSpacing": -0.01, "description": "имя на первом экране" },
+    "Display/Hero-sm":   { "family": "Bricolage Grotesque", "weight": 800, "size": 32, "lineHeight": 1.10, "letterSpacing": -0.01, "description": "имя в компактном Hero" },
     "Display/Number":    { "family": "IBM Plex Mono",       "weight": 700, "size": 40, "lineHeight": 1.00, "letterSpacing": -0.02, "description": "большие цифры" },
     "Display/Number-sm": { "family": "IBM Plex Mono",       "weight": 700, "size": 20, "lineHeight": 1.20, "letterSpacing": -0.01, "description": "компактная цифра для Hero-метрик" },
     "Heading/Window":    { "family": "Bricolage Grotesque", "weight": 800, "size": 28, "lineHeight": 1.15, "letterSpacing": -0.005, "description": "заголовок окна" },
     "Heading/Section":   { "family": "Bricolage Grotesque", "weight": 700, "size": 20, "lineHeight": 1.20, "letterSpacing": 0, "description": "подзаголовок внутри окна" },
     "Label/Eyebrow":     { "family": "Bricolage Grotesque", "weight": 700, "size": 12, "lineHeight": 1.20, "letterSpacing": 0.08, "uppercase": true, "description": "надпись над заголовком" },
+    "Label/Tag-xs":      { "family": "Bricolage Grotesque", "weight": 700, "size": 12, "lineHeight": 1.20, "letterSpacing": 0.06, "description": "подпись компактной метрики в Hero" },
     "Label/Caption":     { "family": "Bricolage Grotesque", "weight": 600, "size": 14, "lineHeight": 1.20, "letterSpacing": 0, "description": "подписи остановок, кнопок" },
     "Body/Default":      { "family": "Bricolage Grotesque", "weight": 400, "size": 16, "lineHeight": 1.50, "letterSpacing": 0, "description": "основной текст" },
     "Body/Strong":       { "family": "Bricolage Grotesque", "weight": 600, "size": 16, "lineHeight": 1.50, "letterSpacing": 0 },

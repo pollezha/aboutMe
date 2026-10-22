@@ -37,4 +37,24 @@ describe('IconButton', () => {
 
     expect(wrapper.get('button').attributes('aria-pressed')).toBeUndefined()
   })
+
+  it('renders a named link with as="a" and opens a new tab safely', () => {
+    const wrapper = mount(IconButton, {
+      props: {
+        icon: 'telegram',
+        label: 'Telegram',
+        as: 'a',
+        href: 'https://t.me/x',
+        target: '_blank',
+      },
+    })
+
+    expect(wrapper.find('button').exists()).toBe(false)
+    const link = wrapper.get('a.icon-btn')
+    expect(link.attributes('href')).toBe('https://t.me/x')
+    expect(link.attributes('aria-label')).toBe('Telegram')
+    expect(link.attributes('target')).toBe('_blank')
+    expect(link.attributes('rel')).toContain('noopener')
+    expect(link.find('svg').exists()).toBe(true)
+  })
 })

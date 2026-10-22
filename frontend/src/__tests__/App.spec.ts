@@ -283,6 +283,32 @@ describe('App', () => {
     expect(openDialog(wrapper).get('h2').text()).toBe('TimePath')
   })
 
+  it('stacks TopBar → Hero → map → bar on a phone, without metrics or a Monitoring link', () => {
+    setViewport(390)
+    const { wrapper } = mountApp()
+
+    const order = [...wrapper.get('.app').element.querySelectorAll('*')]
+      .map((el) =>
+        ['top-bar', 'hero', 'static-map', 'bottom-bar'].find((name) => el.classList.contains(name)),
+      )
+      .filter(Boolean)
+    expect(order).toEqual(['top-bar', 'hero', 'static-map', 'bottom-bar'])
+
+    const map = wrapper.get('.static-map').element
+    const siblings = [...map.parentElement!.children].filter((el) => el !== map)
+    expect(siblings.map((el) => el.textContent).join(' ')).not.toContain('Monitoring')
+    expect(wrapper.get('.hero').text()).not.toContain('1000+')
+  })
+
+  it('shows the compact hero with CV from content on desktop', () => {
+    const { wrapper } = mountApp()
+
+    const hero = wrapper.get('.hero')
+    expect(hero.classes()).toContain('hero--compact')
+    expect(hero.get('a.btn--secondary').attributes('href')).toBe('/cv/Yakov_Polezhaev_CV_EN.pdf')
+    expect(hero.find('a[aria-label="Telegram"]').exists()).toBe(true)
+  })
+
   it('decides 2D by the same media query as CSS, not by innerWidth', () => {
     setViewport(1440)
     const matchMedia = window.matchMedia
