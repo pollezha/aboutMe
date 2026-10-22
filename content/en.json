@@ -25,5 +25,449 @@
   "experience": [
     { "id": "timepath", "company": "TimePath", "role": "Backend Developer (.NET)", "from": "2024-07", "to": "2025-12" },
     { "id": "prospace", "company": "ProSpace · OptiTrack", "role": "Backend Developer (.NET)", "from": "2026-01", "to": null }
-  ]
+  ],
+  "chapters": {
+    "profile": {
+      "eyebrow": "Driver licence · on the road since {sinceShort}",
+      "title": "Yakov Polezhaev",
+      "subtitle": ".NET backend developer · on the road since {since}",
+      "name": { "label": "NAME", "value": "Yakov Polezhaev" },
+      "since": { "label": "ON THE ROAD SINCE", "value": "{since} · {experience} in production" },
+      "keyNumbers": { "label": "KEY NUMBERS" },
+      "about": {
+        "label": "ABOUT",
+        "value": ".NET backend developer. I own modules end to end: domain logic, data, messaging and the monitoring around them. 1000+ shipments a day went through my last module. I build with AI agents (Claude Code) every day."
+      },
+      "languages": { "label": "LANGUAGES", "items": ["EN B2", "CS B2", "DE A2", "RU native"] },
+      "lookingFor": {
+        "label": "LOOKING FOR",
+        "value": "Backend services with real load · .NET · remote or relocation in Europe"
+      },
+      "proofLinks": [
+        { "label": "GitHub pollezha", "href": "https://github.com/pollezha", "icon": "external" },
+        { "label": "Download CV (PDF, EN)", "href": "/cv/Yakov_Polezhaev_CV_EN.pdf", "icon": "download" }
+      ]
+    },
+    "prospace": {
+      "experienceId": "prospace",
+      "eyebrow": "Waybill · Latest role · {period}",
+      "title": "ProSpace · OptiTrack",
+      "subtitle": "Backend Developer (.NET) · TMS for large cargo owners",
+      "metrics": [
+        { "label": "VOLUME", "value": "1000+", "note": "shipments / day", "accent": true },
+        { "label": "POSTGRESQL", "value": "200+", "note": "tables" },
+        { "label": "MY MODULE", "value": "Transport", "note": "CREATED → PLANNED → IN TRANSIT → DELIVERED ✓" }
+      ],
+      "keyResults": {
+        "heading": "Key results",
+        "items": [
+          {
+            "result": "Built the transport module on my own",
+            "how": "core service every shipment passes through · ASP.NET Core REST · 1000+ shipments/day"
+          },
+          {
+            "result": "Made audit logging extensible without touching business code",
+            "how": "event-driven journaling of CRUD"
+          },
+          {
+            "result": "Found incident root causes and verified releases in production",
+            "how": "Grafana, on call"
+          },
+          {
+            "result": "Owned technical decisions in my scope",
+            "how": "architecture of new modules, specs with analysts, legacy refactoring, xUnit"
+          },
+          {
+            "result": "Built features with AI agents every day",
+            "how": "Claude Code; set up the team's agent workflow: rules, prompts, MCP, skills"
+          }
+        ]
+      },
+      "stack": {
+        "label": "STACK",
+        "items": [
+          "ASP.NET Core",
+          "EF Core",
+          "PostgreSQL",
+          "MongoDB",
+          "Kafka",
+          "SignalR",
+          "Kubernetes",
+          "Grafana",
+          "Vue.js",
+          "Claude Code"
+        ]
+      },
+      "team": { "label": "TEAM", "value": "cross-functional · code review · on-call" },
+      "proofLinks": [{ "label": "prospace.tech", "href": "https://prospace.tech", "icon": "external" }]
+    },
+    "timepath": {
+      "experienceId": "timepath",
+      "eyebrow": "Route sheet · Previous role · {period}",
+      "title": "TimePath",
+      "subtitle": "Backend Developer (.NET) · corporate platforms for energy and utilities",
+      "metricGroups": [
+        {
+          "label": "GRID SIZE",
+          "metrics": [
+            { "label": "OBJECTS", "value": "7M+", "note": "grid objects" },
+            { "label": "USERS", "value": "2000+", "note": "platform users" }
+          ]
+        },
+        {
+          "label": "FILTER PAGE LOAD",
+          "metrics": [
+            { "label": "BEFORE", "value": "40+ s", "note": "filtered on the client" },
+            { "label": "AFTER", "value": "< 2 s", "note": "filtering in optimised SQL", "accent": true },
+            { "label": "OUTPUT", "value": "~2×", "note": "faster to build on three projects" }
+          ]
+        }
+      ],
+      "keyResults": {
+        "heading": "Key results",
+        "items": [
+          {
+            "result": "Cut a filter page from 40+ s to under 2 s",
+            "how": "data was filtered on the client; moved filtering into optimised SQL"
+          },
+          {
+            "result": "Made new features ~2× faster to build on three projects",
+            "how": "queues, files and shared logic into a platform core"
+          },
+          {
+            "result": "Hardened the platform",
+            "how": "endpoint protection, RBAC, config encryption, bulk-export limits"
+          },
+          {
+            "result": "Supported sales and the team",
+            "how": "demo stand, GitLab CI, reviewed interns' code"
+          }
+        ]
+      },
+      "stack": {
+        "label": "STACK",
+        "items": [
+          "C#",
+          "ASP.NET Core",
+          "EF Core",
+          "PostgreSQL",
+          "SQL Server",
+          "RabbitMQ",
+          "SignalR",
+          "Docker",
+          "GitLab CI"
+        ]
+      },
+      "proofLinks": [{ "label": "timepath.ru", "href": "https://timepath.ru", "icon": "external" }]
+    },
+    "techstack": {
+      "eyebrow": "Data center · {span}",
+      "title": "Tech stack",
+      "subtitle": "Each rack is an area, each server a technology. Click a server to pull it out.",
+      "experienceLabel": "EXPERIENCE",
+      "whereLabel": "WHERE I USED IT",
+      "whatLabel": "WHAT I DID WITH IT",
+      "racks": [
+        {
+          "name": "BACKEND",
+          "servers": [
+            {
+              "name": "C# / .NET",
+              "usedIn": ["timepath", "prospace"],
+              "where": "TimePath · ProSpace",
+              "what": "My main language. Built the transport module at ProSpace and the shared platform core at TimePath."
+            },
+            {
+              "name": "ASP.NET Core",
+              "usedIn": ["timepath", "prospace"],
+              "where": "TimePath · ProSpace",
+              "what": "REST services and microservices. The transport module is an ASP.NET Core service."
+            },
+            {
+              "name": "EF Core",
+              "usedIn": ["timepath", "prospace"],
+              "where": "TimePath · ProSpace",
+              "what": "Data access layer on both platforms."
+            },
+            {
+              "name": "xUnit",
+              "usedIn": ["timepath", "prospace"],
+              "where": "TimePath · ProSpace",
+              "what": "xUnit tests on business logic to reduce regression risk."
+            }
+          ]
+        },
+        {
+          "name": "DATA",
+          "servers": [
+            {
+              "name": "PostgreSQL",
+              "usedIn": ["timepath", "prospace"],
+              "where": "TimePath · ProSpace",
+              "what": "Moved client-side filtering into optimised SQL (40+ s → < 2 s); schemas for new modules; EF Core migrations; query tuning in production."
+            },
+            {
+              "name": "SQL Server",
+              "usedIn": ["timepath"],
+              "where": "TimePath",
+              "what": "Rewrote filtering queries and moved them into the database: a page went from 40+ s to under 2 s."
+            },
+            {
+              "name": "MongoDB",
+              "usedIn": ["prospace"],
+              "where": "ProSpace",
+              "what": "Part of the OptiTrack stack."
+            }
+          ]
+        },
+        {
+          "name": "MESSAGING",
+          "servers": [
+            {
+              "name": "Kafka",
+              "usedIn": ["prospace"],
+              "where": "ProSpace",
+              "what": "Event streaming in the OptiTrack microservice platform."
+            },
+            {
+              "name": "RabbitMQ",
+              "usedIn": ["timepath"],
+              "where": "TimePath",
+              "what": "Message queues; moved queue handling into the shared platform core."
+            },
+            {
+              "name": "SignalR",
+              "usedIn": ["timepath", "prospace"],
+              "where": "TimePath · ProSpace",
+              "what": "Real-time updates to the UI on both platforms."
+            }
+          ]
+        },
+        {
+          "name": "DEVOPS",
+          "servers": [
+            {
+              "name": "Docker",
+              "usedIn": ["timepath", "prospace"],
+              "where": "TimePath · ProSpace",
+              "what": "Containerised services in both jobs; set up a client demo stand at TimePath."
+            },
+            {
+              "name": "Kubernetes",
+              "usedIn": ["prospace"],
+              "where": "ProSpace",
+              "what": "Platform runtime for OptiTrack services."
+            },
+            {
+              "name": "GitLab CI",
+              "usedIn": ["timepath"],
+              "where": "TimePath",
+              "what": "Set up CI/CD pipelines."
+            },
+            {
+              "name": "Grafana",
+              "usedIn": ["prospace"],
+              "where": "ProSpace",
+              "what": "Diagnosed services, found incident root causes and checked releases while on call."
+            }
+          ]
+        },
+        {
+          "name": "FRONTEND",
+          "servers": [
+            {
+              "name": "Vue.js",
+              "usedIn": ["prospace"],
+              "where": "ProSpace",
+              "what": "Frontend in the OptiTrack stack; this site is Vue too."
+            }
+          ]
+        },
+        {
+          "name": "AI AGENTS",
+          "servers": [
+            {
+              "name": "Claude Code",
+              "usedIn": ["prospace"],
+              "where": "ProSpace",
+              "what": "Daily development with an AI agent: features, refactoring, tests and review, with me owning design and every change that ships."
+            },
+            {
+              "name": "MCP",
+              "usedIn": ["prospace"],
+              "where": "ProSpace",
+              "what": "Set up the agent workflow for the team: rules, prompts, MCP servers and skills, so agents follow our architecture and conventions."
+            }
+          ]
+        }
+      ],
+      "proofLinks": [
+        { "label": "GitHub pollezha", "href": "https://github.com/pollezha", "icon": "external" },
+        { "label": "Source of this site", "href": "https://github.com/pollezha/aboutMe", "icon": "external" }
+      ]
+    },
+    "education": {
+      "eyebrow": "Certificate · HSE University · 2021 – 2025",
+      "title": "HSE University",
+      "subtitle": "Bachelor of Business Informatics · Perm campus · 2025 BSc",
+      "programme": { "label": "PROGRAMME", "value": "38.03.05 Business Informatics" },
+      "format": { "label": "FORMAT", "value": "Full-time · 4 years · 240 credits" },
+      "graduated": { "label": "GRADUATED", "value": "June 2025" },
+      "thesis": { "label": "THESIS", "value": "«Corporate Telegram bot for TimePath employees»" },
+      "teamProjects": {
+        "label": "TEAM PROJECTS",
+        "items": ["HR system for the Perm Krai ambulance service", "IS to optimise business processes"]
+      },
+      "courses": {
+        "label": "COURSES",
+        "items": [
+          "Web application development · excellent",
+          "Corporate information systems",
+          "Machine learning",
+          "Databases · good",
+          "Algorithms and data structures",
+          "Software design and architecture · in English",
+          "Requirements and IS design"
+        ]
+      },
+      "studyWork": {
+        "label": "STUDY + WORK",
+        "items": [
+          "Jul 2024 — joined TimePath while studying (3rd year)",
+          "Jun 2025 — graduated, BSc",
+          "2026 — ProSpace, OptiTrack"
+        ]
+      },
+      "languages": {
+        "label": "LANGUAGES",
+        "items": ["Russian · native", "English · B2", "Czech · B2", "German · A2"]
+      },
+      "proofLinks": [{ "label": "perm.hse.ru", "href": "https://perm.hse.ru", "icon": "external" }]
+    },
+    "contact": {
+      "eyebrow": "Destination · Your team",
+      "title": "Next stop: your team.",
+      "subtitle": ".NET backend developer looking for services with real load. Remote, or relocation in Europe.",
+      "role": { "label": "ROLE", "value": ".NET Backend Developer · {experience} in production" },
+      "status": { "label": "STATUS", "value": "Open to work · remote / relocation" },
+      "basedIn": { "label": "BASED IN", "value": "Serbia · CET · UTC+1" },
+      "languages": { "label": "LANGUAGES", "items": ["EN B2", "CS B2", "DE A2", "RU native"] },
+      "goodFit": {
+        "label": "GOOD FIT IF YOU NEED",
+        "items": [
+          "Microservices on .NET",
+          "Event-driven systems",
+          "Kafka",
+          "SQL performance",
+          "On-call & monitoring",
+          "AI-assisted development"
+        ]
+      },
+      "summaryLink": { "label": "30-second summary", "chapter": "summary" },
+      "contacts": [
+        { "kind": "cv", "label": "Download CV (PDF, EN)", "href": "/cv/Yakov_Polezhaev_CV_EN.pdf" },
+        { "kind": "cv", "label": "Download CV (PDF, RU)", "href": "/cv/Yakov_Polezhaev_CV_RU.pdf" },
+        { "kind": "telegram", "label": "Telegram @poll_ezha", "href": "https://t.me/poll_ezha" },
+        { "kind": "github", "label": "GitHub pollezha", "href": "https://github.com/pollezha" },
+        { "kind": "email", "label": "polezhaev.yasha@gmail.com", "href": "mailto:polezhaev.yasha@gmail.com" }
+      ],
+      "mailbox": {
+        "heading": "Message in a bottle",
+        "text": "Until the mailbox is wired up, the fastest way is Telegram.",
+        "action": { "label": "Write me on Telegram", "href": "https://t.me/poll_ezha" }
+      },
+      "proofLinks": [
+        { "label": "30-second summary", "chapter": "summary" },
+        { "label": "Source of this site", "href": "https://github.com/pollezha/aboutMe", "icon": "external" }
+      ]
+    },
+    "summary": {
+      "eyebrow": "Summary · 30 seconds",
+      "title": "Yakov Polezhaev — .NET backend, open to work",
+      "subtitle": "{experience} in production · Remote or relocation in Europe · EN B2 · Based in Serbia (CET)",
+      "metrics": [
+        {
+          "label": "SHIPMENTS / DAY",
+          "value": "1000+",
+          "note": "through my last module (ProSpace, 2026)",
+          "accent": true
+        },
+        { "label": "FILTER PAGE", "value": "40 s → 2 s", "note": "filtering moved into SQL (TimePath)" },
+        { "kind": "experience", "label": "IN PRODUCTION", "note": "since {since}, two companies" }
+      ],
+      "whatIDo": {
+        "heading": "What I do",
+        "items": [
+          {
+            "result": "Own backend modules end to end",
+            "how": "domain logic, data, messaging, monitoring — ASP.NET Core, EF Core, PostgreSQL"
+          },
+          {
+            "result": "Event-driven systems",
+            "how": "Kafka, RabbitMQ, SignalR; extensible audit logging without touching business code"
+          },
+          {
+            "result": "SQL performance",
+            "how": "PostgreSQL, SQL Server — 40+ s → < 2 s on a filter page"
+          },
+          {
+            "result": "On-call & production",
+            "how": "Grafana, incident root causes, release verification; Docker, Kubernetes, GitLab CI"
+          },
+          {
+            "result": "Build with AI agents every day",
+            "how": "Claude Code; set up the team's agent workflow: rules, prompts, MCP, skills"
+          }
+        ]
+      },
+      "cta": {
+        "contact": { "label": "Contact", "chapter": "contact" },
+        "cv": { "label": "Download CV", "href": "/cv/Yakov_Polezhaev_CV_EN.pdf", "icon": "download" }
+      },
+      "proofLinks": [
+        { "label": "Download CV (PDF, EN)", "href": "/cv/Yakov_Polezhaev_CV_EN.pdf", "icon": "download" },
+        { "label": "Telegram @poll_ezha", "href": "https://t.me/poll_ezha", "icon": "external" }
+      ]
+    },
+    "monitoring": {
+      "eyebrow": "Monitoring · this site, live",
+      "title": "Monitoring",
+      "subtitle": "This site monitors itself. Every click becomes a Kafka event and comes back over SignalR.",
+      "metrics": [
+        { "label": "ON SITE NOW", "note": "live via SignalR" },
+        { "label": "EVENTS TODAY", "note": "topic site.events.v1" },
+        { "label": "API P95", "note": "gateway · last 5 min" },
+        { "label": "ERROR RATE", "note": "5xx · last 5 min" },
+        { "label": "CONSUMER LAG", "note": "group projector" },
+        { "label": "UPTIME", "note": "last 30 days" }
+      ],
+      "clickPath": {
+        "heading": "Path of a click",
+        "steps": [
+          "Your click",
+          "gateway",
+          "events-api",
+          "Kafka",
+          "projector + live-hub",
+          "SignalR",
+          "this board"
+        ]
+      },
+      "observability": {
+        "heading": "Logs · Metrics · Traces",
+        "items": [
+          { "label": "LOGS", "value": "Loki · structured JSON with TraceId · no IP / PII" },
+          { "label": "METRICS", "value": "Prometheus via OTel Collector · RED per service" },
+          {
+            "label": "TRACES",
+            "value": "Tempo · one trace per click: gateway → events-api → Kafka → projector"
+          }
+        ]
+      },
+      "proofLinks": [
+        { "label": "Source of this site", "href": "https://github.com/pollezha/aboutMe", "icon": "external" },
+        { "label": "30-second summary", "chapter": "summary" }
+      ]
+    }
+  }
 }

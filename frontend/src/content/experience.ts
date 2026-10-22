@@ -66,6 +66,22 @@ export function totalExperience(experience: ExperienceEntry[], now = new Date())
   return { years: Math.floor(total / 12), months: total % 12 }
 }
 
+/**
+ * Срок технологии (FR6): объединение периодов ролей из `usedIn`.
+ * Пересечения считаются один раз, неизвестные id и повторы игнорируются.
+ */
+export function serverExperience(
+  usedIn: readonly string[],
+  experience: ExperienceEntry[],
+  now = new Date(),
+): Duration {
+  const ids = new Set(usedIn)
+  return totalExperience(
+    experience.filter((entry) => ids.has(entry.id)),
+    now,
+  )
+}
+
 function years(count: number, lang: ContentLang, plus = ''): string {
   if (lang === 'ru') return `${count}${plus} г.`
   return `${count}${plus} ${count === 1 && !plus ? 'yr' : 'yrs'}`

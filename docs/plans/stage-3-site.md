@@ -34,7 +34,7 @@ Roadmap: docs/plans/roadmap.md, этап 3 (E3-T1…T10) · ADR: 0003 (HTML по
 ## Задачи
 Каждая задача: укладывается в половину контекста, даёт рабочее состояние, один коммит. Тест сначала.
 
-- [ ] T1 — Контент глав в JSON: схема, EN-данные, типы, правила валидатора
+- [x] T1 — Контент глав в JSON: схема, EN-данные, типы, правила валидатора
   - Файлы: `content/schema/content.schema.json` (новые `$defs`: `chapter`, `paragraph`, `bullets`, `rack`,
     `server`, `project`, `course`; поле `chapters` с ключами `profile|prospace|timepath|techstack|education|
     contact|summary`), `content/en.json` (тексты из CV + Figma-окон; серверы Tech stack со ссылкой на

@@ -2,10 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/pollezha/aboutMe/content/schema/content.schema.json",
   "title": "Site content bundle (one language)",
-  "description": "Source of truth for site texts (ADR-0004). Chapters and skills are added in stage 3.",
+  "description": "Source of truth for site texts (ADR-0004). Interface strings (buttons, footer labels, statuses) live in i18n, not here.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["contentVersion", "lang", "profile", "experience"],
+  "required": ["contentVersion", "lang", "profile", "experience", "chapters"],
   "properties": {
     "$schema": { "type": "string" },
     "contentVersion": {
@@ -67,10 +67,53 @@
       "type": "array",
       "minItems": 1,
       "items": { "$ref": "#/$defs/experience" }
+    },
+    "chapters": {
+      "description": "Texts of the eight chapter windows (Figma Window/01…08). Route order, sign icons and the \"Stop N of 6\" prefix are code (src/content/chapters.ts), not content. Chapter texts may contain date tokens that are filled from experience[] at render time and never stored as dates: {since} \"July 2024\" and {sinceShort} \"Jul 2024\" (earliest start), {experience} \"2 yrs 3 mo\" (total), {span} \"2024 – 2026\" (years of all roles), {period} \"Jan – Oct 2026\" (only in a chapter with experienceId)",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "prospace",
+        "timepath",
+        "techstack",
+        "education",
+        "contact",
+        "summary",
+        "monitoring"
+      ],
+      "properties": {
+        "profile": { "$ref": "#/$defs/profileChapter" },
+        "prospace": { "$ref": "#/$defs/prospaceChapter" },
+        "timepath": { "$ref": "#/$defs/timepathChapter" },
+        "techstack": { "$ref": "#/$defs/techstackChapter" },
+        "education": { "$ref": "#/$defs/educationChapter" },
+        "contact": { "$ref": "#/$defs/contactChapter" },
+        "summary": { "$ref": "#/$defs/summaryChapter" },
+        "monitoring": { "$ref": "#/$defs/monitoringChapter" }
+      }
     }
   },
   "$defs": {
     "text": { "type": "string", "minLength": 1, "maxLength": 2000 },
+    "href": {
+      "description": "https URL, mailto: address or a site path (\"/cv/…\"); no \"#\", no protocol-relative \"//host\"",
+      "type": "string",
+      "pattern": "^(https://[^\\s]+|mailto:[^\\s]+|/([^/\\s][^\\s]*)?)$"
+    },
+    "experienceId": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "chapterId": {
+      "enum": [
+        "profile",
+        "prospace",
+        "timepath",
+        "techstack",
+        "education",
+        "contact",
+        "summary",
+        "monitoring"
+      ]
+    },
     "link": {
       "type": "object",
       "additionalProperties": false,
@@ -80,7 +123,7 @@
           "enum": ["github", "telegram", "hh", "linkedin", "email", "cv"]
         },
         "label": { "$ref": "#/$defs/text" },
-        "href": { "type": "string", "pattern": "^(https://|mailto:|/)" }
+        "href": { "$ref": "#/$defs/href" }
       }
     },
     "yearMonth": {
@@ -113,13 +156,438 @@
       "additionalProperties": false,
       "required": ["id", "company", "role", "from", "to"],
       "properties": {
-        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "id": { "$ref": "#/$defs/experienceId" },
         "company": { "$ref": "#/$defs/text" },
         "role": { "$ref": "#/$defs/text" },
         "from": { "$ref": "#/$defs/yearMonth" },
         "to": {
           "description": "Last month in the role (inclusive) or null for the current role",
           "oneOf": [{ "$ref": "#/$defs/yearMonth" }, { "type": "null" }]
+        }
+      }
+    },
+    "hrefProofLink": {
+      "description": "Footer link to an external page or a file",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "href", "icon"],
+      "properties": {
+        "label": { "$ref": "#/$defs/text" },
+        "href": { "$ref": "#/$defs/href" },
+        "icon": { "enum": ["external", "download"] }
+      }
+    },
+    "chapterProofLink": {
+      "description": "Link that opens another chapter window (arrow-right)",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "chapter"],
+      "properties": {
+        "label": { "$ref": "#/$defs/text" },
+        "chapter": { "$ref": "#/$defs/chapterId" }
+      }
+    },
+    "proofLinks": {
+      "description": "Footer \"Proof & links\": one or two links",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "items": {
+        "if": { "type": "object", "properties": { "chapter": true }, "required": ["chapter"] },
+        "then": { "$ref": "#/$defs/chapterProofLink" },
+        "else": { "$ref": "#/$defs/hrefProofLink" }
+      }
+    },
+    "meta": {
+      "description": "Label (eyebrow) + value (strong)",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "value"],
+      "properties": {
+        "label": { "$ref": "#/$defs/text" },
+        "value": { "$ref": "#/$defs/text" }
+      }
+    },
+    "chips": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "items"],
+      "properties": {
+        "label": { "$ref": "#/$defs/text" },
+        "items": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } }
+      }
+    },
+    "bullets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "items"],
+      "properties": {
+        "label": { "$ref": "#/$defs/text" },
+        "items": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } }
+      }
+    },
+    "label": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label"],
+      "properties": { "label": { "$ref": "#/$defs/text" } }
+    },
+    "keyResults": {
+      "description": "Section heading + list of results with how they were achieved",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["heading", "items"],
+      "properties": {
+        "heading": { "$ref": "#/$defs/text" },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["result", "how"],
+            "properties": {
+              "result": { "$ref": "#/$defs/text" },
+              "how": { "$ref": "#/$defs/text" }
+            }
+          }
+        }
+      }
+    },
+    "staticMetric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "value", "note"],
+      "properties": {
+        "label": { "$ref": "#/$defs/text" },
+        "value": { "$ref": "#/$defs/text" },
+        "note": { "$ref": "#/$defs/text" },
+        "accent": { "description": "Tone=accent: stripe in the chapter colour", "type": "boolean" }
+      }
+    },
+    "experienceMetric": {
+      "description": "Total experience computed from experience[]; note may use date tokens",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "label"],
+      "properties": {
+        "kind": { "const": "experience" },
+        "label": { "$ref": "#/$defs/text" },
+        "note": { "$ref": "#/$defs/text" },
+        "accent": { "type": "boolean" }
+      }
+    },
+    "metrics": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [{ "$ref": "#/$defs/staticMetric" }, { "$ref": "#/$defs/experienceMetric" }]
+      }
+    },
+    "profileChapter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eyebrow",
+        "title",
+        "subtitle",
+        "proofLinks",
+        "name",
+        "since",
+        "keyNumbers",
+        "about",
+        "languages",
+        "lookingFor"
+      ],
+      "properties": {
+        "eyebrow": { "$ref": "#/$defs/text" },
+        "title": { "$ref": "#/$defs/text" },
+        "subtitle": { "$ref": "#/$defs/text" },
+        "proofLinks": { "$ref": "#/$defs/proofLinks" },
+        "name": { "$ref": "#/$defs/meta" },
+        "since": { "$ref": "#/$defs/meta" },
+        "keyNumbers": {
+          "description": "Label of the KEY NUMBERS block; the metrics are profile.highlights",
+          "$ref": "#/$defs/label"
+        },
+        "about": { "$ref": "#/$defs/meta" },
+        "languages": { "$ref": "#/$defs/chips" },
+        "lookingFor": { "$ref": "#/$defs/meta" }
+      }
+    },
+    "prospaceChapter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eyebrow",
+        "title",
+        "subtitle",
+        "proofLinks",
+        "experienceId",
+        "metrics",
+        "keyResults",
+        "stack",
+        "team"
+      ],
+      "properties": {
+        "eyebrow": { "$ref": "#/$defs/text" },
+        "title": { "$ref": "#/$defs/text" },
+        "subtitle": { "$ref": "#/$defs/text" },
+        "proofLinks": { "$ref": "#/$defs/proofLinks" },
+        "experienceId": {
+          "description": "experience[].id of the role: source of {period}",
+          "$ref": "#/$defs/experienceId"
+        },
+        "metrics": { "$ref": "#/$defs/metrics" },
+        "keyResults": { "$ref": "#/$defs/keyResults" },
+        "stack": { "$ref": "#/$defs/chips" },
+        "team": { "$ref": "#/$defs/meta" }
+      }
+    },
+    "timepathChapter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eyebrow",
+        "title",
+        "subtitle",
+        "proofLinks",
+        "experienceId",
+        "metricGroups",
+        "keyResults",
+        "stack"
+      ],
+      "properties": {
+        "eyebrow": { "$ref": "#/$defs/text" },
+        "title": { "$ref": "#/$defs/text" },
+        "subtitle": { "$ref": "#/$defs/text" },
+        "proofLinks": { "$ref": "#/$defs/proofLinks" },
+        "experienceId": { "$ref": "#/$defs/experienceId" },
+        "metricGroups": {
+          "description": "Rows of metrics, each with its own label (GRID SIZE, FILTER PAGE LOAD)",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["label", "metrics"],
+            "properties": {
+              "label": { "$ref": "#/$defs/text" },
+              "metrics": { "$ref": "#/$defs/metrics" }
+            }
+          }
+        },
+        "keyResults": { "$ref": "#/$defs/keyResults" },
+        "stack": { "$ref": "#/$defs/chips" }
+      }
+    },
+    "server": {
+      "description": "One technology. Its experience is computed from the roles in usedIn (union of their periods), never stored",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "usedIn", "where", "what"],
+      "properties": {
+        "name": { "$ref": "#/$defs/text" },
+        "usedIn": {
+          "description": "experience[].id of every role where the technology was used",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/experienceId" }
+        },
+        "where": { "$ref": "#/$defs/text" },
+        "what": { "$ref": "#/$defs/text" }
+      }
+    },
+    "rack": {
+      "description": "An area of the stack (BACKEND, DATA, …)",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "servers"],
+      "properties": {
+        "name": { "$ref": "#/$defs/text" },
+        "servers": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/server" } }
+      }
+    },
+    "techstackChapter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eyebrow",
+        "title",
+        "subtitle",
+        "proofLinks",
+        "experienceLabel",
+        "whereLabel",
+        "whatLabel",
+        "racks"
+      ],
+      "properties": {
+        "eyebrow": { "$ref": "#/$defs/text" },
+        "title": { "$ref": "#/$defs/text" },
+        "subtitle": { "$ref": "#/$defs/text" },
+        "proofLinks": { "$ref": "#/$defs/proofLinks" },
+        "experienceLabel": { "$ref": "#/$defs/text" },
+        "whereLabel": { "$ref": "#/$defs/text" },
+        "whatLabel": { "$ref": "#/$defs/text" },
+        "racks": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/rack" } }
+      }
+    },
+    "educationChapter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eyebrow",
+        "title",
+        "subtitle",
+        "proofLinks",
+        "programme",
+        "format",
+        "graduated",
+        "thesis",
+        "teamProjects",
+        "courses",
+        "studyWork",
+        "languages"
+      ],
+      "properties": {
+        "eyebrow": { "$ref": "#/$defs/text" },
+        "title": { "$ref": "#/$defs/text" },
+        "subtitle": { "$ref": "#/$defs/text" },
+        "proofLinks": { "$ref": "#/$defs/proofLinks" },
+        "programme": { "$ref": "#/$defs/meta" },
+        "format": { "$ref": "#/$defs/meta" },
+        "graduated": { "$ref": "#/$defs/meta" },
+        "thesis": { "$ref": "#/$defs/meta" },
+        "teamProjects": { "$ref": "#/$defs/bullets" },
+        "courses": { "$ref": "#/$defs/chips" },
+        "studyWork": { "$ref": "#/$defs/bullets" },
+        "languages": { "$ref": "#/$defs/chips" }
+      }
+    },
+    "contactChapter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eyebrow",
+        "title",
+        "subtitle",
+        "proofLinks",
+        "role",
+        "status",
+        "basedIn",
+        "languages",
+        "goodFit",
+        "summaryLink",
+        "contacts",
+        "mailbox"
+      ],
+      "properties": {
+        "eyebrow": { "$ref": "#/$defs/text" },
+        "title": { "$ref": "#/$defs/text" },
+        "subtitle": { "$ref": "#/$defs/text" },
+        "proofLinks": { "$ref": "#/$defs/proofLinks" },
+        "role": { "$ref": "#/$defs/meta" },
+        "status": {
+          "description": "Label STATUS + text of the status pill",
+          "$ref": "#/$defs/meta"
+        },
+        "basedIn": { "$ref": "#/$defs/meta" },
+        "languages": { "$ref": "#/$defs/chips" },
+        "goodFit": { "$ref": "#/$defs/chips" },
+        "summaryLink": { "$ref": "#/$defs/chapterProofLink" },
+        "contacts": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/link" } },
+        "mailbox": {
+          "description": "Stage 3: card instead of the message form (FR17 arrives in stage 4)",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["heading", "text", "action"],
+          "properties": {
+            "heading": { "$ref": "#/$defs/text" },
+            "text": { "$ref": "#/$defs/text" },
+            "action": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["label", "href"],
+              "properties": {
+                "label": { "$ref": "#/$defs/text" },
+                "href": { "$ref": "#/$defs/href" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "summaryChapter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eyebrow", "title", "subtitle", "proofLinks", "metrics", "whatIDo", "cta"],
+      "properties": {
+        "eyebrow": { "$ref": "#/$defs/text" },
+        "title": { "$ref": "#/$defs/text" },
+        "subtitle": { "$ref": "#/$defs/text" },
+        "proofLinks": { "$ref": "#/$defs/proofLinks" },
+        "metrics": { "$ref": "#/$defs/metrics" },
+        "whatIDo": { "$ref": "#/$defs/keyResults" },
+        "cta": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["contact", "cv"],
+          "properties": {
+            "contact": { "$ref": "#/$defs/chapterProofLink" },
+            "cv": { "$ref": "#/$defs/hrefProofLink" }
+          }
+        }
+      }
+    },
+    "monitoringChapter": {
+      "description": "Texts only: metric values and the status line come from the live board (stage 4)",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eyebrow",
+        "title",
+        "subtitle",
+        "proofLinks",
+        "metrics",
+        "clickPath",
+        "observability"
+      ],
+      "properties": {
+        "eyebrow": { "$ref": "#/$defs/text" },
+        "title": { "$ref": "#/$defs/text" },
+        "subtitle": { "$ref": "#/$defs/text" },
+        "proofLinks": { "$ref": "#/$defs/proofLinks" },
+        "metrics": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["label", "note"],
+            "properties": {
+              "label": { "$ref": "#/$defs/text" },
+              "note": { "$ref": "#/$defs/text" }
+            }
+          }
+        },
+        "clickPath": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["heading", "steps"],
+          "properties": {
+            "heading": { "$ref": "#/$defs/text" },
+            "steps": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/text" } }
+          }
+        },
+        "observability": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["heading", "items"],
+          "properties": {
+            "heading": { "$ref": "#/$defs/text" },
+            "items": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/meta" } }
+          }
         }
       }
     }

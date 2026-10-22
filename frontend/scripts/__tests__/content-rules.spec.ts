@@ -3,26 +3,9 @@ import schema from '../../../content/schema/content.schema.json'
 import en from '../../../content/en.json'
 import { validateContent, validateContentFile } from '../content-rules.ts'
 
-function validContent() {
-  return {
-    contentVersion: '2026-10-20T00:00:00Z',
-    lang: 'en',
-    profile: {
-      name: 'Yakov Polezhaev',
-      role: '.NET Backend Developer',
-      status: 'Open to work',
-      workFormat: 'Remote / relocation',
-      location: 'Based in Serbia',
-      locationShort: 'Serbia',
-      highlights: [
-        { label: 'A', value: '1', note: 'a' },
-        { label: 'B', value: '2', note: 'b' },
-        { kind: 'experience', label: 'C' },
-      ],
-      links: [{ kind: 'github', label: 'GitHub', href: 'https://github.com/pollezha' }],
-    },
-    experience: [{ id: 'a', company: 'A', role: 'R', from: '2024-07', to: null }],
-  }
+// Опубликованный контент как валидная основа: каждый тест портит одно поле.
+function validContent(): typeof en {
+  return JSON.parse(JSON.stringify(en))
 }
 
 describe('validateContent', () => {
@@ -155,5 +138,144 @@ describe('validateContentFile', () => {
     const issues = validateContentFile('ru.json', JSON.stringify(validContent()), schema)
 
     expect(issues).toEqual([{ path: '/lang', message: 'must match file name "ru"' }])
+  })
+})
+
+describe('validateContent: chapters', () => {
+  type Loose = Record<string, unknown>
+  function chapters(content: ReturnType<typeof validContent>) {
+    return content.chapters as unknown as Record<string, Loose>
+  }
+  function firstServer(content: ReturnType<typeof validContent>) {
+    return content.chapters.techstack.racks[0]!.servers[0]! as Loose
+  }
+
+  it('requires every chapter of the island', () => {
+    const content = validContent()
+    delete chapters(content).monitoring
+
+    expect(validateContent(content, schema)).toContainEqual({
+      path: '/chapters',
+      message: "must have required property 'monitoring'",
+    })
+  })
+
+  it('rejects a chapter without a title', () => {
+    const content = validContent()
+    delete chapters(content).prospace!.title
+
+    expect(validateContent(content, schema)).toContainEqual({
+      path: '/chapters/prospace',
+      message: "must have required property 'title'",
+    })
+  })
+
+  it.each(['[ADD]', '[ADD: a fourth metric]'])(
+    'rejects placeholder %j deep inside a chapter and names the field',
+    (placeholder) => {
+      const content = validContent()
+      content.chapters.prospace.keyResults.items[1]!.how = placeholder
+
+      expect(validateContent(content, schema)).toEqual([
+        {
+          path: '/chapters/prospace/keyResults/items/1/how',
+          message: 'placeholder [ADD] is not allowed in published content',
+        },
+      ])
+    },
+  )
+
+  it('rejects a server that refers to an unknown experience id', () => {
+    const content = validContent()
+    firstServer(content).usedIn = ['timepath', 'acme']
+
+    expect(validateContent(content, schema)).toEqual([
+      {
+        path: '/chapters/techstack/racks/0/servers/0/usedIn/1',
+        message: 'unknown experience id "acme"',
+      },
+    ])
+  })
+
+  it('requires at least one usedIn entry on a server', () => {
+    const content = validContent()
+    firstServer(content).usedIn = []
+
+    expect(validateContent(content, schema).map((issue) => issue.path)).toContain(
+      '/chapters/techstack/racks/0/servers/0/usedIn',
+    )
+  })
+
+  it('rejects a chapter period bound to an unknown experience id', () => {
+    const content = validContent()
+    content.chapters.prospace.experienceId = 'acme'
+
+    expect(validateContent(content, schema)).toContainEqual({
+      path: '/chapters/prospace/experienceId',
+      message: 'unknown experience id "acme"',
+    })
+  })
+
+  it.each(['#', '//evil.example', 'http://x', 'javascript:alert(1)', 'prospace.tech'])(
+    'rejects proof link href %j',
+    (href) => {
+      const content = validContent()
+      const link = content.chapters.prospace.proofLinks[0]! as Loose
+      link.href = href
+
+      expect(validateContent(content, schema).map((issue) => issue.path)).toContain(
+        '/chapters/prospace/proofLinks/0/href',
+      )
+    },
+  )
+
+  it.each(['https://prospace.tech', '/cv/Yakov_Polezhaev_CV_EN.pdf', 'mailto:a@b.c'])(
+    'accepts proof link href %j',
+    (href) => {
+      const content = validContent()
+      const link = content.chapters.prospace.proofLinks[0]! as Loose
+      link.href = href
+
+      expect(validateContent(content, schema)).toEqual([])
+    },
+  )
+
+  it('rejects an unknown date token in chapter text', () => {
+    const content = validContent()
+    content.chapters.profile.subtitle = 'on the road since {sinse}'
+
+    expect(validateContent(content, schema)).toEqual([
+      {
+        path: '/chapters/profile/subtitle',
+        message:
+          'unknown token {sinse}; allowed: {since}, {sinceShort}, {experience}, {period}, {span}',
+      },
+    ])
+  })
+
+  it('rejects {period} in a chapter that is not bound to an experience', () => {
+    const content = validContent()
+    content.chapters.techstack.eyebrow = 'Data center · {period}'
+
+    expect(validateContent(content, schema)).toEqual([
+      {
+        path: '/chapters/techstack/eyebrow',
+        message: '{period} needs experienceId on the chapter',
+      },
+    ])
+  })
+})
+
+describe('published content/en.json', () => {
+  const text = JSON.stringify(en)
+
+  it('has no placeholders and no "#" links', () => {
+    expect(text).not.toMatch(/\[ADD/)
+    expect(text).not.toContain('"#"')
+  })
+
+  it('binds the role chapters to their experience entries', () => {
+    expect(en.chapters.prospace.experienceId).toBe('prospace')
+    expect(en.chapters.timepath.experienceId).toBe('timepath')
   })
 })

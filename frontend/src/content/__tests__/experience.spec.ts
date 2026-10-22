@@ -4,6 +4,7 @@ import {
   experienceBadge,
   formatExperience,
   resolveHighlights,
+  serverExperience,
   sinceLabel,
   totalExperience,
 } from '../experience'
@@ -100,6 +101,50 @@ describe('sinceLabel', () => {
 
   it('names the earliest start month in Russian', () => {
     expect(sinceLabel(career, 'ru')).toBe('с июля 2024')
+  })
+})
+
+describe('serverExperience', () => {
+  const overlapping: ExperienceEntry[] = [
+    { id: 'a', company: 'A', role: 'R', from: '2024-01', to: '2024-12' },
+    { id: 'b', company: 'B', role: 'R', from: '2024-07', to: '2025-06' },
+    { id: 'c', company: 'C', role: 'R', from: '2026-01', to: null },
+  ]
+
+  it('counts only the roles the server was used in', () => {
+    expect(serverExperience(['timepath'], career, NOW)).toEqual({ years: 1, months: 6 })
+    expect(serverExperience(['prospace'], career, NOW)).toEqual({ years: 0, months: 9 })
+  })
+
+  it('joins the intervals of several roles up to the current month', () => {
+    expect(serverExperience(['timepath', 'prospace'], career, NOW)).toEqual({
+      years: 2,
+      months: 3,
+    })
+  })
+
+  it('counts overlapping roles once', () => {
+    expect(serverExperience(['a', 'b'], overlapping, NOW)).toEqual({ years: 1, months: 6 })
+  })
+
+  it('ignores the order and duplicates of usedIn', () => {
+    expect(serverExperience(['b', 'a', 'b'], overlapping, NOW)).toEqual({ years: 1, months: 6 })
+  })
+
+  it('returns zero for roles that are not in experience[]', () => {
+    expect(serverExperience(['unknown'], career, NOW)).toEqual({ years: 0, months: 0 })
+  })
+
+  it('computes every published server from its roles', () => {
+    const content = en as ContentBundle
+    const servers = content.chapters.techstack.racks.flatMap((rack) => rack.servers)
+    const csharp = servers.find((server) => server.name === 'C# / .NET')
+
+    expect(servers.length).toBeGreaterThan(0)
+    expect(serverExperience(csharp!.usedIn, content.experience, NOW)).toEqual({
+      years: 2,
+      months: 3,
+    })
   })
 })
 
