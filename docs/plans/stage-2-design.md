@@ -72,7 +72,7 @@ danger в Night, 30-sec summary вне панели, дата стажа, пле
   - Готово, когда: тесты зелёные.
   - Зависит от: T3
 
-- [ ] T5 — Route/Stop, BottomBar, Hero/FirstScreen, Card/Metric + расширение контента
+- [x] T5 — Route/Stop, BottomBar, Hero/FirstScreen, Card/Metric + расширение контента
   - Файлы: `RouteStop.vue`, `BottomBar.vue` (desktop | compact; на < 768 — fixed, 72 px, номера с aria-label),
     `HeroCard.vue` (desktop | mobile; стаж из дат), `MetricCard.vue`; `content/schema/content.schema.json` +
     `content/en.json`: `profile.location`, `profile.highlights[3]`, `experience[]` с датами;
