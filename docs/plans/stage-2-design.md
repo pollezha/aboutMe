@@ -62,7 +62,7 @@ danger в Night, 30-sec summary вне панели, дата стажа, пле
     `#[0-9a-f]{3,6}`).
   - Зависит от: T1, T2
 
-- [ ] T4 — Dialog + Window/Shell
+- [x] T4 — Dialog + Window/Shell
   - Файлы: `frontend/src/ui/Dialog.vue` (native `<dialog>` + `showModal()`, Esc, возврат фокуса,
     `aria-labelledby`, backdrop, без transition при reduced-motion), `ChapterWindow.vue` (eyebrow с акцентом
     главы, заголовок, подзаголовок, close, slot, футер Proof & links, prev/next; desktop ≤ `--size-window-max`,
