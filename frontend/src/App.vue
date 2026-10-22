@@ -13,8 +13,8 @@ import { resolveHighlights } from './content/experience'
 import type { ContentBundle } from './content/types'
 import StaticMap from './fallback2d/StaticMap.vue'
 import { useLocaleSync } from './i18n'
-import { detectWebGL2, shouldUse3D } from './scene/shouldUse3D'
-import { isTheme, useUiStore } from './stores/ui'
+import { MIN_3D_WIDTH, detectWebGL2, shouldUse3D } from './scene/shouldUse3D'
+import { isTheme, useUiStore, type Theme } from './stores/ui'
 import BottomBar, { type BottomBarStop } from './ui/BottomBar.vue'
 import ChapterWindow from './ui/ChapterWindow.vue'
 import HeroCard from './ui/HeroCard.vue'
@@ -29,19 +29,26 @@ const breakpoint = useBreakpoint()
 // Снимок контента EN; RU-контент и загрузка из content-api — этап 3.
 const content = en as ContentBundle
 
-// ?theme=night переопределяет сохранённую тему (ссылки на конкретную тему, скриншоты).
+// ?theme=night переопределяет сохранённую тему (ссылки на конкретную тему, скриншоты), но не запоминается.
 if (typeof window !== 'undefined') {
   const queryTheme = new URLSearchParams(window.location.search).get('theme')
-  if (isTheme(queryTheme)) ui.setTheme(queryTheme)
+  if (isTheme(queryTheme)) ui.previewTheme(queryTheme)
 }
 
 watch(() => ui.theme, ui.applyTheme, { immediate: true })
+
+// Тот же предикат, что у CSS (width < 768px) и useBreakpoint: matchMedia, а не innerWidth
+// (innerWidth включает полосу прокрутки и расходится с медиа-запросами на её ширину).
+function isWide() {
+  if (typeof window.matchMedia !== 'function') return window.innerWidth >= MIN_3D_WIDTH
+  return window.matchMedia(`(min-width: ${MIN_3D_WIDTH}px)`).matches
+}
 
 function detectMode() {
   if (typeof window === 'undefined') return
   const nav = navigator as Navigator & { deviceMemory?: number }
   const use3D = shouldUse3D({
-    width: window.innerWidth,
+    width: isWide() ? MIN_3D_WIDTH : 0,
     webgl: detectWebGL2(),
     deviceMemory: nav.deviceMemory,
     userChoice: null,
@@ -91,7 +98,9 @@ const stops = computed<BottomBarStop[]>(() =>
   })),
 )
 
-const themeLabel = computed(() => `Theme: ${ui.theme}`)
+// Три темы по кругу — не toggle, поэтому без aria-pressed: в имени текущая и следующая тема.
+const NEXT_THEME: Record<Theme, Theme> = { day: 'evening', evening: 'night', night: 'day' }
+const themeLabel = computed(() => `Theme: ${ui.theme}. Switch to ${NEXT_THEME[ui.theme]}`)
 
 function open(id: string) {
   if (isChapterId(id)) ui.openChapter(id)
@@ -108,32 +117,61 @@ const nextLink = computed(() => {
   return next ? { number: next.index, title: next.title } : undefined
 })
 
-function onWindowOpen(value: boolean) {
-  if (!value) ui.closeWindow()
+// Окно ↔ URL-хэш (#prospace) и история (design §4 «Окна»): ссылку на главу можно отправить,
+// «Назад» закрывает окно. Открытие из UI — новая запись истории с state.chapter, prev/next — замена
+// этой записи. Запись, открытую по ссылке (#contact), считаем чужой: закрытие лишь убирает хэш.
+function ownsHistoryEntry() {
+  return typeof (history.state as { chapter?: unknown } | null)?.chapter === 'string'
 }
 
-// Окно ↔ URL-хэш (#prospace): ссылку на главу можно отправить.
-function openFromHash() {
-  const id = window.location.hash.slice(1)
-  if (isChapterId(id)) ui.openChapter(id as ChapterId)
+function urlWith(id: ChapterId | null) {
+  const { pathname, search } = window.location
+  return `${pathname}${search}${id ? `#${id}` : ''}`
+}
+
+function onWindowOpen(value: boolean) {
+  if (value) return
+  ui.closeWindow()
+  // Своя запись — уходим с неё; окно уже закрыто, popstate придёт на запись без главы.
+  if (ownsHistoryEntry()) history.back()
 }
 
 watch(
   () => ui.openWindow,
-  (id) => {
-    const { pathname, search, hash } = window.location
-    const next = id ? `#${id}` : ''
-    if (hash !== next) history.replaceState(history.state, '', `${pathname}${search}${next}`)
+  (id, previous) => {
+    const target = id ? `#${id}` : ''
+    if (window.location.hash === target) return
+    if (id && !previous) {
+      history.pushState({ chapter: id }, '', urlWith(id))
+    } else if (id) {
+      const state = ownsHistoryEntry() ? { chapter: id } : history.state
+      history.replaceState(state, '', urlWith(id))
+    } else if (!ownsHistoryEntry()) {
+      // Своя запись снимается history.back() в onWindowOpen; чужая — только теряет хэш.
+      history.replaceState(history.state, '', urlWith(null))
+    }
   },
 )
 
+/** Хэш главы открывает её окно; пустой или чужой хэш закрывает окно (Назад, ручная правка URL). */
+function syncFromLocation() {
+  const id = window.location.hash.slice(1)
+  if (isChapterId(id)) {
+    if (ui.openWindow !== id) ui.openChapter(id)
+  } else if (ui.openWindow) {
+    ui.closeWindow()
+  }
+}
+
 onMounted(() => {
-  openFromHash()
-  window.addEventListener('hashchange', openFromHash)
+  syncFromLocation()
+  window.addEventListener('popstate', syncFromLocation)
+  window.addEventListener('hashchange', syncFromLocation)
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('hashchange', openFromHash)
+  window.removeEventListener('popstate', syncFromLocation)
+  window.removeEventListener('hashchange', syncFromLocation)
 })
 </script>
 
@@ -156,8 +194,7 @@ onBeforeUnmount(() => {
           v-if="layout === 'overlay'"
           class="top-bar__rotate"
           icon="rotate"
-          label="Rotate map"
-          title="Этап 3"
+          label="Rotate map (coming soon)"
           disabled
         />
         <IconButton
@@ -167,15 +204,13 @@ onBeforeUnmount(() => {
           :pressed="ui.motionPaused"
           @click="ui.toggleMotion()"
         />
-        <template v-if="layout === 'stacked'">
-          <IconButton
-            icon="theme"
-            :label="themeLabel"
-            :pressed="ui.theme === 'night'"
-            @click="ui.cycleTheme()"
-          />
-          <IconButton icon="lang" label="Language" @click="ui.toggleLang()" />
-        </template>
+        <!-- Кнопка языка — с RU-контентом (этап 3, FR8). -->
+        <IconButton
+          v-if="layout === 'stacked'"
+          icon="theme"
+          :label="themeLabel"
+          @click="ui.cycleTheme()"
+        />
       </div>
     </header>
 
@@ -197,8 +232,8 @@ onBeforeUnmount(() => {
       :variant="barVariant"
       :stops="stops"
       :profile="barProfile"
-      :theme-pressed="ui.theme === 'night'"
       :theme-label="themeLabel"
+      :show-lang="false"
       @open="open"
       @contact="ui.openChapter('contact')"
       @monitoring="ui.openChapter('monitoring')"
@@ -329,7 +364,7 @@ onBeforeUnmount(() => {
 
 .app--stacked.app--mobile {
   gap: var(--space-3);
-  padding-bottom: calc(72px + var(--space-4));
+  padding-bottom: calc(72px + var(--space-4) + env(safe-area-inset-bottom));
 }
 
 .app--stacked .top-bar,
@@ -358,7 +393,7 @@ onBeforeUnmount(() => {
   --route-stop-width: 72px;
 }
 
-/* В колонке бар без профиля и переключателей: тема и язык — в TopBar (Figma Tablet 34:709). */
+/* В колонке бар без профиля и переключателей: тема (и язык с этапа 3) — в TopBar (Figma Tablet 34:709). */
 .app--stacked .app__bar :deep(.bottom-bar__profile),
 .app--stacked .app__bar :deep(.bottom-bar__actions .icon-btn) {
   display: none;

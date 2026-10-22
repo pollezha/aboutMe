@@ -2,15 +2,14 @@
 <html lang="en" data-theme="day">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Yakov Polezhaev — .NET Backend Developer</title>
     <meta
       name="description"
       content=".NET Backend Developer · Open to work, remote or relocation · Based in Serbia, CET. 1000+ shipments/day through my last module; filter page 40 s → 2 s."
     />
-    <!-- theme-color: palette day bg/canvas, night bg/canvas (src/theme/palette.ts) -->
-    <meta name="theme-color" content="#5FB8E6" />
-    <meta name="theme-color" content="#0E1A33" media="(prefers-color-scheme: dark)" />
+    <!-- theme-color: palette day bg/canvas; applyTheme (src/stores/ui.ts) keeps it in sync with the theme -->
+    <meta name="theme-color" id="theme-color" content="#5FB8E6" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/favicon-192.png" />
     <link rel="manifest" href="/site.webmanifest" />

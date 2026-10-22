@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import BottomBar, { type BottomBarStop } from '../BottomBar.vue'
+import barSource from '../BottomBar.vue?raw'
 
 const stops: BottomBarStop[] = [
   { id: 'profile', index: '01', title: 'Profile', subtitle: 'About me', state: 'visited' },
@@ -45,8 +46,15 @@ describe('BottomBar', () => {
     ])
   })
 
-  it('keeps every control reachable by Tab: stops first, then Contact, Monitoring, theme, language', () => {
+  it('hides the language toggle until Russian content ships (stage 3)', () => {
     const wrapper = mountBar()
+
+    expect(wrapper.find('button[aria-label="Language"]').exists()).toBe(false)
+    expect(wrapper.findAll('button')).toHaveLength(9)
+  })
+
+  it('keeps every control reachable by Tab: stops first, then Contact, Monitoring, theme, language', () => {
+    const wrapper = mountBar({ showLang: true })
 
     const buttons = wrapper.findAll('button')
     expect(buttons).toHaveLength(10)
@@ -54,7 +62,7 @@ describe('BottomBar', () => {
       buttons.every((b) => b.attributes('tabindex') !== '-1' && !b.attributes('disabled')),
     ).toBe(true)
     const names = buttons.slice(6).map((b) => b.attributes('aria-label') ?? b.text())
-    expect(names).toEqual(['Contact', 'Monitoring', 'Dark theme', 'Language'])
+    expect(names).toEqual(['Contact', 'Monitoring', 'Theme', 'Language'])
   })
 
   it('emits open(id) synchronously when a stop is clicked', () => {
@@ -72,7 +80,7 @@ describe('BottomBar', () => {
   })
 
   it('emits contact, monitoring, toggleTheme and toggleLang from the actions', async () => {
-    const wrapper = mountBar()
+    const wrapper = mountBar({ showLang: true })
     const actions = wrapper.findAll('button').slice(6)
 
     for (const action of actions) await action.trigger('click')
@@ -83,10 +91,22 @@ describe('BottomBar', () => {
     expect(wrapper.emitted('toggleLang')).toHaveLength(1)
   })
 
-  it('reflects the dark theme in aria-pressed on the theme toggle', () => {
-    const wrapper = mountBar({ themePressed: true })
+  it('names the theme button by the given label without aria-pressed (three themes, not a toggle)', () => {
+    const wrapper = mountBar({ themeLabel: 'Theme: day. Switch to evening' })
 
-    expect(wrapper.get('button[aria-label="Dark theme"]').attributes('aria-pressed')).toBe('true')
+    const theme = wrapper.get('button[aria-label="Theme: day. Switch to evening"]')
+    expect(theme.attributes('aria-pressed')).toBeUndefined()
+  })
+
+  it('uses range media queries and keeps the phone bar clear of the home indicator', () => {
+    expect(barSource).not.toMatch(/(min|max)-width: \d+px\)/)
+    expect(barSource).toContain('@media (width < 1366px)')
+    const phone = /@media \(width < 768px\)\s*\{\s*\.bottom-bar--auto\s*\{([^}]*)\}/.exec(
+      barSource,
+    )?.[1]
+    expect(phone).toBeDefined()
+    expect(phone).toContain('padding-bottom: calc(var(--space-1) + env(safe-area-inset-bottom))')
+    expect(phone).toMatch(/min-height: 72px/)
   })
 
   it('shows the profile without years of experience', () => {

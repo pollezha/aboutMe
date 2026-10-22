@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, useId } from 'vue'
+import { computed, nextTick, ref, useId, watch } from 'vue'
 import BaseButton from './BaseButton.vue'
 import Dialog from './Dialog.vue'
 import Icon from './Icon.vue'
@@ -43,6 +43,18 @@ const emit = defineEmits<{
 }>()
 
 const titleId = useId()
+const titleEl = ref<HTMLElement | null>(null)
+const bodyEl = ref<HTMLElement | null>(null)
+
+// prev/next меняют главу в том же окне: фокус и прокрутка — как у только что открытого окна.
+watch(
+  () => props.chapter,
+  async () => {
+    await nextTick()
+    if (bodyEl.value) bodyEl.value.scrollTop = 0
+    titleEl.value?.focus()
+  },
+)
 const style = computed(() => `--chapter: var(--chapter-${props.chapter})`)
 
 function requestClose() {
@@ -65,13 +77,15 @@ function requestClose() {
       <header class="window__header">
         <div class="window__heading">
           <p class="window__eyebrow t-label-eyebrow">{{ eyebrow }}</p>
-          <h2 :id="titleId" class="window__title t-heading-window">{{ title }}</h2>
+          <h2 :id="titleId" ref="titleEl" tabindex="-1" class="window__title t-heading-window">
+            {{ title }}
+          </h2>
           <p v-if="subtitle" class="window__subtitle t-body-default">{{ subtitle }}</p>
         </div>
         <IconButton icon="close" :label="closeLabel" @click="requestClose" />
       </header>
 
-      <div class="window__body">
+      <div ref="bodyEl" class="window__body">
         <slot />
       </div>
 
@@ -182,7 +196,7 @@ function requestClose() {
   gap: var(--space-3);
 }
 
-@media (max-width: 767px) {
+@media (width < 768px) {
   .chapter-window {
     width: 100%;
     max-width: none;
@@ -196,7 +210,7 @@ function requestClose() {
 }
 
 /* Скругление и тень — только у плавающего окна; на mobile окно на весь экран. */
-@media (min-width: 768px) {
+@media (width >= 768px) {
   .window {
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-panel);

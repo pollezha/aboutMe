@@ -28,8 +28,8 @@ withDefaults(
     profile: BottomBarProfile
     /** Без значения — по ширине окна: ≥ 1366 desktop, 768–1365 compact, < 768 — 2D-бар внизу. */
     variant?: 'desktop' | 'compact'
-    /** Тёмная тема включена → aria-pressed у переключателя темы. */
-    themePressed?: boolean
+    /** Кнопка языка — только когда есть RU-контент (этап 3, FR8). */
+    showLang?: boolean
     contactLabel?: string
     monitoringLabel?: string
     themeLabel?: string
@@ -37,10 +37,10 @@ withDefaults(
   }>(),
   {
     variant: undefined,
-    themePressed: false,
+    showLang: false,
     contactLabel: 'Contact',
     monitoringLabel: 'Monitoring',
-    themeLabel: 'Dark theme',
+    themeLabel: 'Theme',
     langLabel: 'Language',
   },
 )
@@ -84,13 +84,8 @@ const emit = defineEmits<{
     <div class="bottom-bar__actions">
       <BaseButton variant="primary" @click="emit('contact')">{{ contactLabel }}</BaseButton>
       <BaseButton variant="ghost" @click="emit('monitoring')">{{ monitoringLabel }}</BaseButton>
-      <IconButton
-        icon="theme"
-        :label="themeLabel"
-        :pressed="themePressed"
-        @click="emit('toggleTheme')"
-      />
-      <IconButton icon="lang" :label="langLabel" @click="emit('toggleLang')" />
+      <IconButton icon="theme" :label="themeLabel" @click="emit('toggleTheme')" />
+      <IconButton v-if="showLang" icon="lang" :label="langLabel" @click="emit('toggleLang')" />
     </div>
   </nav>
 </template>
@@ -130,7 +125,7 @@ const emit = defineEmits<{
   --route-stop-width: 88px;
 }
 
-@media (max-width: 1365px) {
+@media (width < 1366px) {
   .bottom-bar--auto {
     --bar-height: 104px;
     --bar-px: var(--space-5);
@@ -201,7 +196,7 @@ const emit = defineEmits<{
 }
 
 /* < 768: 2D-бар 72 px внизу экрана (Screens/Phone 56:1408); Contact/Monitoring — в Hero, тема/язык — в TopBar. */
-@media (max-width: 767px) {
+@media (width < 768px) {
   .bottom-bar--auto {
     --bar-height: 72px;
     --bar-px: var(--space-3);
@@ -209,6 +204,10 @@ const emit = defineEmits<{
     --route-stop-circle: 44px;
     --route-stop-width: 56px;
 
+    /* Высота растёт на safe-area: бар не уходит под индикатор «домой» (viewport-fit=cover). */
+    height: auto;
+    min-height: 72px;
+    padding-bottom: calc(var(--space-1) + env(safe-area-inset-bottom));
     position: fixed;
     right: 0;
     bottom: 0;

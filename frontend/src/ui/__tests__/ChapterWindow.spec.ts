@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import ChapterWindow from '../ChapterWindow.vue'
 import windowSource from '../ChapterWindow.vue?raw'
 
@@ -115,8 +116,35 @@ describe('ChapterWindow', () => {
     expect(w.emitted('close')).toHaveLength(1)
   })
 
+  it('moves focus to the new title and scrolls the body to the top when the chapter changes', async () => {
+    const w = mountWindow()
+    const body = w.get('.window__body').element
+    body.scrollTop = 120
+
+    await w.setProps({ chapter: 'timepath', number: '03', title: 'TimePath' })
+    await nextTick()
+
+    const title = w.get('h2')
+    expect(title.text()).toBe('TimePath')
+    expect(title.attributes('tabindex')).toBe('-1')
+    expect(document.activeElement).toBe(title.element)
+    expect(body.scrollTop).toBe(0)
+  })
+
   it('goes full screen on mobile and respects reduced motion', () => {
-    expect(windowSource).toMatch(/@media \(max-width: 767px\)/)
+    const mobile = /@media \(width < 768px\)\s*\{\s*\.chapter-window\s*\{([^}]*)\}/.exec(
+      windowSource,
+    )?.[1]
+    expect(mobile).toBeDefined()
+    expect(mobile).toMatch(/width: 100%/)
+    expect(mobile).toMatch(/max-width: none/)
+    expect(mobile).toMatch(/height: 100dvh/)
+    expect(mobile).toMatch(/margin: 0/)
+    // Скругление и тень — только у плавающего окна.
+    expect(windowSource).toMatch(
+      /@media \(width >= 768px\)\s*\{\s*\.window\s*\{[^}]*border-radius: var\(--radius-lg\)/,
+    )
+    expect(windowSource).not.toMatch(/(min|max)-width: \d+px\)/)
     expect(windowSource).toContain('prefers-reduced-motion')
   })
 })

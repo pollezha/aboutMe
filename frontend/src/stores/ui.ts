@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { ChapterId } from '../content/chapters'
+import { palette } from '../theme/palette'
 
 export type Lang = 'en' | 'ru'
 export type Theme = 'day' | 'evening' | 'night'
@@ -53,12 +54,24 @@ export const useUiStore = defineStore('ui', () => {
     save(KEY.theme, next)
   }
 
+  /** Тема из ссылки (?theme=night): показываем, но не запоминаем как выбор пользователя. */
+  function previewTheme(next: Theme) {
+    theme.value = next
+  }
+
   function cycleTheme() {
     setTheme(THEMES[(THEMES.indexOf(theme.value) + 1) % THEMES.length] ?? 'day')
   }
 
+  /** Тема → <html data-theme>, color-scheme (полосы прокрутки, формы) и <meta name="theme-color">. */
   function applyTheme() {
-    if (typeof document !== 'undefined') document.documentElement.dataset.theme = theme.value
+    if (typeof document === 'undefined') return
+    const root = document.documentElement
+    root.dataset.theme = theme.value
+    root.style.colorScheme = theme.value === 'night' ? 'dark' : 'light'
+    document
+      .querySelector<HTMLMetaElement>('meta#theme-color')
+      ?.setAttribute('content', palette[theme.value]['bg/canvas'])
   }
 
   function setLang(next: Lang) {
@@ -97,6 +110,7 @@ export const useUiStore = defineStore('ui', () => {
     activeStop,
     openWindow,
     setTheme,
+    previewTheme,
     cycleTheme,
     applyTheme,
     setLang,

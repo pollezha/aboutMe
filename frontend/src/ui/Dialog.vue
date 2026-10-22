@@ -51,9 +51,18 @@ function onCancel(event: Event) {
   requestClose()
 }
 
-// Сам <dialog> без отступов: клик с target === dialog — это клик по ::backdrop.
+// Сам <dialog> без отступов: target === dialog — это ::backdrop. Закрываем, только если и нажатие,
+// и отпускание были на подложке: выделение текста, начатое внутри окна, его не закрывает.
+let pressedOnBackdrop = false
+
+function onPointerDown(event: PointerEvent) {
+  pressedOnBackdrop = event.target === dialog.value
+}
+
 function onClick(event: MouseEvent) {
-  if (event.target === dialog.value) requestClose()
+  const backdrop = pressedOnBackdrop && event.target === dialog.value
+  pressedOnBackdrop = false
+  if (backdrop) requestClose()
 }
 
 watch(
@@ -79,6 +88,7 @@ onBeforeUnmount(() => {
     :aria-labelledby="labelledBy"
     :aria-describedby="describedBy"
     @cancel="onCancel"
+    @pointerdown="onPointerDown"
     @click="onClick"
   >
     <slot />

@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { beforeAll, describe, expect, it } from 'vitest'
 import { build } from 'vite'
+import { palette } from '../theme/palette'
 
 // @types/node is not a project dependency, so fs is typed locally and imported by a non-literal specifier.
 type Fs = {
@@ -66,13 +67,20 @@ describe('built index.html (FR11, D12)', () => {
     expect(attr(html, /<meta name="twitter:image" content="([^"]+)"/)).toBe('/og.png')
   })
 
-  it('links the favicon, touch icon, manifest and day/night theme colors', () => {
+  it('links the favicon, touch icon, manifest and one theme-color the app keeps in sync', () => {
     expect(html).toMatch(/<link rel="icon" href="\/favicon\.svg" type="image\/svg\+xml"/)
     expect(html).toMatch(/<link rel="apple-touch-icon" href="\/favicon-192\.png"/)
     expect(html).toMatch(/<link rel="manifest" href="\/site\.webmanifest"/)
-    expect(html).toMatch(/<meta name="theme-color" content="#[0-9A-F]{6}" \/?>/)
-    expect(html).toMatch(
-      /<meta name="theme-color" content="#[0-9A-F]{6}" media="\(prefers-color-scheme: dark\)"/,
+    // Тема сайта не следует prefers-color-scheme: applyTheme обновляет этот тег (src/stores/ui.ts).
+    expect(html.match(/<meta name="theme-color"/g)).toHaveLength(1)
+    expect(html).toContain(
+      `<meta name="theme-color" id="theme-color" content="${palette.day['bg/canvas']}" />`,
+    )
+  })
+
+  it('lets the layout reach under the notch and home indicator', () => {
+    expect(attr(html, /<meta name="viewport" content="([^"]+)"/)).toBe(
+      'width=device-width, initial-scale=1, viewport-fit=cover',
     )
   })
 

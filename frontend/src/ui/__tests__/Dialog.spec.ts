@@ -88,9 +88,19 @@ describe('Dialog', () => {
     await w.get('#inside').trigger('click')
     expect(w.emitted('update:open')).toBeUndefined()
 
+    await w.get('dialog').trigger('pointerdown')
     await w.get('dialog').trigger('click')
     expect(w.emitted('update:open')).toEqual([[false]])
     expect(w.emitted('close')).toHaveLength(1)
+  })
+
+  it('stays open when a drag starts inside and ends on the backdrop', async () => {
+    const w = mountDialog(true)
+
+    await w.get('#inside').trigger('pointerdown')
+    await w.get('dialog').trigger('click')
+
+    expect(w.emitted('update:open')).toBeUndefined()
   })
 
   it('moves focus inside on open and returns it to the opener on close', async () => {

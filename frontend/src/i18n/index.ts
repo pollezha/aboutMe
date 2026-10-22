@@ -17,7 +17,7 @@ export function createAppI18n() {
 
 /**
  * Держит глобальную локаль i18n в соответствии с `ui.lang`.
- * Источник правды — стор: смена `setLang` меняет `i18n.global.locale` и `<html lang>`.
+ * Источник правды — стор: смена `setLang` меняет `i18n.global.locale`.
  * Вызывается один раз в корневом компоненте.
  */
 export function useLocaleSync() {
@@ -27,7 +27,8 @@ export function useLocaleSync() {
     () => ui.lang,
     (lang) => {
       locale.value = lang
-      if (typeof document !== 'undefined') document.documentElement.lang = lang
+      // TODO(этап 3, FR8): выставлять <html lang> вместе с RU-контентом. Пока контент только EN,
+      // <html lang="en"> из index.html не меняем — иначе скринридер прочтёт английский текст как русский.
     },
     { immediate: true },
   )

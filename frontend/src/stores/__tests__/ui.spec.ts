@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { palette } from '../../theme/palette'
 import { useUiStore } from '../ui'
 
 function freshStore() {
@@ -42,6 +43,38 @@ describe('ui store', () => {
     ui.applyTheme()
 
     expect(document.documentElement.dataset.theme).toBe('night')
+  })
+
+  it('applyTheme updates the theme-color meta and the color scheme', () => {
+    const meta = document.createElement('meta')
+    meta.name = 'theme-color'
+    meta.id = 'theme-color'
+    meta.content = palette.day['bg/canvas']
+    document.head.appendChild(meta)
+    try {
+      const ui = freshStore()
+
+      ui.setTheme('night')
+      ui.applyTheme()
+      expect(meta.content).toBe(palette.night['bg/canvas'])
+      expect(document.documentElement.style.colorScheme).toBe('dark')
+
+      ui.setTheme('evening')
+      ui.applyTheme()
+      expect(meta.content).toBe(palette.evening['bg/canvas'])
+      expect(document.documentElement.style.colorScheme).toBe('light')
+    } finally {
+      meta.remove()
+    }
+  })
+
+  it('previewTheme switches the theme without remembering it', () => {
+    const ui = freshStore()
+
+    ui.previewTheme('night')
+
+    expect(ui.theme).toBe('night')
+    expect(localStorage.getItem('aboutme.theme')).toBeNull()
   })
 
   it('openChapter sets the active stop and the open window at once', () => {

@@ -32,8 +32,37 @@ export function validateContentFile(
   return issues
 }
 
-export function validateContent(content: unknown, schema: object): ContentIssue[] {
-  return [...schemaIssues(content, schema), ...placeholderIssues(content, '')]
+export function validateContent(
+  content: unknown,
+  schema: object,
+  now = new Date(),
+): ContentIssue[] {
+  return [
+    ...schemaIssues(content, schema),
+    ...placeholderIssues(content, ''),
+    ...experienceIssues(content, now),
+  ]
+}
+
+const YEAR_MONTH = /^\d{4}-\d{2}$/
+
+/** Периоды стажа (D21): `to` не раньше `from`, `from` не в будущем. `YYYY-MM` сравниваются как строки. */
+function experienceIssues(content: unknown, now: Date): ContentIssue[] {
+  if (!isRecord(content) || !Array.isArray(content.experience)) return []
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  return content.experience.flatMap((entry: unknown, index) => {
+    if (!isRecord(entry) || typeof entry.from !== 'string' || !YEAR_MONTH.test(entry.from)) {
+      return []
+    }
+    const issues: ContentIssue[] = []
+    if (entry.from > currentMonth) {
+      issues.push({ path: `/experience/${index}/from`, message: 'must not be in the future' })
+    }
+    if (typeof entry.to === 'string' && YEAR_MONTH.test(entry.to) && entry.to < entry.from) {
+      issues.push({ path: `/experience/${index}/to`, message: 'must not be earlier than from' })
+    }
+    return issues
+  })
 }
 
 function schemaIssues(content: unknown, schema: object): ContentIssue[] {

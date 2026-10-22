@@ -107,6 +107,36 @@ describe('validateContent: schema messages', () => {
   })
 })
 
+describe('validateContent: experience dates', () => {
+  const now = new Date(2026, 9, 15) // октябрь 2026
+
+  function withPeriod(from: string, to: string | null) {
+    const content = validContent()
+    content.experience[0] = { ...content.experience[0]!, from, to: to as null }
+    return content
+  }
+
+  it('rejects a period that ends before it starts', () => {
+    expect(validateContent(withPeriod('2024-07', '2024-06'), schema, now)).toContainEqual({
+      path: '/experience/0/to',
+      message: 'must not be earlier than from',
+    })
+  })
+
+  it('accepts a one-month period and an open period', () => {
+    expect(validateContent(withPeriod('2024-07', '2024-07'), schema, now)).toEqual([])
+    expect(validateContent(withPeriod('2024-07', null), schema, now)).toEqual([])
+  })
+
+  it('rejects a start in the future but accepts the current month', () => {
+    expect(validateContent(withPeriod('2026-11', null), schema, now)).toContainEqual({
+      path: '/experience/0/from',
+      message: 'must not be in the future',
+    })
+    expect(validateContent(withPeriod('2026-10', null), schema, now)).toEqual([])
+  })
+})
+
 describe('validateContentFile', () => {
   it('accepts valid content whose lang matches the file name', () => {
     expect(validateContentFile('en.json', JSON.stringify(validContent()), schema)).toEqual([])
