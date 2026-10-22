@@ -153,7 +153,11 @@
   "textStyleAudit2026-10-22": {
     "rule": "every component/window/screen TEXT has a textStyleId; Inter service texts (Review/*, notes, § section labels, showcase captions) left unstyled on purpose",
     "newStyles": "Display/Hero-sm 32 ExtraBold 110% -1% · Label/Tag-xs 12 Bold 120% +6% (pins, metric labels) · Body/Caption-xs 12 Regular 145% · Mono/Number-xs Plex 12 Bold 140% · Mono/Stack-xs Plex 12 Regular 140% · Heading/Window-sm 24 Bold 120% (mobile window titles)",
-    "unstyledBeforeAfter": { "Components": "155 → 33 (all Inter)", "Windows": "209 → 98 (all Inter)", "Screens": "490 → 113 (all Inter)" },
+    "unstyledBeforeAfter": {
+      "Components": "155 → 33 (all Inter)",
+      "Windows": "209 → 98 (all Inter)",
+      "Screens": "490 → 113 (all Inter)"
+    },
     "note": "styles applied on master components; instances inherited automatically"
   },
   "effectStyles": {
@@ -163,7 +167,8 @@
   },
   "fonts": {
     "text": "Bricolage Grotesque (Regular, Medium, SemiBold, Bold, ExtraBold available)",
-    "mono": "IBM Plex Mono (Regular, Bold)"
+    "mono": "IBM Plex Mono (Regular, Bold)",
+    "cyrillic": "Onest Variable (code only, unicode-range cyrillic/cyrillic-ext; not loaded in Figma)"
   },
   "components": {
     "icons": {
@@ -422,7 +427,7 @@
     "cv": "/cv/Yakov_Polezhaev_CV_EN.pdf, /cv/Yakov_Polezhaev_CV_RU.pdf; Hero CV button → EN"
   },
   "knownIssues": [
-    "RU screen 79:1553: Bricolage Grotesque has no Cyrillic — fallback font in Figma; system-ui acceptable on site",
+    "RU screen 79:1553 (note 79:1726): Bricolage Grotesque has no Cyrillic — Figma shows a fallback; on site Cyrillic renders in Onest Variable (resolved 2026-10-22, 675bfd7; note text updated in Figma)",
     "Reference PNG still carries baked Lab/Email/old pins and a sliver of the plane/bottle at the right edge (noted in on-screen note); not part of the design",
     "Mobile Prev in Window/Shell is Button/Icon with arrow-right rotated 180° (no arrow-left icon); needs aria-label"
   ]

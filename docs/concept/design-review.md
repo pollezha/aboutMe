@@ -99,7 +99,7 @@
 **Важно**
 - [x] D2 цифры на первом экране — ✅ Figma Hero (21:465) + код HeroCard/MetricCard, 3 метрики (T5 fe63ad0).
 - [x] D3 язык и локация — ✅ переключатель языка в баре/TopBar и «Based in Serbia · CET» в Hero (T5, T6);
-  RU-контент (`content/ru.json`) — ⏭ этап 3; кириллица Bricolage — knownIssue Specs §7.
+  RU-контент (`content/ru.json`) — ⏭ этап 3; кириллица — Onest (675bfd7), пометка у RU-экрана в Figma (79:1726) обновлена.
 - [x] D10 анимации — ✅ кнопка паузы/play в верхних контролах (T6, ui store `motionPaused`), reduced-motion в
   компонентах (Dialog, RouteStop, BaseButton, StaticMap). Бесконечные анимации сцены — ⏭ этап 3, то же правило.
 - [x] D11 текстовая альтернатива карты — ✅ заглушка сцены `aria-hidden`, 2D-карта с `alt` и хотспотами-кнопками с

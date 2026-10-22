@@ -160,7 +160,7 @@ danger в Night, 30-sec summary вне панели, дата стажа, пле
   (10.5 КБ), ось `wght` 100–900, без latin. Стек `--font-text: 'Bricolage Grotesque Variable', 'Onest Variable',
   system-ui, sans-serif` — браузер выбирает начертание по `unicode-range`: кириллица → Onest, латинские вставки
   (`.NET`) → Bricolage (проверено через CDP `CSS.getPlatformFontsForNode`, кадры `*-day-ru.png`). Все woff2
-  вместе — 111.7 КБ из 150 КБ (было 85.9 КБ). knownIssue «кириллица Bricolage» в Specs §7 (Figma) можно снять.
+  вместе — 111.7 КБ из 150 КБ (было 85.9 КБ). пометка у RU-экрана в Figma (Screens, 79:1726) обновлена на резолюцию.
 - Открытые решения Specs §7 — значения из Figma как есть; `status/danger` Night помечен knownIssue.
 - Контент окон 01–08 в коде — этап 3 (окна здесь только каркасом `ChapterWindow`).
 - Сцена TresJS и грузовик — этап 3; в T6 на месте сцены заглушка цвета `scene/sky` или статичная карта.
