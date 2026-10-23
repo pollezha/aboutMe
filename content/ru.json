@@ -1,0 +1,473 @@
+{
+  "$schema": "./schema/content.schema.json",
+  "contentVersion": "2026-10-20T00:00:00Z",
+  "lang": "ru",
+  "profile": {
+    "name": "Яков Полежаев",
+    "role": ".NET backend-разработчик",
+    "status": "Открыт к предложениям",
+    "workFormat": "Удалённо / релокация",
+    "location": "Живу в Сербии · CET (UTC+1)",
+    "locationShort": "Сербия · CET",
+    "highlights": [
+      { "label": "ОТГРУЗОК / ДЕНЬ", "value": "1000+", "note": "через мой последний модуль" },
+      { "label": "СТРАНИЦА ФИЛЬТРОВ", "value": "40 с → 2 с", "note": "после переноса фильтров в SQL" },
+      { "kind": "experience", "label": "В ПРОДАКШЕНЕ" }
+    ],
+    "links": [
+      { "kind": "github", "label": "GitHub", "href": "https://github.com/pollezha" },
+      { "kind": "telegram", "label": "Telegram", "href": "https://t.me/poll_ezha" },
+      { "kind": "email", "label": "Почта", "href": "mailto:polezhaev.yasha@gmail.com" },
+      { "kind": "cv", "label": "Резюме (PDF)", "href": "/cv/Yakov_Polezhaev_CV_RU.pdf" },
+      { "kind": "hh", "label": "hh.ru", "href": "https://hh.ru/resume/28e123adff10fa48aa0039ed1f7a63354f3842" }
+    ]
+  },
+  "experience": [
+    { "id": "timepath", "company": "TimePath", "role": "Backend-разработчик (.NET)", "from": "2024-07", "to": "2025-12" },
+    { "id": "prospace", "company": "ProSpace · OptiTrack", "role": "Backend-разработчик (.NET)", "from": "2026-01", "to": null }
+  ],
+  "chapters": {
+    "profile": {
+      "eyebrow": "Водительские права · в пути с {sinceShort}",
+      "title": "Яков Полежаев",
+      "subtitle": ".NET backend-разработчик · в пути с {since}",
+      "name": { "label": "ИМЯ", "value": "Яков Полежаев" },
+      "since": { "label": "В ПУТИ С", "value": "{since} · {experience} в продакшене" },
+      "keyNumbers": { "label": "КЛЮЧЕВЫЕ ЦИФРЫ" },
+      "about": {
+        "label": "О СЕБЕ",
+        "value": ".NET backend-разработчик. Веду модули целиком: доменная логика, данные, очереди и мониторинг вокруг них. Через мой последний модуль проходило 1000+ отгрузок в день. Каждый день работаю с AI-агентами (Claude Code)."
+      },
+      "languages": { "label": "ЯЗЫКИ", "items": ["EN B2", "CS B2", "DE A2", "RU родной"] },
+      "lookingFor": {
+        "label": "ИЩУ",
+        "value": "Backend-сервисы с реальной нагрузкой · .NET · удалённо или релокация в Европу"
+      },
+      "proofLinks": [
+        { "label": "GitHub pollezha", "href": "https://github.com/pollezha", "icon": "external" },
+        { "label": "Скачать резюме (PDF, RU)", "href": "/cv/Yakov_Polezhaev_CV_RU.pdf", "icon": "download" }
+      ]
+    },
+    "prospace": {
+      "experienceId": "prospace",
+      "eyebrow": "Накладная · Текущее место · {period}",
+      "title": "ProSpace · OptiTrack",
+      "subtitle": "Backend-разработчик (.NET) · TMS для крупных грузовладельцев",
+      "metrics": [
+        { "label": "ОБЪЁМ", "value": "1000+", "note": "отгрузок / день", "accent": true },
+        { "label": "POSTGRESQL", "value": "200+", "note": "таблиц" },
+        { "label": "МОЙ МОДУЛЬ", "value": "Транспорт", "note": "СОЗДАНА → СПЛАНИРОВАНА → В ПУТИ → ДОСТАВЛЕНА ✓" }
+      ],
+      "keyResults": {
+        "heading": "Ключевые результаты",
+        "items": [
+          {
+            "result": "Самостоятельно построил транспортный модуль",
+            "how": "ядро, через которое проходит каждая отгрузка · ASP.NET Core REST · 1000+ отгрузок в день"
+          },
+          {
+            "result": "Сделал аудит-логирование расширяемым без правок бизнес-кода",
+            "how": "событийное журналирование CRUD"
+          },
+          {
+            "result": "Находил причины инцидентов и проверял релизы в продакшене",
+            "how": "Grafana, дежурства"
+          },
+          {
+            "result": "Отвечал за технические решения в своей зоне",
+            "how": "архитектура новых модулей, спецификации с аналитиками, рефакторинг legacy, xUnit"
+          },
+          {
+            "result": "Каждый день делал фичи вместе с AI-агентами",
+            "how": "Claude Code; настроил агентный процесс для команды: правила, промпты, MCP, скилы"
+          }
+        ]
+      },
+      "stack": {
+        "label": "СТЕК",
+        "items": [
+          "ASP.NET Core",
+          "EF Core",
+          "PostgreSQL",
+          "MongoDB",
+          "Kafka",
+          "SignalR",
+          "Kubernetes",
+          "Grafana",
+          "Vue.js",
+          "Claude Code"
+        ]
+      },
+      "team": { "label": "КОМАНДА", "value": "кросс-функциональная · код-ревью · дежурства" },
+      "proofLinks": [{ "label": "prospace.tech", "href": "https://prospace.tech", "icon": "external" }]
+    },
+    "timepath": {
+      "experienceId": "timepath",
+      "eyebrow": "Путевой лист · Предыдущее место · {period}",
+      "title": "TimePath",
+      "subtitle": "Backend-разработчик (.NET) · корпоративные платформы для энергетики и ЖКХ",
+      "metricGroups": [
+        {
+          "label": "МАСШТАБ СЕТИ",
+          "metrics": [
+            { "label": "ОБЪЕКТОВ", "value": "7 млн+", "note": "объектов сети" },
+            { "label": "ПОЛЬЗОВАТЕЛЕЙ", "value": "2000+", "note": "пользователей платформы" }
+          ]
+        },
+        {
+          "label": "ЗАГРУЗКА СТРАНИЦЫ ФИЛЬТРОВ",
+          "metrics": [
+            { "label": "БЫЛО", "value": "40+ с", "note": "фильтрация на клиенте" },
+            { "label": "СТАЛО", "value": "< 2 с", "note": "фильтрация в оптимизированном SQL", "accent": true },
+            { "label": "СКОРОСТЬ", "value": "~2×", "note": "быстрее разработка на трёх проектах" }
+          ]
+        }
+      ],
+      "keyResults": {
+        "heading": "Ключевые результаты",
+        "items": [
+          {
+            "result": "Ускорил страницу фильтров с 40+ с до менее 2 с",
+            "how": "данные фильтровались на клиенте; перенёс фильтрацию в оптимизированный SQL"
+          },
+          {
+            "result": "Новые фичи стали делаться ~2× быстрее на трёх проектах",
+            "how": "очереди, файлы и общая логика вынесены в ядро платформы"
+          },
+          {
+            "result": "Укрепил безопасность платформы",
+            "how": "защита эндпоинтов, RBAC, шифрование конфигов, лимиты массового экспорта"
+          },
+          {
+            "result": "Помогал продажам и команде",
+            "how": "демо-стенд, GitLab CI, ревью кода стажёров"
+          }
+        ]
+      },
+      "stack": {
+        "label": "СТЕК",
+        "items": [
+          "C#",
+          "ASP.NET Core",
+          "EF Core",
+          "PostgreSQL",
+          "SQL Server",
+          "RabbitMQ",
+          "SignalR",
+          "Docker",
+          "GitLab CI"
+        ]
+      },
+      "proofLinks": [{ "label": "timepath.ru", "href": "https://timepath.ru", "icon": "external" }]
+    },
+    "techstack": {
+      "eyebrow": "Дата-центр · {span}",
+      "title": "Технологии",
+      "subtitle": "Каждая стойка — область, каждый сервер — технология. Нажмите на сервер, чтобы выдвинуть его.",
+      "experienceLabel": "ОПЫТ",
+      "whereLabel": "ГДЕ ПРИМЕНЯЛ",
+      "whatLabel": "ЧТО ДЕЛАЛ",
+      "racks": [
+        {
+          "name": "BACKEND",
+          "servers": [
+            {
+              "name": "C# / .NET",
+              "usedIn": ["timepath", "prospace"],
+              "where": "TimePath · ProSpace",
+              "what": "Основной язык. Построил транспортный модуль в ProSpace и общее ядро платформы в TimePath."
+            },
+            {
+              "name": "ASP.NET Core",
+              "usedIn": ["timepath", "prospace"],
+              "where": "TimePath · ProSpace",
+              "what": "REST-сервисы и микросервисы. Транспортный модуль — сервис на ASP.NET Core."
+            },
+            {
+              "name": "EF Core",
+              "usedIn": ["timepath", "prospace"],
+              "where": "TimePath · ProSpace",
+              "what": "Слой доступа к данным на обеих платформах."
+            },
+            {
+              "name": "xUnit",
+              "usedIn": ["timepath", "prospace"],
+              "where": "TimePath · ProSpace",
+              "what": "Тесты бизнес-логики на xUnit, чтобы снизить риск регрессий."
+            }
+          ]
+        },
+        {
+          "name": "ДАННЫЕ",
+          "servers": [
+            {
+              "name": "PostgreSQL",
+              "usedIn": ["timepath", "prospace"],
+              "where": "TimePath · ProSpace",
+              "what": "Перенёс фильтрацию с клиента в оптимизированный SQL (40+ с → < 2 с); схемы для новых модулей; миграции EF Core; тюнинг запросов в продакшене."
+            },
+            {
+              "name": "SQL Server",
+              "usedIn": ["timepath"],
+              "where": "TimePath",
+              "what": "Переписал запросы фильтрации и перенёс их в базу: страница стала открываться за 2 с вместо 40+."
+            },
+            {
+              "name": "MongoDB",
+              "usedIn": ["prospace"],
+              "where": "ProSpace",
+              "what": "Часть стека OptiTrack."
+            }
+          ]
+        },
+        {
+          "name": "ОЧЕРЕДИ",
+          "servers": [
+            {
+              "name": "Kafka",
+              "usedIn": ["prospace"],
+              "where": "ProSpace",
+              "what": "Потоки событий в микросервисной платформе OptiTrack."
+            },
+            {
+              "name": "RabbitMQ",
+              "usedIn": ["timepath"],
+              "where": "TimePath",
+              "what": "Очереди сообщений; вынес работу с очередями в общее ядро платформы."
+            },
+            {
+              "name": "SignalR",
+              "usedIn": ["timepath", "prospace"],
+              "where": "TimePath · ProSpace",
+              "what": "Обновления интерфейса в реальном времени на обеих платформах."
+            }
+          ]
+        },
+        {
+          "name": "DEVOPS",
+          "servers": [
+            {
+              "name": "Docker",
+              "usedIn": ["timepath", "prospace"],
+              "where": "TimePath · ProSpace",
+              "what": "Контейнеризация сервисов на обеих работах; собрал демо-стенд для клиентов в TimePath."
+            },
+            {
+              "name": "Kubernetes",
+              "usedIn": ["prospace"],
+              "where": "ProSpace",
+              "what": "Среда выполнения сервисов OptiTrack."
+            },
+            {
+              "name": "GitLab CI",
+              "usedIn": ["timepath"],
+              "where": "TimePath",
+              "what": "Настроил CI/CD-пайплайны."
+            },
+            {
+              "name": "Grafana",
+              "usedIn": ["prospace"],
+              "where": "ProSpace",
+              "what": "Диагностировал сервисы, находил причины инцидентов и проверял релизы на дежурствах."
+            }
+          ]
+        },
+        {
+          "name": "FRONTEND",
+          "servers": [
+            {
+              "name": "Vue.js",
+              "usedIn": ["prospace"],
+              "where": "ProSpace",
+              "what": "Фронтенд в стеке OptiTrack; этот сайт тоже на Vue."
+            }
+          ]
+        },
+        {
+          "name": "AI-АГЕНТЫ",
+          "servers": [
+            {
+              "name": "Claude Code",
+              "usedIn": ["prospace"],
+              "where": "ProSpace",
+              "what": "Ежедневная разработка с AI-агентом: фичи, рефакторинг, тесты и ревью; проектирование и каждое изменение в релизе — на мне."
+            },
+            {
+              "name": "MCP",
+              "usedIn": ["prospace"],
+              "where": "ProSpace",
+              "what": "Настроил агентный процесс для команды: правила, промпты, MCP-серверы и скилы, чтобы агенты следовали нашей архитектуре и соглашениям."
+            }
+          ]
+        }
+      ],
+      "proofLinks": [
+        { "label": "GitHub pollezha", "href": "https://github.com/pollezha", "icon": "external" },
+        { "label": "Исходники сайта", "href": "https://github.com/pollezha/aboutMe", "icon": "external" }
+      ]
+    },
+    "education": {
+      "eyebrow": "Диплом · НИУ ВШЭ · 2021 – 2025",
+      "title": "НИУ ВШЭ",
+      "subtitle": "Бакалавр бизнес-информатики · Пермский кампус · выпуск 2025",
+      "programme": { "label": "ПРОГРАММА", "value": "38.03.05 Бизнес-информатика" },
+      "format": { "label": "ФОРМАТ", "value": "Очно · 4 года · 240 кредитов" },
+      "graduated": { "label": "ВЫПУСК", "value": "Июнь 2025" },
+      "thesis": { "label": "ДИПЛОМ", "value": "«Корпоративный Telegram-бот для сотрудников TimePath»" },
+      "teamProjects": {
+        "label": "КОМАНДНЫЕ ПРОЕКТЫ",
+        "items": ["HR-система для службы скорой помощи Пермского края", "ИС для оптимизации бизнес-процессов"]
+      },
+      "courses": {
+        "label": "КУРСЫ",
+        "items": [
+          "Разработка веб-приложений · отлично",
+          "Корпоративные информационные системы",
+          "Машинное обучение",
+          "Базы данных · хорошо",
+          "Алгоритмы и структуры данных",
+          "Проектирование и архитектура ПО · на английском",
+          "Требования и проектирование ИС"
+        ]
+      },
+      "studyWork": {
+        "label": "УЧЁБА + РАБОТА",
+        "items": [
+          "Июль 2024 — вышел в TimePath во время учёбы (3-й курс)",
+          "Июнь 2025 — защитил диплом бакалавра",
+          "2026 — ProSpace, OptiTrack"
+        ]
+      },
+      "languages": {
+        "label": "ЯЗЫКИ",
+        "items": ["Русский · родной", "Английский · B2", "Чешский · B2", "Немецкий · A2"]
+      },
+      "proofLinks": [{ "label": "perm.hse.ru", "href": "https://perm.hse.ru", "icon": "external" }]
+    },
+    "contact": {
+      "eyebrow": "Пункт назначения · Ваша команда",
+      "title": "Следующая остановка: ваша команда.",
+      "subtitle": ".NET backend-разработчик, ищу сервисы с реальной нагрузкой. Удалённо или с релокацией в Европу.",
+      "role": { "label": "РОЛЬ", "value": ".NET backend-разработчик · {experience} в продакшене" },
+      "status": { "label": "СТАТУС", "value": "Открыт к предложениям · удалённо / релокация" },
+      "basedIn": { "label": "ГДЕ НАХОЖУСЬ", "value": "Сербия · CET · UTC+1" },
+      "languages": { "label": "ЯЗЫКИ", "items": ["EN B2", "CS B2", "DE A2", "RU родной"] },
+      "goodFit": {
+        "label": "ПОДОЙДУ, ЕСЛИ НУЖНЫ",
+        "items": [
+          "Микросервисы на .NET",
+          "Событийные системы",
+          "Kafka",
+          "Производительность SQL",
+          "Дежурства и мониторинг",
+          "Разработка с AI-агентами"
+        ]
+      },
+      "summaryLink": { "label": "Выжимка за 30 секунд", "chapter": "summary" },
+      "contacts": [
+        { "kind": "cv", "label": "Скачать резюме (PDF, RU)", "href": "/cv/Yakov_Polezhaev_CV_RU.pdf" },
+        { "kind": "cv", "label": "Скачать резюме (PDF, EN)", "href": "/cv/Yakov_Polezhaev_CV_EN.pdf" },
+        { "kind": "telegram", "label": "Telegram @poll_ezha", "href": "https://t.me/poll_ezha" },
+        { "kind": "github", "label": "GitHub pollezha", "href": "https://github.com/pollezha" },
+        { "kind": "email", "label": "polezhaev.yasha@gmail.com", "href": "mailto:polezhaev.yasha@gmail.com" }
+      ],
+      "mailbox": {
+        "heading": "Записка в бутылке",
+        "text": "Пока почтовый ящик не подключён, быстрее всего написать в Telegram.",
+        "action": { "label": "Написать в Telegram", "href": "https://t.me/poll_ezha" }
+      },
+      "proofLinks": [
+        { "label": "Выжимка за 30 секунд", "chapter": "summary" },
+        { "label": "Исходники сайта", "href": "https://github.com/pollezha/aboutMe", "icon": "external" }
+      ]
+    },
+    "summary": {
+      "eyebrow": "Выжимка · 30 секунд",
+      "title": "Яков Полежаев — .NET backend, открыт к предложениям",
+      "subtitle": "{experience} в продакшене · Удалённо или релокация в Европу · EN B2 · Живу в Сербии (CET)",
+      "metrics": [
+        {
+          "label": "ОТГРУЗОК / ДЕНЬ",
+          "value": "1000+",
+          "note": "через мой последний модуль (ProSpace, 2026)",
+          "accent": true
+        },
+        { "label": "СТРАНИЦА ФИЛЬТРОВ", "value": "40 с → 2 с", "note": "фильтрация перенесена в SQL (TimePath)" },
+        { "kind": "experience", "label": "В ПРОДАКШЕНЕ", "note": "с {since}, две компании" }
+      ],
+      "whatIDo": {
+        "heading": "Чем занимаюсь",
+        "items": [
+          {
+            "result": "Веду backend-модули целиком",
+            "how": "доменная логика, данные, очереди, мониторинг — ASP.NET Core, EF Core, PostgreSQL"
+          },
+          {
+            "result": "Событийные системы",
+            "how": "Kafka, RabbitMQ, SignalR; расширяемое аудит-логирование без правок бизнес-кода"
+          },
+          {
+            "result": "Производительность SQL",
+            "how": "PostgreSQL, SQL Server — страница фильтров с 40+ с до < 2 с"
+          },
+          {
+            "result": "Дежурства и продакшен",
+            "how": "Grafana, причины инцидентов, проверка релизов; Docker, Kubernetes, GitLab CI"
+          },
+          {
+            "result": "Каждый день работаю с AI-агентами",
+            "how": "Claude Code; настроил агентный процесс для команды: правила, промпты, MCP, скилы"
+          }
+        ]
+      },
+      "cta": {
+        "contact": { "label": "Связаться", "chapter": "contact" },
+        "cv": { "label": "Скачать резюме", "href": "/cv/Yakov_Polezhaev_CV_RU.pdf", "icon": "download" }
+      },
+      "proofLinks": [
+        { "label": "Скачать резюме (PDF, RU)", "href": "/cv/Yakov_Polezhaev_CV_RU.pdf", "icon": "download" },
+        { "label": "Telegram @poll_ezha", "href": "https://t.me/poll_ezha", "icon": "external" }
+      ]
+    },
+    "monitoring": {
+      "eyebrow": "Мониторинг · этот сайт, вживую",
+      "title": "Мониторинг",
+      "subtitle": "Этот сайт следит за собой сам. Каждый клик становится событием в Kafka и возвращается через SignalR.",
+      "metrics": [
+        { "label": "СЕЙЧАС НА САЙТЕ", "note": "вживую через SignalR" },
+        { "label": "СОБЫТИЙ СЕГОДНЯ", "note": "топик site.events.v1" },
+        { "label": "API P95", "note": "gateway · последние 5 мин" },
+        { "label": "ДОЛЯ ОШИБОК", "note": "5xx · последние 5 мин" },
+        { "label": "ОТСТАВАНИЕ", "note": "группа projector" },
+        { "label": "UPTIME", "note": "последние 30 дней" }
+      ],
+      "clickPath": {
+        "heading": "Путь одного клика",
+        "steps": [
+          "Ваш клик",
+          "gateway",
+          "events-api",
+          "Kafka",
+          "projector + live-hub",
+          "SignalR",
+          "эта панель"
+        ]
+      },
+      "observability": {
+        "heading": "Логи · Метрики · Трейсы",
+        "items": [
+          { "label": "ЛОГИ", "value": "Loki · структурный JSON с TraceId · без IP и персональных данных" },
+          { "label": "МЕТРИКИ", "value": "Prometheus через OTel Collector · RED по каждому сервису" },
+          {
+            "label": "ТРЕЙСЫ",
+            "value": "Tempo · один трейс на клик: gateway → events-api → Kafka → projector"
+          }
+        ]
+      },
+      "proofLinks": [
+        { "label": "Исходники сайта", "href": "https://github.com/pollezha/aboutMe", "icon": "external" },
+        { "label": "Выжимка за 30 секунд", "chapter": "summary" }
+      ]
+    }
+  }
+}
