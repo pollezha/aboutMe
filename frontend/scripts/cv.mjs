@@ -1,22 +1,18 @@
 // Резюме EN/RU в PDF: HTML-шаблон → headless Chrome (Page.printToPDF) → frontend/public/cv/*.pdf.
-// Тот же приём, что og.mjs: CDP поверх встроенного WebSocket, шрифты data:-URL из node_modules.
+// Тот же приём, что og.mjs: Chrome через scripts/cdp.mjs, шрифты data:-URL из node_modules.
 // Латиница — Bricolage Grotesque (на сайте), числа и даты — IBM Plex Mono (latin + cyrillic).
 // Кириллицу Bricolage не содержит: для RU-текста Chrome поглифно откатывается на 'Segoe UI' (Windows);
 // PDF встраивает использованные глифы, так что файл самодостаточен. Данные — scripts/cv-data.mjs.
 // Переменная CV_PREVIEW_DIR — туда дополнительно снимаются PNG шаблона (794×N) для визуальной проверки.
-import { spawn } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { setTimeout as delay } from 'node:timers/promises'
 import { palette } from '../src/theme/palette.ts'
+import { launchChrome } from './cdp.mjs'
 import { cvs } from './cv-data.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const outDir = resolve(root, 'public', 'cv')
-const chrome = process.env.CHROME_PATH ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe'
-const debugPort = 9335
 const previewDir = process.env.CV_PREVIEW_DIR
 
 const day = palette.day
@@ -148,77 +144,9 @@ li { font-size: 11px; margin-top: 2px; }
 </body></html>`
 }
 
-/** Минимальный CDP-клиент поверх встроенного WebSocket (Node ≥ 22). */
-async function connect(wsUrl) {
-  const socket = new WebSocket(wsUrl)
-  await new Promise((ok, fail) => {
-    socket.addEventListener('open', ok, { once: true })
-    socket.addEventListener('error', fail, { once: true })
-  })
-  let nextId = 0
-  const pending = new Map()
-  socket.addEventListener('message', (event) => {
-    const message = JSON.parse(String(event.data))
-    if (message.id === undefined) return
-    const call = pending.get(message.id)
-    pending.delete(message.id)
-    if (message.error) call?.fail(new Error(message.error.message))
-    else call?.ok(message.result)
-  })
-  return {
-    send(method, params = {}) {
-      const id = ++nextId
-      socket.send(JSON.stringify({ id, method, params }))
-      return new Promise((ok, fail) => pending.set(id, { ok, fail }))
-    },
-    close() {
-      socket.close()
-    },
-  }
-}
-
-async function waitForDebugger() {
-  for (let attempt = 0; attempt < 50; attempt++) {
-    try {
-      const response = await fetch(`http://127.0.0.1:${debugPort}/json/version`)
-      if (response.ok) return
-    } catch {
-      /* Chrome ещё стартует */
-    }
-    await delay(200)
-  }
-  throw new Error('Chrome DevTools endpoint did not come up')
-}
-
-async function evaluate(page, expression) {
-  const { result, exceptionDetails } = await page.send('Runtime.evaluate', {
-    expression,
-    awaitPromise: true,
-    returnByValue: true,
-  })
-  if (exceptionDetails) throw new Error(exceptionDetails.text)
-  return result.value
-}
-
-async function withPage(work) {
-  const response = await fetch(`http://127.0.0.1:${debugPort}/json/new?about:blank`, {
-    method: 'PUT',
-  })
-  const target = await response.json()
-  const page = await connect(target.webSocketDebuggerUrl)
-  try {
-    const { frameTree } = await page.send('Page.getFrameTree')
-    return await work(page, frameTree.frame.id)
-  } finally {
-    page.close()
-    await fetch(`http://127.0.0.1:${debugPort}/json/close/${target.id}`)
-  }
-}
-
-async function loadDocument(page, frameId, html) {
-  await page.send('Page.setDocumentContent', { frameId, html })
-  const fonts = await evaluate(
-    page,
+async function loadDocument(page, html) {
+  await page.setContent(html)
+  const fonts = await page.evaluate(
     `document.fonts.ready.then(() => [...document.fonts].map((f) => f.family + ' ' + f.weight + ' ' + f.status))`,
   )
   // Неиспользуемый unicode-range (кириллица Plex Mono в EN) остаётся «unloaded» — это нормально.
@@ -227,78 +155,46 @@ async function loadDocument(page, frameId, html) {
     throw new Error(`fonts not loaded: ${fonts.join(', ')}`)
 }
 
-async function renderPdf(cv) {
+async function renderPdf(browser, cv) {
   const file = join(outDir, cv.file)
-  await withPage(async (page, frameId) => {
-    await loadDocument(page, frameId, cvHtml(cv))
-    const { data } = await page.send('Page.printToPDF', {
+  await browser.withPage(async (page) => {
+    await loadDocument(page, cvHtml(cv))
+    const pdf = await page.pdf({
       preferCSSPageSize: true,
       printBackground: true,
       displayHeaderFooter: false,
     })
-    writeFileSync(file, Buffer.from(data, 'base64'))
-    const pages = (
-      Buffer.from(data, 'base64')
-        .toString('latin1')
-        .match(/\/Type\s*\/Page[^s]/g) ?? []
-    ).length
-    console.log(`wrote ${file} (${pages} page(s), ${Math.round(data.length * 0.75) / 1024} KiB)`)
+    writeFileSync(file, pdf)
+    const pages = (pdf.toString('latin1').match(/\/Type\s*\/Page[^s]/g) ?? []).length
+    console.log(`wrote ${file} (${pages} page(s), ${Math.round(pdf.length / 1024)} KiB)`)
   })
 }
 
-async function renderPreview(cv) {
+async function renderPreview(browser, cv) {
   const width = 794
   const file = join(previewDir, cv.file.replace(/\.pdf$/, '.png'))
-  await withPage(async (page, frameId) => {
-    await page.send('Emulation.setDeviceMetricsOverride', {
-      width,
-      height: 1123,
-      deviceScaleFactor: 1,
-      mobile: false,
-    })
-    await loadDocument(page, frameId, cvHtml(cv).replace('<body>', '<body class="preview">'))
-    const height = await evaluate(page, 'document.documentElement.scrollHeight')
-    const { data } = await page.send('Page.captureScreenshot', {
-      format: 'png',
+  await browser.withPage(async (page) => {
+    await page.setViewport({ width, height: 1123 })
+    await loadDocument(page, cvHtml(cv).replace('<body>', '<body class="preview">'))
+    const height = await page.evaluate('document.documentElement.scrollHeight')
+    const png = await page.screenshot({
       captureBeyondViewport: true,
       clip: { x: 0, y: 0, width, height, scale: 1 },
     })
-    writeFileSync(file, Buffer.from(data, 'base64'))
+    writeFileSync(file, png)
     console.log(`wrote ${file} (${width}×${height})`)
   })
-}
-
-if (!existsSync(chrome)) {
-  console.error(`Chrome not found at ${chrome}; set CHROME_PATH`)
-  process.exit(1)
 }
 
 mkdirSync(outDir, { recursive: true })
 if (previewDir) mkdirSync(previewDir, { recursive: true })
 
-// Свой временный профиль: профиль пользователя не трогаем.
-const profile = mkdtempSync(join(tmpdir(), 'aboutme-cv-'))
-const browser = spawn(
-  chrome,
-  [
-    '--headless=new',
-    `--user-data-dir=${profile}`,
-    `--remote-debugging-port=${debugPort}`,
-    '--no-first-run',
-    '--hide-scrollbars',
-    'about:blank',
-  ],
-  { stdio: 'ignore' },
-)
-
+const browser = await launchChrome({ prefix: 'aboutme-cv-' })
 try {
-  await waitForDebugger()
   for (const cv of cvs) {
-    await renderPdf(cv)
-    if (previewDir) await renderPreview(cv)
+    await renderPdf(browser, cv)
+    if (previewDir) await renderPreview(browser, cv)
   }
 } finally {
-  browser.kill()
-  await delay(500)
-  rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 })
+  await browser.close()
 }

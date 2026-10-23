@@ -162,6 +162,19 @@ describe('ui store', () => {
     expect(freshStore().userChoice).toBe('2d')
   })
 
+  it('chooseMode sets the mode and remembers it for the next visit', () => {
+    const ui = freshStore()
+
+    ui.chooseMode('2d')
+    expect(ui.mode).toBe('2d')
+    expect(freshStore().userChoice).toBe('2d')
+
+    const next = freshStore()
+    next.chooseMode('3d')
+    expect(next.mode).toBe('3d')
+    expect(localStorage.getItem('aboutme.sceneChoice')).toBe('3d')
+  })
+
   it('ignores an unknown saved scene choice', () => {
     localStorage.setItem('aboutme.sceneChoice', 'vr')
 

@@ -12,6 +12,7 @@ const EXPECTED = [
   'external',
   'github',
   'lang',
+  'map',
   'pause',
   'play',
   'rotate',
@@ -32,7 +33,7 @@ const SIGNS = [
 ]
 
 describe('Icon', () => {
-  it('ships exactly the 13 design-system icons and 8 chapter signs', () => {
+  it('ships exactly the 14 UI icons and 8 chapter signs', () => {
     expect([...ICON_NAMES].sort()).toEqual([...EXPECTED, ...SIGNS].sort())
   })
 

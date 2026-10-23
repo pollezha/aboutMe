@@ -7,6 +7,7 @@ export type IconName =
   | 'theme'
   | 'lang'
   | 'rotate'
+  | 'map'
   | 'email'
   | 'telegram'
   | 'github'

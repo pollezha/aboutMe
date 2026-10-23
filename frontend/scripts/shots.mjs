@@ -1,20 +1,19 @@
-// Скриншоты первого экрана для сверки с Figma: сборка → vite preview → headless Chrome.
-// Результат: docs/design/shots/<w>x<h>-<theme>[-ru].png. Chrome: env CHROME_PATH или стандартный путь Windows.
+// Скриншоты первого экрана для сверки с Figma: сборка → vite preview → headless Chrome (scripts/cdp.mjs).
+// Результат: docs/design/shots/<w>x<h>-<theme>[-ru].png. Chrome: env CHROME_PATH или стандартные пути.
 // Размер вьюпорта задаётся через DevTools Protocol (Emulation.setDeviceMetricsOverride): окно Chrome
 // не бывает уже ~500 px, поэтому `--window-size=390,…` дал бы неверную раскладку телефона.
-import { execFileSync, spawn } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+// Планшет и телефон снимаются в 2D (`?mode=2d`): их кадры в Figma — 2D-карта (урок этапа 2).
+import { execFileSync } from 'node:child_process'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { setTimeout as delay } from 'node:timers/promises'
 import { preview } from 'vite'
+import { launchChrome } from './cdp.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const outDir = resolve(root, '../docs/design/shots')
-const chrome = process.env.CHROME_PATH ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe'
 const previewPort = 4173
-const debugPort = 9333
 const SETTLE_MS = 1500
 
 const SIZES = [
@@ -29,95 +28,23 @@ const RU_SHOTS = [
   [1440, 900, 'day'],
   [390, 844, 'day'],
 ]
+/** До этой ширины включительно кадр — 2D-карта. */
+const MAX_2D_WIDTH = 768
 
-/** Минимальный CDP-клиент поверх встроенного WebSocket (Node ≥ 22). */
-async function connect(wsUrl) {
-  const socket = new WebSocket(wsUrl)
-  await new Promise((ok, fail) => {
-    socket.addEventListener('open', ok, { once: true })
-    socket.addEventListener('error', fail, { once: true })
-  })
-  let nextId = 0
-  const pending = new Map()
-  const waiters = []
-  socket.addEventListener('message', (event) => {
-    const message = JSON.parse(String(event.data))
-    if (message.id !== undefined) {
-      const call = pending.get(message.id)
-      pending.delete(message.id)
-      if (message.error) call?.fail(new Error(message.error.message))
-      else call?.ok(message.result)
-    } else {
-      for (const waiter of waiters.filter((w) => w.method === message.method)) {
-        waiters.splice(waiters.indexOf(waiter), 1)
-        waiter.ok(message.params)
-      }
-    }
-  })
-  return {
-    send(method, params = {}) {
-      const id = ++nextId
-      socket.send(JSON.stringify({ id, method, params }))
-      return new Promise((ok, fail) => pending.set(id, { ok, fail }))
-    },
-    once(method) {
-      return new Promise((ok) => waiters.push({ method, ok }))
-    },
-    close() {
-      socket.close()
-    },
-  }
-}
-
-async function waitForDebugger() {
-  for (let attempt = 0; attempt < 50; attempt++) {
-    try {
-      const response = await fetch(`http://127.0.0.1:${debugPort}/json/version`)
-      if (response.ok) return
-    } catch {
-      /* Chrome ещё стартует */
-    }
-    await delay(200)
-  }
-  throw new Error('Chrome DevTools endpoint did not come up')
-}
-
-async function shoot(width, height, theme, lang = 'en') {
-  const response = await fetch(`http://127.0.0.1:${debugPort}/json/new?about:blank`, {
-    method: 'PUT',
-  })
-  const target = await response.json()
-  const page = await connect(target.webSocketDebuggerUrl)
-  try {
-    await page.send('Page.enable')
-    await page.send('Emulation.setDeviceMetricsOverride', {
-      width,
-      height,
-      deviceScaleFactor: 1,
-      mobile: width < 768,
-    })
+async function shoot(browser, width, height, theme, lang = 'en') {
+  await browser.withPage(async (page) => {
+    await page.setViewport({ width, height, mobile: width < 768 })
     // Язык страницы задаёт маршрут: `/` — EN, `/ru/` — RU (предрендер vite-ssg).
     const path = lang === 'ru' ? '/ru/' : '/'
-    const loaded = page.once('Page.loadEventFired')
-    await page.send('Page.navigate', {
-      url: `http://localhost:${previewPort}${path}?theme=${theme}`,
-    })
-    await loaded
+    const query = new URLSearchParams({ theme })
+    if (width <= MAX_2D_WIDTH) query.set('mode', '2d')
+    await page.navigate(`http://localhost:${previewPort}${path}?${query}`)
     await delay(SETTLE_MS)
-    const { data } = await page.send('Page.captureScreenshot', { format: 'png' })
     const suffix = lang === 'en' ? '' : `-${lang}`
     const file = join(outDir, `${width}x${height}-${theme}${suffix}.png`)
-    writeFileSync(file, Buffer.from(data, 'base64'))
+    writeFileSync(file, await page.screenshot())
     console.log(`shot ${file}`)
-  } finally {
-    page.close()
-    await fetch(`http://127.0.0.1:${debugPort}/json/close/${target.id}`)
-  }
-}
-
-if (!existsSync(chrome)) {
-  console.error(`Chrome not found at ${chrome}; set CHROME_PATH`)
-  process.exit(1)
+  })
 }
 
 if (!process.argv.includes('--no-build')) {
@@ -130,33 +57,21 @@ const server = await preview({
   preview: { port: previewPort, strictPort: true },
   logLevel: 'warn',
 })
-// Свой временный профиль: профиль пользователя не трогаем, localStorage пустой.
-const profile = mkdtempSync(join(tmpdir(), 'aboutme-shots-'))
-const browser = spawn(
-  chrome,
-  [
-    '--headless=new',
-    `--user-data-dir=${profile}`,
-    `--remote-debugging-port=${debugPort}`,
-    '--no-first-run',
-    '--hide-scrollbars',
-    // Иначе на русской системе inline-скрипт уведёт `/` на `/ru/` (navigator.language) и EN-кадры выйдут RU.
-    '--lang=en-US',
-    '--accept-lang=en-US',
-    'about:blank',
-  ],
-  { stdio: 'ignore' },
-)
 
 try {
-  await waitForDebugger()
-  for (const [width, height] of SIZES) {
-    for (const theme of THEMES) await shoot(width, height, theme)
+  // Язык браузера — английский: иначе boot-скрипт по navigator.language (RU-система) уводит `/` на `/ru/`.
+  const browser = await launchChrome({
+    prefix: 'aboutme-shots-',
+    args: ['--lang=en-US', '--accept-lang=en-US'],
+  })
+  try {
+    for (const [width, height] of SIZES) {
+      for (const theme of THEMES) await shoot(browser, width, height, theme)
+    }
+    for (const [width, height, theme] of RU_SHOTS) await shoot(browser, width, height, theme, 'ru')
+  } finally {
+    await browser.close()
   }
-  for (const [width, height, theme] of RU_SHOTS) await shoot(width, height, theme, 'ru')
 } finally {
-  browser.kill()
   await server.close()
-  await delay(500)
-  rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 })
 }

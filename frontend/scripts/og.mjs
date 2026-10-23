@@ -3,21 +3,17 @@
 // Шрифты встраиваются в шаблон data:-URL из node_modules (self-hosted, как на сайте; file:// из
 // setDocumentContent не грузится). Объявлены только используемые начертания: скрипт падает, если какой-то
 // @font-face не загрузился (неиспользуемый остаётся «unloaded»), — так превью не уйдёт на system-ui.
-// Chrome: env CHROME_PATH или стандартный путь Windows. Вьюпорт — через DevTools Protocol, как в shots.mjs.
-import { spawn } from 'node:child_process'
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+// Chrome и DevTools Protocol — scripts/cdp.mjs (CHROME_PATH или стандартные пути).
+import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { setTimeout as delay } from 'node:timers/promises'
 import en from '../../content/en.json' with { type: 'json' }
 import { palette } from '../src/theme/palette.ts'
 import { resolveHighlights } from '../src/content/experience.ts'
+import { launchChrome } from './cdp.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const publicDir = resolve(root, 'public')
-const chrome = process.env.CHROME_PATH ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe'
-const debugPort = 9334
 
 const day = palette.day
 
@@ -136,126 +132,33 @@ svg { display: block; width: ${size}px; height: ${size}px; }
 </style></head><body>${svg}</body></html>`
 }
 
-/** Минимальный CDP-клиент поверх встроенного WebSocket (Node ≥ 22). */
-async function connect(wsUrl) {
-  const socket = new WebSocket(wsUrl)
-  await new Promise((ok, fail) => {
-    socket.addEventListener('open', ok, { once: true })
-    socket.addEventListener('error', fail, { once: true })
-  })
-  let nextId = 0
-  const pending = new Map()
-  socket.addEventListener('message', (event) => {
-    const message = JSON.parse(String(event.data))
-    if (message.id === undefined) return
-    const call = pending.get(message.id)
-    pending.delete(message.id)
-    if (message.error) call?.fail(new Error(message.error.message))
-    else call?.ok(message.result)
-  })
-  return {
-    send(method, params = {}) {
-      const id = ++nextId
-      socket.send(JSON.stringify({ id, method, params }))
-      return new Promise((ok, fail) => pending.set(id, { ok, fail }))
-    },
-    close() {
-      socket.close()
-    },
-  }
-}
-
-async function waitForDebugger() {
-  for (let attempt = 0; attempt < 50; attempt++) {
-    try {
-      const response = await fetch(`http://127.0.0.1:${debugPort}/json/version`)
-      if (response.ok) return
-    } catch {
-      /* Chrome ещё стартует */
-    }
-    await delay(200)
-  }
-  throw new Error('Chrome DevTools endpoint did not come up')
-}
-
-async function evaluate(page, expression) {
-  const { result, exceptionDetails } = await page.send('Runtime.evaluate', {
-    expression,
-    awaitPromise: true,
-    returnByValue: true,
-  })
-  if (exceptionDetails) throw new Error(exceptionDetails.text)
-  return result.value
-}
-
-async function render(html, width, height, file, { transparent = false } = {}) {
-  const response = await fetch(`http://127.0.0.1:${debugPort}/json/new?about:blank`, {
-    method: 'PUT',
-  })
-  const target = await response.json()
-  const page = await connect(target.webSocketDebuggerUrl)
-  try {
-    await page.send('Emulation.setDeviceMetricsOverride', {
-      width,
-      height,
-      deviceScaleFactor: 1,
-      mobile: false,
-    })
+async function render(browser, html, width, height, file, { transparent = false } = {}) {
+  await browser.withPage(async (page) => {
+    await page.setViewport({ width, height })
     if (transparent) {
       await page.send('Emulation.setDefaultBackgroundColorOverride', {
         color: { r: 0, g: 0, b: 0, a: 0 },
       })
     }
-    const { frameTree } = await page.send('Page.getFrameTree')
-    await page.send('Page.setDocumentContent', { frameId: frameTree.frame.id, html })
-    const fonts = await evaluate(
-      page,
+    await page.setContent(html)
+    const fonts = await page.evaluate(
       `document.fonts.ready.then(() => [...document.fonts].map((f) => f.family + ' ' + f.weight + ' ' + f.status))`,
     )
     const failed = fonts.filter((font) => !font.endsWith(' loaded'))
     if (failed.length > 0) throw new Error(`fonts not loaded in ${file}: ${failed.join(', ')}`)
-    const { data } = await page.send('Page.captureScreenshot', {
-      format: 'png',
-      clip: { x: 0, y: 0, width, height, scale: 1 },
-    })
-    writeFileSync(file, Buffer.from(data, 'base64'))
+    writeFileSync(file, await page.screenshot({ clip: { x: 0, y: 0, width, height, scale: 1 } }))
     console.log(`wrote ${file}${fonts.length ? ` (fonts: ${fonts.join('; ')})` : ''}`)
-  } finally {
-    page.close()
-    await fetch(`http://127.0.0.1:${debugPort}/json/close/${target.id}`)
-  }
+  })
 }
 
-if (!existsSync(chrome)) {
-  console.error(`Chrome not found at ${chrome}; set CHROME_PATH`)
-  process.exit(1)
-}
-
-// Свой временный профиль: профиль пользователя не трогаем.
-const profile = mkdtempSync(join(tmpdir(), 'aboutme-og-'))
-const browser = spawn(
-  chrome,
-  [
-    '--headless=new',
-    `--user-data-dir=${profile}`,
-    `--remote-debugging-port=${debugPort}`,
-    '--no-first-run',
-    '--hide-scrollbars',
-    'about:blank',
-  ],
-  { stdio: 'ignore' },
-)
-
+const browser = await launchChrome({ prefix: 'aboutme-og-' })
 try {
-  await waitForDebugger()
-  await render(ogHtml(), 1200, 630, join(publicDir, 'og.png'))
+  await render(browser, ogHtml(), 1200, 630, join(publicDir, 'og.png'))
   for (const size of [192, 512]) {
-    await render(iconHtml(size), size, size, join(publicDir, `favicon-${size}.png`), {
+    await render(browser, iconHtml(size), size, size, join(publicDir, `favicon-${size}.png`), {
       transparent: true,
     })
   }
 } finally {
-  browser.kill()
-  await delay(500)
-  rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 })
+  await browser.close()
 }

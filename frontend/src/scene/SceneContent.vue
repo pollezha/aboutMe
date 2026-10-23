@@ -8,6 +8,7 @@ import { useUiStore } from '../stores/ui'
 import { palette } from '../theme/palette'
 import BackgroundHouses from './buildings/BackgroundHouses.vue'
 import Building from './buildings/Building.vue'
+import { ISLAND_FRAMING, OVERLAY_FRAMING } from './framing'
 import Labels from './Labels.vue'
 import { ISLAND_SIZE, island, roads, stops } from './layout'
 import { createSceneMaterials } from './materials'
@@ -15,17 +16,18 @@ import { chapterClickHandler } from './pick'
 import Truck from './Truck.vue'
 import { useCamera } from './useCamera'
 
+const props = withDefaults(
+  defineProps<{
+    /** overlay — первый экран под HTML-слоем; island — рендер острова для 2D-карты, без подписей. */
+    framing?: 'overlay' | 'island'
+  }>(),
+  { framing: 'overlay' },
+)
+
 const emit = defineEmits<{ hover: [boolean] }>()
 
-/** Половина высоты кадра в units: остров (≈ 155 по диагонали) целиком помещается с запасом. */
-const VIEW_HALF_HEIGHT = 66
-/**
- * Сдвиг кадра в долях половины высоты (экранный, поэтому при повороте карты остров стоит на месте):
- * вправо — от Hero (400 px слева сверху, figma-state heroDecision.sceneCrops), вверх — от нижнего бара.
- * Проверено на 1440×900 и 1280×720: остров целиком, здания остановок не под Hero.
- */
-const VIEW_SHIFT_X = -0.3
-const VIEW_SHIFT_Y = -0.08
+const frame = props.framing === 'island' ? ISLAND_FRAMING : OVERLAY_FRAMING
+const VIEW_HALF_HEIGHT = frame.halfHeight
 const CAMERA_DISTANCE = 200 * Math.sqrt(3)
 const WATER_SIZE = ISLAND_SIZE * 8
 
@@ -38,8 +40,8 @@ const box = new BoxGeometry(1, 1, 1)
 
 const aspect = computed(() => sizes.aspectRatio.value || 1)
 const halfWidth = computed(() => VIEW_HALF_HEIGHT * aspect.value)
-const shiftX = VIEW_SHIFT_X * VIEW_HALF_HEIGHT
-const shiftY = VIEW_SHIFT_Y * VIEW_HALF_HEIGHT
+const shiftX = frame.centerX
+const shiftY = frame.centerY
 
 const reducedMotion =
   typeof window !== 'undefined' && typeof window.matchMedia === 'function'
@@ -133,5 +135,5 @@ onBeforeUnmount(() => {
 
   <Truck :geometry="box" :materials="materials" :instant="instant" />
 
-  <Labels />
+  <Labels v-if="framing === 'overlay'" />
 </template>

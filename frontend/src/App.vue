@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, shallowRef, watch, type Component } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { CONTENT_LANGS, contentFor } from './content/bundles'
@@ -21,7 +21,7 @@ import { langOf, pathFor } from './router'
 import { SCENE_TIMEOUT_MS, loadSceneWhenIdle, type SceneLoad } from './scene'
 import { MIN_3D_WIDTH, detectWebGL2, shouldUse3D } from './scene/shouldUse3D'
 import { mapRotation } from './scene/useCamera'
-import { isTheme, useUiStore, type Theme } from './stores/ui'
+import { isTheme, useUiStore, type Mode, type Theme } from './stores/ui'
 import BottomBar, { type BottomBarStop } from './ui/BottomBar.vue'
 import ChapterWindow from './ui/ChapterWindow.vue'
 import HeroCard from './ui/HeroCard.vue'
@@ -68,11 +68,19 @@ useSiteHead(() => ({
 // приложение заново (без гидрации), поэтому этот блок есть только в статическом HTML и не дублирует окна.
 const prerender = import.meta.env.SSR || typeof window === 'undefined'
 
+const query = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+
 // ?theme=night переопределяет сохранённую тему (ссылки на конкретную тему, скриншоты), но не запоминается.
-if (typeof window !== 'undefined') {
-  const queryTheme = new URLSearchParams(window.location.search).get('theme')
-  if (isTheme(queryTheme)) ui.previewTheme(queryTheme)
-}
+const queryTheme = query?.get('theme') ?? null
+if (isTheme(queryTheme)) ui.previewTheme(queryTheme)
+
+// ?mode=2d|3d переопределяет сохранённый выбор на этот визит (ссылки, скриншоты), но не запоминается;
+// 3D и по ссылке — только там, где оно возможно (ширина, WebGL). Кнопка переключения важнее ссылки.
+const queryMode = query?.get('mode')
+let urlMode: Mode | null = queryMode === '2d' || queryMode === '3d' ? queryMode : null
+
+// ?shot=island — только сцена, без HTML-слоя и подписей: кадр рендера острова для 2D-карты (npm run island).
+const shot = query?.get('shot') === 'island'
 
 watch(() => ui.theme, ui.applyTheme, { immediate: true })
 
@@ -84,24 +92,39 @@ function isWide() {
 }
 
 // Сцена не загрузилась в этом визите — до перезагрузки страницы в 3D не возвращаемся (и при смене ширины).
-let sceneFailed = false
+const sceneFailed = ref(false)
+const webgl = typeof window !== 'undefined' && detectWebGL2()
+
+function use3D(userChoice: Mode | null) {
+  if (typeof window === 'undefined' || sceneFailed.value) return false
+  const nav = navigator as Navigator & { deviceMemory?: number }
+  return shouldUse3D({
+    width: isWide() ? MIN_3D_WIDTH : 0,
+    webgl,
+    deviceMemory: nav.deviceMemory,
+    userChoice,
+  })
+}
 
 function detectMode() {
   if (typeof window === 'undefined') return
-  const nav = navigator as Navigator & { deviceMemory?: number }
-  const use3D =
-    !sceneFailed &&
-    shouldUse3D({
-      width: isWide() ? MIN_3D_WIDTH : 0,
-      webgl: detectWebGL2(),
-      deviceMemory: nav.deviceMemory,
-      userChoice: ui.userChoice,
-    })
-  ui.setMode(use3D ? '3d' : '2d')
+  ui.setMode(use3D(urlMode ?? ui.userChoice) ? '3d' : '2d')
 }
 
 detectMode()
 watch(breakpoint, detectMode)
+
+// «Switch to 2D/3D» в верхних контролах: из 3D в 2D — всегда, из 2D в 3D — только если сцена здесь
+// возможна (на ширине < 768, без WebGL2 или после сбоя сцены кнопки нет). Выбор запоминается.
+const canSwitchMode = computed(
+  () => breakpoint.value !== 'mobile' && (ui.mode === '3d' || use3D(null)),
+)
+const modeLabel = computed(() => (ui.mode === '3d' ? t('topBar.to2d') : t('topBar.to3d')))
+
+function switchMode() {
+  urlMode = null
+  ui.chooseMode(ui.mode === '3d' ? '2d' : '3d')
+}
 
 // Сцена: ленивый чанк после простоя, таймаут → 2D с баннером (design §4 «Загрузка», UX9).
 const sceneComponent = shallowRef<Component>()
@@ -134,7 +157,7 @@ function startScene() {
 function failScene() {
   if (ui.sceneState !== 'loading') return
   stopSceneLoading()
-  sceneFailed = true
+  sceneFailed.value = true
   ui.sceneTimedOut()
 }
 
@@ -310,98 +333,112 @@ onBeforeUnmount(() => {
 <template>
   <div
     class="app"
-    :class="[`app--${ui.mode}`, `app--${layout}`, `app--${breakpoint}`]"
+    :class="[`app--${ui.mode}`, `app--${layout}`, `app--${breakpoint}`, { 'app--shot': shot }]"
     :data-theme="ui.theme"
   >
     <div v-if="ui.mode === '3d' && sceneComponent" class="scene-layer">
-      <component :is="sceneComponent" @ready="onSceneReady" />
+      <component
+        :is="sceneComponent"
+        :framing="shot ? 'island' : 'overlay'"
+        @ready="onSceneReady"
+      />
     </div>
     <!-- Заглушка под сценой: плавно уходит, когда сцена нарисовала первый кадр. -->
     <Transition name="scene-fade">
       <div
-        v-if="ui.mode === '3d' && ui.sceneState !== 'ready'"
+        v-if="!shot && ui.mode === '3d' && ui.sceneState !== 'ready'"
         class="scene-placeholder"
         aria-hidden="true"
       />
     </Transition>
     <SceneLoading
-      v-if="ui.mode === '3d' && ui.sceneState === 'loading'"
+      v-if="!shot && ui.mode === '3d' && ui.sceneState === 'loading'"
       class="app__scene-loading"
       @skip="continueWithout3D"
     />
 
-    <header class="top-bar">
-      <span v-if="layout === 'stacked'" class="top-bar__brand t-label-caption">
-        YP · .NET backend
-      </span>
-      <div class="top-bar__actions">
-        <IconButton
-          v-if="ui.mode === '3d'"
-          class="top-bar__rotate"
-          icon="rotate"
-          :label="t('topBar.rotate')"
-          :title="t('topBar.rotateHint')"
-          @click="mapRotation.rotate()"
-        />
-        <IconButton
-          v-if="ui.mode === '3d'"
-          :icon="ui.motionPaused ? 'play' : 'pause'"
-          :label="t('topBar.pause')"
-          :pressed="ui.motionPaused"
-          @click="ui.toggleMotion()"
-        />
-        <IconButton
-          v-if="layout === 'stacked'"
-          icon="theme"
-          :label="themeLabel"
-          @click="ui.cycleTheme()"
-        />
-        <IconButton
-          v-if="layout === 'stacked' && showLang"
-          icon="lang"
-          :label="t('lang.label')"
-          @click="ui.toggleLang()"
-        />
-      </div>
-    </header>
+    <template v-if="!shot">
+      <header class="top-bar">
+        <span v-if="layout === 'stacked'" class="top-bar__brand t-label-caption">
+          YP · .NET backend
+        </span>
+        <div class="top-bar__actions">
+          <IconButton
+            v-if="ui.mode === '3d'"
+            class="top-bar__rotate"
+            icon="rotate"
+            :label="t('topBar.rotate')"
+            :title="t('topBar.rotateHint')"
+            @click="mapRotation.rotate()"
+          />
+          <IconButton
+            v-if="ui.mode === '3d'"
+            :icon="ui.motionPaused ? 'play' : 'pause'"
+            :label="t('topBar.pause')"
+            :pressed="ui.motionPaused"
+            @click="ui.toggleMotion()"
+          />
+          <IconButton
+            v-if="canSwitchMode"
+            class="top-bar__mode"
+            icon="map"
+            :label="modeLabel"
+            :title="modeLabel"
+            @click="switchMode"
+          />
+          <IconButton
+            v-if="layout === 'stacked'"
+            icon="theme"
+            :label="themeLabel"
+            @click="ui.cycleTheme()"
+          />
+          <IconButton
+            v-if="layout === 'stacked' && showLang"
+            icon="lang"
+            :label="t('lang.label')"
+            @click="ui.toggleLang()"
+          />
+        </div>
+      </header>
 
-    <main class="app__main">
-      <SceneFallbackBanner
-        v-if="ui.sceneState === 'failed'"
-        class="app__scene-banner"
-        @dismiss="ui.dismissSceneBanner()"
-      />
-      <HeroCard
-        class="app__hero"
-        :variant="heroVariant"
-        :profile="profile"
-        :highlights="highlights"
-        :links="links"
-        :contact-label="t('hero.contact')"
-        :cv-label="cvLink?.label ?? ''"
-        :telegram-label="telegramLink?.label ?? ''"
+      <main class="app__main">
+        <SceneFallbackBanner
+          v-if="ui.sceneState === 'failed'"
+          class="app__scene-banner"
+          @dismiss="ui.dismissSceneBanner()"
+        />
+        <HeroCard
+          class="app__hero"
+          :variant="heroVariant"
+          :profile="profile"
+          :highlights="highlights"
+          :links="links"
+          :contact-label="t('hero.contact')"
+          :cv-label="cvLink?.label ?? ''"
+          :telegram-label="telegramLink?.label ?? ''"
+          @contact="ui.openChapter('contact')"
+        />
+        <StaticMap v-if="ui.mode === '2d'" class="app__map" :variant="mapVariant" @open="open" />
+      </main>
+
+      <BottomBar
+        class="app__bar"
+        :variant="barVariant"
+        :stops="stops"
+        :profile="barProfile"
+        :nav-label="t('bar.nav')"
+        :contact-label="t('bar.contact')"
+        :monitoring-label="t('bar.monitoring')"
+        :theme-label="themeLabel"
+        :lang-label="t('lang.label')"
+        :show-lang="showLang"
+        @open="open"
         @contact="ui.openChapter('contact')"
+        @monitoring="ui.openChapter('monitoring')"
+        @toggle-theme="ui.cycleTheme()"
+        @toggle-lang="ui.toggleLang()"
       />
-      <StaticMap v-if="ui.mode === '2d'" class="app__map" :variant="mapVariant" @open="open" />
-    </main>
-
-    <BottomBar
-      class="app__bar"
-      :variant="barVariant"
-      :stops="stops"
-      :profile="barProfile"
-      :nav-label="t('bar.nav')"
-      :contact-label="t('bar.contact')"
-      :monitoring-label="t('bar.monitoring')"
-      :theme-label="themeLabel"
-      :lang-label="t('lang.label')"
-      :show-lang="showLang"
-      @open="open"
-      @contact="ui.openChapter('contact')"
-      @monitoring="ui.openChapter('monitoring')"
-      @toggle-theme="ui.cycleTheme()"
-      @toggle-lang="ui.toggleLang()"
-    />
+    </template>
 
     <ChapterWindow
       v-if="windowChapter && windowText"

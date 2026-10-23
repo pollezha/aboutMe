@@ -134,6 +134,13 @@ export const useUiStore = defineStore('ui', () => {
     sceneState.value = next
   }
 
+  /** Кнопка «Switch to 2D/3D»: режим сейчас и при следующих визитах. */
+  function chooseMode(next: Mode) {
+    userChoice.value = next
+    save(KEY.sceneChoice, next)
+    mode.value = next
+  }
+
   /** «Continue without 3D»: 2D сейчас и при следующих визитах. */
   function continueWithout3D() {
     userChoice.value = '2d'
@@ -189,6 +196,7 @@ export const useUiStore = defineStore('ui', () => {
     toggleMotion,
     setMode,
     setSceneState,
+    chooseMode,
     continueWithout3D,
     sceneTimedOut,
     dismissSceneBanner,

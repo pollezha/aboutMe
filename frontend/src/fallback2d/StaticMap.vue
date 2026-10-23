@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import map from '../../scripts/design/figma-2d-map.json'
 import type { ChapterId } from '../content/chapters'
 import { useChapterLabel } from '../i18n'
+import { useUiStore } from '../stores/ui'
+import { ISLAND_RENDER_HEIGHT, ISLAND_RENDER_WIDTH, islandRenderUrl } from './render'
 
-// 2D-режим (FR10): статичная картинка острова + кнопки-хотспоты поверх (Figma Tablet 34:771, Phone 56:1398).
-// Геометрия — проценты от рамки карты, снимок figma-2d-map.json; имена хотспотов — подписи глав из i18n
-// («Profile · About me»), а не `label` снимка (он только на английском).
+// 2D-режим (FR10): рендер острова в теме сайта + кнопки-хотспоты поверх (Figma Tablet 34:771, Phone 56:1398).
+// Геометрия — проценты от рамки карты (figma-2d-map.json, сверена с рендером в framing.spec.ts); имена
+// хотспотов — подписи глав из i18n, а не `label` снимка (он только на английском).
+// Картинка — LCP-элемент 2D-режима: fetchpriority=high, размеры заданы (без сдвига раскладки).
 
 interface Hotspot {
   id: ChapterId
@@ -18,19 +21,15 @@ interface Hotspot {
   height: number
 }
 
-const props = withDefaults(
-  defineProps<{
-    variant: 'tablet' | 'phone'
-    /** Рендер острова (этап 3); пока файла нет — видна заливка моря. */
-    src?: string
-  }>(),
-  { src: '/img/island-day.webp' },
-)
+const props = defineProps<{ variant: 'tablet' | 'phone' }>()
 
 const emit = defineEmits<{ open: [id: ChapterId] }>()
 
 const { t } = useI18n()
 const chapterLabel = useChapterLabel()
+const ui = useUiStore()
+const src = computed(() => islandRenderUrl(ui.theme))
+const srcset = computed(() => `${islandRenderUrl(ui.theme)} 1x, ${islandRenderUrl(ui.theme, 2)} 2x`)
 
 const hotspots = computed(() =>
   (map.hotspots[props.variant] as Hotspot[]).map((spot) => {
@@ -38,7 +37,13 @@ const hotspots = computed(() =>
     return { ...spot, label: `${title} · ${subtitle}` }
   }),
 )
+/** Имя кнопки: номер остановки и глава — как у подписи здания в 3D («02 ProSpace · Latest role»). */
+const nameOf = (spot: Hotspot & { label: string }) =>
+  spot.index ? `${spot.index} ${spot.label}` : spot.label
+
+// Нет файла — видна заливка моря; у другой темы своя картинка, пробуем её заново.
 const imageFailed = ref(false)
+watch(src, () => (imageFailed.value = false))
 
 function boxStyle(spot: Hotspot) {
   return {
@@ -56,8 +61,12 @@ function boxStyle(spot: Hotspot) {
       v-if="!imageFailed"
       class="static-map__image"
       :src="src"
+      :srcset="srcset"
+      :width="ISLAND_RENDER_WIDTH"
+      :height="ISLAND_RENDER_HEIGHT"
       :alt="t('map.alt')"
       fetchpriority="high"
+      decoding="async"
       @error="imageFailed = true"
     />
     <button
@@ -65,7 +74,7 @@ function boxStyle(spot: Hotspot) {
       :key="spot.id"
       type="button"
       class="hotspot"
-      :aria-label="spot.label"
+      :aria-label="nameOf(spot)"
       :style="boxStyle(spot)"
       @click="emit('open', spot.id)"
     >

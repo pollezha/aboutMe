@@ -7,7 +7,9 @@
   "topBar": {
     "rotate": "Rotate map",
     "rotateHint": "Rotate map · R",
-    "pause": "Pause animation"
+    "pause": "Pause animation",
+    "to2d": "Switch to 2D",
+    "to3d": "Switch to 3D"
   },
   "theme": {
     "label": "Theme: {current}. Switch to {next}",
