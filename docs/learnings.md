@@ -12,45 +12,8 @@
 
 Если урок повторился дважды — он должен быть закреплён механически (тест, линтер, хук), а не только текстом.
 
-## 2026-10-20 — этап 1, T1: версии и тестовый раннер .NET 10
-- Что случилось: xUnit v3 4.x работает на Microsoft.Testing.Platform; `dotnet test` в .NET 10 SDK падает с
-  «Testing with VSTest target is no longer supported», пока MTP не включён. Шаблон Aspire ServiceDefaults
-  маппит `/health` и `/alive` только в Development.
-- Правило на будущее: `global.json` → `"test": { "runner": "Microsoft.Testing.Platform" }`, без
-  Microsoft.NET.Test.Sdk; `using Xunit;` писать явно. Health-эндпоинты маппятся во всех средах (нужны CD и
-  мониторингу). Версии пакетов сверять по NuGet/context7, а не по памяти: на 2026-10 Aspire 13.6.1,
-  OpenTelemetry 1.20, Microsoft.Extensions.* 10.11, xunit.v3 4.0.2.
-- Куда закреплено: global.json, тест DefaultEndpointsTests (Production → 200).
-
-## 2026-10-20 — этап 1, T3: Aspire 13.6 AppHost
-- Что случилось: шаблон AppHost включает `AspireUseCliBundle`; сборка сама ставит Aspire CLI (DCP + дашборд)
-  через `dnx aspire.cli setup` с лимитом 120 с — на этом канале установка шла 3,5 мин и сборка падала
-  ASPIRE009. Aspire.Hosting 13.6.1 транзитивно тянет MessagePack 2.5.302 с уязвимостью (GHSA-qhrr-8q5h-9q3h),
-  NU1902 при TreatWarningsAsErrors роняет сборку. Без `launchSettings.json` у сервиса Aspire не видит его
-  HTTP-эндпоинт, и `WithHttpHealthCheck` падает.
-- Правило на будущее: на новой машине и в CI сначала `dotnet dnx --yes aspire.cli@<версия> -- setup
-  --install-path ~/.aspire` (в CI — кэшировать `~/.aspire`). Уязвимые транзитивные пакеты поднимать
-  пиннингом в Directory.Packages.props (`CentralPackageTransitivePinningEnabled`), не глушить NU190x.
-  У каждого сервиса — `Properties/launchSettings.json` с профилем http.
-- Куда закреплено: Directory.Packages.props, тест AppHostTests; шаг установки — в T6 (CI) и README (T7).
-- Источник истины версии Aspire — Sdk в `src/AppHost/AppHost.csproj`; CI читает оттуда.
-
-## 2026-10-20 — этап 1, T4: версии фронтенда
-- Что случилось: последний TypeScript — 7.x (нативный порт), но typescript-eslint 8.72 требует `typescript <6.1`,
-  а совместимость vue-tsc с TS 7 не подтверждена.
-- Правило на будущее: держать `typescript ~6.0` до поддержки TS 7 в typescript-eslint и vue-tsc; при обновлении
-  сначала `npm view typescript-eslint peerDependencies`.
-- Куда закреплено: frontend/package.json (`~6.0.3`).
-
-## 2026-10-21 — ревью этапа 1: хук защиты файлов
-- Что случилось: хук проверял только путь у Edit/Write; через Bash/PowerShell (`sed -i`, `cp`, `Set-Content`,
-  `cat .env`) защищённые файлы были доступны. Переписывание проверки команд на bash-регэкспах заняло 6 итераций
-  и всё равно было хрупким (кавычки в `${var//…}`, `\b`, точки в токенах).
-- Правило на будущее: логику хуков писать на node (`.js`), bash — только обёртка; держать матрицу
-  «должно блокировать / должно пройти» и гонять её после каждой правки хука.
-- Куда закреплено: `.claude/hooks/guard-protected-files.js`, matcher `Bash|PowerShell` в settings.json;
-  тесты — `.claude/hooks/guard-protected-files.test.js` (node:test, 49 кейсов); раунд 2 ревью нашёл пропуск `>> .env`
-  и ложные срабатывания на `;`/`|` внутри кавычек — закрыто тестами.
+Закреплённые механически уроки этапов 1–2 — в `docs/learnings-archive.md`. На шлюзе этапа переносить туда
+записи, у которых «Куда закреплено» — тест, линтер, CI или конфиг.
 
 ## 2026-10-21 — этап 1: процесс ревью и оркестрации
 - Что случилось: 4 reviewer дали 13 находок, verifier снизил severity у 9 и отклонил 2 — ревьюеры
@@ -62,53 +25,6 @@
   worktree (как и записано в /implement); правку хука делать так: сначала тест в `.test.js`, потом код,
   `node --test` до коммита.
 - Куда закреплено: REVIEW.md (severity без сценария → не major), /implement (worktree), тесты хука.
-
-## 2026-10-22 — этап 2, T1/T2: токены и шрифты из Figma
-- Что случилось: Bricolage Grotesque не имеет кириллицы (fontsource: latin/latin-ext/vietnamese) — RU-версия
-  уйдёт на system-ui; в Figma RU-макеты это не покажут. Vitest отдаёт CSS пустой строкой даже при `?raw` —
-  нужен `test.css.include`. Subset-css fontsource (`cyrillic-400.css`) без unicode-range: два subset через них
-  перекрывают друг друга — только свой @font-face. Prettier приводит hex к нижнему регистру. Worktree
-  implementer стартовал от старого main — агенту пришлось самому делать `merge --ff-only`.
-- Правило на будущее: выбирать шрифт с нужными subset ДО фиксации в Figma (проверять `npm view
-  @fontsource/<x>` → files); перед запуском implementer в worktree убедиться, что main запушен/актуален и
-  сказать агенту `git merge --ff-only main` первым шагом; генерируемые файлы прогонять через prettier в
-  генераторе, тесты сравнивать без учёта регистра hex.
-- Куда закреплено: fonts.spec (бюджет и subsets), palette.spec (имена = снимок), /implement (строка про ff-only).
-
-## 2026-10-22 — этап 2: красный CI из-за снимков дизайна
-- Что случилось: оркестратор закоммитил выгрузки из Figma (`figma-components.md`, `figma-2d-map.json` с ручным
-  выравниванием) без `format:check` — локально проверялись только тесты затронутой части; CI упал на prettier.
-- Правило на будущее: любой коммит в `frontend/` — хотя бы `npm run format:check` перед ним; файлы-снимки
-  (`scripts/design/`) целиком в `.prettierignore`, а не по одному.
-- Куда закреплено: `.prettierignore` (папка), этот урок; при следующем повторе — pre-commit хук.
-
-## 2026-10-22 — этап 2, T6: скриншоты и раскладка
-- Что случилось: headless Chrome не рендерит окно уже своей минимальной ширины — `--window-size=390` даёт
-  обрезанный справа кадр; `spawnSync` Chrome из того же процесса, где крутится vite `preview()`, вешает сервер.
-  Панель laptop не влезает ниже ~1150 px — понадобился четвёртый режим (768–1279 stacked).
-- Правило на будущее: скриншоты узких вьюпортов — через DevTools Protocol (`Emulation.setDeviceMetricsOverride`),
-  Chrome запускать асинхронно; брейкпоинты фиксировать в одном месте (`useBreakpoint`) и сверять с Figma.
-- Куда закреплено: `frontend/scripts/shots.mjs`, `src/ui/useBreakpoint.ts`, App.spec (tablet-кейс).
-
-## 2026-10-22 — этап 2, T7: OG и favicon через headless Chrome
-- Что случилось: `Page.setDocumentContent` не грузит file://-ресурсы — шрифты для OG-рендера пришлось встраивать
-  data:-URL; неиспользуемый @font-face в CDP остаётся «unloaded», строгая проверка «все loaded» ложно падает;
-  prettier переносит длинные `<meta>` на несколько строк — тесты по HTML гонять после схлопывания пробелов.
-- Правило на будущее: в генераторах картинок объявлять только используемые начертания; CDP-клиент вынести в
-  общий `scripts/cdp.mjs` (сейчас продублирован в shots.mjs и og.mjs).
-- Куда закреплено: seo-assets.spec; TODO в плане этапа 3 — общий cdp.mjs.
-
-## 2026-10-22 — ревью этапа 2: дрейф снимка Figma и «назад» на телефоне
-- Что случилось: снимок токенов был снят до правок дизайн-агента в Figma → фокус-кольцо в коде осталось жёлтым
-  (1,4:1), а design-review.md уже утверждал, что исправлено. Окно открывалось через replaceState — «Назад» на
-  телефоне уводило с сайта. Переключатель языка ставил `lang=ru` на EN-страницу. prev/next теряли фокус.
-- Правило на будущее: (1) перед шлюзом этапа — повторный экспорт переменных из Figma и сверка со снимком
-  (CI ловит только снимок↔код, не Figma↔снимок); (2) любое «окно/панель поверх страницы» — через history.pushState
-  с закрытием по popstate, проверять «Back закрывает, не уводит» тестом; (3) не включать UI-переключатели
-  (язык, режим) раньше, чем есть контент под них; (4) при смене контента внутри открытого диалога — фокус на
-  заголовок + scrollTop 0; (5) 4 ревьюера + verifier окупились: 15 подтверждённых находок, 0 ложных.
-- Куда закреплено: App.spec (история, фокус, lang), palette.spec (focus-ring ≥ 3:1, pin-ink), CI-шаг дрейфа
-  токенов (ci.yml), чек-лист шлюза в roadmap («перед шлюзом — re-export Figma → снимок»).
 
 ## 2026-10-23 — этап 3, T1: схема контента глав
 - Что случилось: ajv в strict-режиме отказывается компилировать схему, где внутри `if/then` в `required` стоит
@@ -175,3 +91,11 @@
 - Урок: подписи бара проверять скриншотом на 390, а не правилом; бинарные артефакты (кадры) в конфликте всегда
   перегенерировать; задачи одной волны, трогающие `App.vue`, лучше не запускать параллельно либо принимать, что
   слияние делает последний исполнитель.
+
+## 2026-10-23 — этап 3, T12: Lighthouse CI локально
+- Что случилось: антивирус (Kaspersky) встраивает http-скрипт в каждую страницу Chrome и распаковывает HTML —
+  локальные BP и perf занижены, эталон — CI; LHCI, как и скриншотам, нужен `--lang=en-US`; у аудита `user-timings`
+  нет `numericValue` — `scene_ready` меряется своим CDP-скриптом (`npm run perf:scene`).
+- Урок: инфраструктуру бюджетов принимать отдельно от их выполнения; базовая линия (mobile): perf .83/.77,
+  LCP 2.7/3.0 с, TBT 400–500 мс, `scene_ready` 4.5 с — чанк сцены стартует только после idle (~2.1 с). Оптимизация —
+  отдельная задача T12b (modulepreload сцены, старт до idle, меньше main JS, критический CSS).
