@@ -12,6 +12,8 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.20.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.20.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.20.0" />
+    <!-- Kafka: обёртка проброса trace context и общий конфиг (ADR-0002, E4-T0) -->
+    <PackageVersion Include="Confluent.Kafka" Version="2.16.0" />
     <!-- AppHost: транзитивно из Aspire.Hosting 13.6.1; 2.5.302 уязвима (GHSA-qhrr-8q5h-9q3h) -->
     <PackageVersion Include="MessagePack" Version="2.5.303" />
     <!-- Gateway -->
@@ -25,6 +27,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.13" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="10.0.13" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.16.0" />
+    <PackageVersion Include="Testcontainers.Kafka" Version="4.16.0" />
     <PackageVersion Include="xunit.v3" Version="4.0.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
   </ItemGroup>

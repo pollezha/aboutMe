@@ -216,6 +216,8 @@ CORS: только домены сайта; разрешены методы `GET
                                         // cta_click{cta: contact|cv|telegram|github|hh|email|bottle}, web_vital{name,value}
 }
 ```
+Источник истины по полям и допустимым значениям (включая лимиты payload и правила валидации) — код
+`src/Contracts/Events` (`SiteEvent`, `IncomingEvent`, `EventTypes.cs`, `EventValidator`); пример выше — иллюстрация.
 Сериализация — JSON (System.Text.Json, source generators). Эволюция: только добавление необязательных полей;
 несовместимое изменение → новый топик `site.events.v2`. Schema Registry не используем — один продюсер, схемы
 в общем проекте `Contracts` (ADR-0002).

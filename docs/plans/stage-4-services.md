@@ -41,7 +41,7 @@
 ## Задачи
 Каждая задача: укладывается в половину контекста, даёт рабочее состояние, один коммит.
 
-- [ ] T0 — Spike: Kafka в Testcontainers и проброс trace context через заголовки (E4-T0, лимит 0,5 дня)
+- [x] T0 — Spike: Kafka в Testcontainers и проброс trace context через заголовки (E4-T0, лимит 0,5 дня)
   - Файлы: `src/ServiceDefaults/Kafka/KafkaTracePropagation.cs` (инъекция `traceparent`/`tracestate` в
     `Headers` продюсера и извлечение родителя при consume через `Propagators.DefaultTextMapPropagator`;
     `ActivitySource` `aboutMe.Kafka`, спаны `produce site.events.v1` / `process site.events.v1` с атрибутами
@@ -58,7 +58,7 @@
     Если за 0,5 дня трейс не пробрасывается — записать причину и предложить обход (ручной `traceparent` в payload).
   - Зависит от: —
 
-- [ ] T1 — Contracts: событие `site.events.v1` и валидация (E4-T1)
+- [x] T1 — Contracts: событие `site.events.v1` и валидация (E4-T1)
   - Файлы: `src/Contracts/Contracts.csproj`, `src/Contracts/Events/SiteEvent.cs` (record: eventId, type, occurredAt,
     receivedAt, sessionHash, lang, theme, device, payload — по §5.4), `src/Contracts/Events/EventTypes.cs`,
     `src/Contracts/Events/IncomingEvent.cs` (то, что шлёт браузер: без sessionHash/receivedAt/device, c sessionId),
