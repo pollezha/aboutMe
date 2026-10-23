@@ -1,6 +1,6 @@
 import type { ContentBundle, ContentLang } from './types'
 
-// Снимки контента content/<lang>.json, какие есть на момент сборки (ru.json появится в T6).
+// Снимки контента content/<lang>.json, какие есть на момент сборки.
 const modules = import.meta.glob<ContentBundle>('../../../content/*.json', {
   eager: true,
   import: 'default',

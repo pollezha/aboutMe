@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import App from '../App.vue'
-import { createAppI18n } from '../i18n'
+import { appPlugins } from './appPlugins'
 
 // Посещённые остановки в баре (решение 19 ревью): 2D-режим, WebGL нет — three не нужен.
 const dialogProto = HTMLDialogElement.prototype
@@ -35,7 +35,7 @@ afterEach(() => {
 async function mountApp() {
   const pinia = createPinia()
   setActivePinia(pinia)
-  wrapper = mount(App, { global: { plugins: [pinia, createAppI18n()] }, attachTo: document.body })
+  wrapper = mount(App, { global: { plugins: appPlugins(pinia) }, attachTo: document.body })
   await flushPromises()
   return wrapper
 }
