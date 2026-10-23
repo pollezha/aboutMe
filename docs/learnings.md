@@ -91,3 +91,22 @@
 - Урок: подписи бара проверять скриншотом на 390, а не правилом; бинарные артефакты (кадры) в конфликте всегда
   перегенерировать; задачи одной волны, трогающие `App.vue`, лучше не запускать параллельно либо принимать, что
   слияние делает последний исполнитель.
+
+## 2026-10-23 — этап 4, T0: spike Kafka в Testcontainers + trace context в заголовках
+- Что случилось: проброс заработал с первого прогона — consume-спан получает `TraceId` запроса и `ParentSpanId`
+  спана produce; сообщение без заголовков даёт новый корневой трейс. Образ `apache/kafka:4.1.1` (KRaft, без
+  ZooKeeper), `Testcontainers.Kafka` 4.16.0 (`new KafkaBuilder(image)`, вендор по имени образа), `Confluent.Kafka`
+  2.16.0. Старт: ryuk ~2 с + Kafka ~5–6 с (≈ 8 с на класс), прогон 10 тестов ServiceDefaults ≈ 19 с при скачанном
+  образе (первый `docker pull` — отдельно).
+- Подводные камни: `Propagators.DefaultTextMapPropagator` без OpenTelemetry SDK — no-op (заголовки молча не
+  пишутся); его ставит SDK при сборке `TracerProvider` — в тестах нужен `Sdk.CreateTracerProviderBuilder()`, в
+  сервисах это делает `AddServiceDefaults()`. `ActivitySource.StartActivity` без слушателя возвращает null — код
+  обёртки и сервисов должен это терпеть. Слушатели глобальны в процессе: тесты, создающие `TracerProvider`, —
+  в одной коллекции xUnit без параллелизма. Консьюмер с новой group и дефолтным `auto.offset.reset=latest` не
+  видит уже отправленное — `KafkaDefaults` ставит `Earliest`; топик в тесте создавать `AdminClient`-ом до
+  подписки. `delivery.timeout.ms` в Confluent.Kafka — свойство `MessageTimeoutMs` (синоним в librdkafka).
+  Новый корень без заголовков — только если цикл консьюмера не идёт внутри чужого `Activity.Current`.
+- Правило на будущее: продюсер и консьюмеры пишут/читают trace context только через
+  `ServiceDefaults.Kafka.KafkaTracePropagation`, конфиг — через `KafkaDefaults.Apply*`/`Create*`.
+- Куда закреплено: тест (`tests/ServiceDefaults.Tests/KafkaTracePropagationTests.cs`,
+  `KafkaTelemetryRegistrationTests.cs`).
