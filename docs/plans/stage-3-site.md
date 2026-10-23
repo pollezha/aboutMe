@@ -140,7 +140,7 @@ Roadmap: docs/plans/roadmap.md, этап 3 (E3-T1…T10) · ADR: 0003 (HTML по
     отмечает `visited` (sessionStorage, решение 19).
   - Зависит от: T8.
 
-- [ ] T10 — 2D-режим: рендеры острова по темам, явный выбор, `?mode=2d`
+- [x] T10 — 2D-режим: рендеры острова по темам, явный выбор, `?mode=2d`
   - Файлы: `frontend/scripts/island.mjs` (headless Chrome → `public/img/island-{day,evening,night}.webp`
     и `@2x`; общий `scripts/cdp.mjs`, выделенный из `shots/og/cv`), `fallback2d/StaticMap.vue` (`src` по теме,
     `srcset`, `fetchpriority=high` — LCP), `App.vue` (`?mode=2d`, кнопка «Switch to 2D/3D» в верхних
