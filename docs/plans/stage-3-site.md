@@ -164,7 +164,7 @@ Roadmap: docs/plans/roadmap.md, этап 3 (E3-T1…T10) · ADR: 0003 (HTML по
     шаг CI подготовлен как патч `ci.yml` для пользователя (хук запрещает правку workflow агентом).
   - Зависит от: T5, T10 (и T8/T9 для сценовых проверок; до них — `?mode=2d`).
 
-- [ ] T12 — Lighthouse CI и size-limit с бюджетами (AC2, T1–T4 спеки)
+- [x] T12 — Lighthouse CI и size-limit с бюджетами (AC2, T1–T4 спеки)
   - Файлы: `frontend/lighthouserc.cjs` (mobile, `/` и `/ru/`, assertions: perf ≥ 85, a11y ≥ 95, bp ≥ 95,
     seo ≥ 95, LCP < 2500 мс, `scene_ready` user timing < 4000 мс), `package.json` (`size-limit`: main gzip
     ≤ 150 КБ, чанк сцены ≤ 2 МБ, шрифты ≤ 150 КБ — заменяет `fonts.spec` или дублирует его), `test:lhci`,
