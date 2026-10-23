@@ -126,7 +126,9 @@
 **Цель:** сайт работает на собственном бэкенде; каждое действие — событие в Kafka.
 - E4-T0 Spike (≤ 0,5 дня): Kafka KRaft + Testcontainers + проброс trace context в заголовках — риск в начало.
 - E4-T1 Contracts: событие `site.events.v1` (eventId UUIDv7, type, occurredAt, sessionId, lang, theme,
-  payload), DTO контента; версия схемы.
+  payload), DTO контента; версия схемы. Контрактный тест: снимок JSON-схемы события в репозитории, тест падает
+  при несовместимом изменении (удаление/переименование поля, смена типа) — замена Schema Registry в MVP.
+  Включить `streaming-skills-plugin` в `.claude/settings.json` (выключен до этапа 4).
 - E4-T2 gateway (YARP): маршруты, rate limit, CORS, фильтр ботов.
 - E4-T2b `/health` gateway — только внутренний доступ (RequireHost/Caddy `respond 404`), наружу только `/alive`; кэш результата health-проверок на несколько секунд.
 - E4-T3 content-api: EF Core + PostgreSQL, сид из JSON, output cache + ETag; миграции отдельной задачей.

@@ -9,6 +9,7 @@ secrets/
 
 # Локальные настройки Claude Code
 .claude/settings.local.json
+.claude/worktrees/
 
 # Зависимости и сборка
 node_modules/
