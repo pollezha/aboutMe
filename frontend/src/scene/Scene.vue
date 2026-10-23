@@ -9,6 +9,14 @@ import { isRotateHotkey, mapRotation } from './useCamera'
 
 defineOptions({ name: 'IslandScene' })
 
+withDefaults(
+  defineProps<{
+    /** island — кадр рендера острова для 2D-карты (App ?shot=island, npm run island). */
+    framing?: 'overlay' | 'island'
+  }>(),
+  { framing: 'overlay' },
+)
+
 const emit = defineEmits<{ ready: [] }>()
 
 const ui = useUiStore()
@@ -36,7 +44,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 <template>
   <div class="scene" :class="{ 'scene--pointer': hovered }" aria-hidden="true">
     <TresCanvas :clear-color="sky" :dpr="[1, 2]" render-mode="always" @render="onRender">
-      <SceneContent @hover="hovered = $event" />
+      <SceneContent :framing="framing" @hover="hovered = $event" />
     </TresCanvas>
   </div>
 </template>

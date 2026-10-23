@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import map from '../../scripts/design/figma-2d-map.json'
 import type { ChapterId } from '../content/chapters'
+import { useUiStore } from '../stores/ui'
+import { ISLAND_RENDER_HEIGHT, ISLAND_RENDER_WIDTH, islandRenderUrl } from './render'
 
-// 2D-режим (FR10): статичная картинка острова + кнопки-хотспоты поверх (Figma Tablet 34:771, Phone 56:1398).
-// Геометрия — проценты от рамки карты, снимок figma-2d-map.json.
+// 2D-режим (FR10): рендер острова в теме сайта + кнопки-хотспоты поверх (Figma Tablet 34:771, Phone 56:1398).
+// Геометрия — проценты от рамки карты (figma-2d-map.json, сверена с рендером в framing.spec.ts).
+// Картинка — LCP-элемент 2D-режима: fetchpriority=high, размеры заданы (без сдвига раскладки).
 
 interface Hotspot {
   id: ChapterId
@@ -19,17 +22,24 @@ interface Hotspot {
 const props = withDefaults(
   defineProps<{
     variant: 'tablet' | 'phone'
-    /** Рендер острова (этап 3); пока файла нет — видна заливка моря. */
-    src?: string
     alt?: string
   }>(),
-  { src: '/img/island-day.webp', alt: 'Isometric island: each building is a chapter of the CV' },
+  { alt: 'Isometric island: each building is a chapter of the CV' },
 )
 
 const emit = defineEmits<{ open: [id: ChapterId] }>()
 
+const ui = useUiStore()
+const src = computed(() => islandRenderUrl(ui.theme))
+const srcset = computed(() => `${islandRenderUrl(ui.theme)} 1x, ${islandRenderUrl(ui.theme, 2)} 2x`)
+
 const hotspots = computed(() => map.hotspots[props.variant] as Hotspot[])
+/** Имя кнопки: номер остановки и глава — как у подписи здания в 3D («02 ProSpace»). */
+const nameOf = (spot: Hotspot) => (spot.index ? `${spot.index} ${spot.label}` : spot.label)
+
+// Нет файла — видна заливка моря; у другой темы своя картинка, пробуем её заново.
 const imageFailed = ref(false)
+watch(src, () => (imageFailed.value = false))
 
 function boxStyle(spot: Hotspot) {
   return {
@@ -47,8 +57,12 @@ function boxStyle(spot: Hotspot) {
       v-if="!imageFailed"
       class="static-map__image"
       :src="src"
+      :srcset="srcset"
+      :width="ISLAND_RENDER_WIDTH"
+      :height="ISLAND_RENDER_HEIGHT"
       :alt="alt"
       fetchpriority="high"
+      decoding="async"
       @error="imageFailed = true"
     />
     <button
@@ -56,7 +70,7 @@ function boxStyle(spot: Hotspot) {
       :key="spot.id"
       type="button"
       class="hotspot"
-      :aria-label="spot.label"
+      :aria-label="nameOf(spot)"
       :style="boxStyle(spot)"
       @click="emit('open', spot.id)"
     >

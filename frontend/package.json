@@ -22,6 +22,7 @@
     "shots": "node scripts/shots.mjs",
     "test": "vitest run",
     "og": "node scripts/og.mjs",
+    "island": "node scripts/island.mjs",
     "cv": "node scripts/cv.mjs"
   },
   "size-limit": [
