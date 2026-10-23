@@ -19,6 +19,7 @@ out/
 coverage/
 .cache/
 .vite-ssg-temp/
+.lighthouseci/
 bin/
 obj/
 __pycache__/
