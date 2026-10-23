@@ -81,7 +81,7 @@ Roadmap: docs/plans/roadmap.md, этап 3 (E3-T1…T10) · ADR: 0003 (HTML по
   - Готово, когда: все 8 окон открываются из бара/пинов/deep-link и в 2D (AC6 без 3D), снимки 1:1 с Figma.
   - Зависит от: T1. Параллельно с T2, T3.
 
-- [ ] T5 — Предрендер vite-ssg: маршруты `/` и `/ru/`, head, inline-скрипт темы и языка
+- [x] T5 — Предрендер vite-ssg: маршруты `/` и `/ru/`, head, inline-скрипт темы и языка
   - Файлы: `frontend/src/main.ts` (`ViteSSG` + router с 2 маршрутами), `src/router.ts`, `src/head.ts`
     (title/description/OG/`hreflang` + `x-default` из контента), `index.html` (inline-скрипт в `<head>`:
     `data-theme`/`theme-color`/`color-scheme` из localStorage до CSS — minor из ревью этапа 2; переход на
