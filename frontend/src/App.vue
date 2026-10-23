@@ -163,7 +163,13 @@ const barProfile = computed(() => ({ initials: 'YP', name: t('hero.name'), role:
 const stops = computed<BottomBarStop[]>(() =>
   ROUTE.map((chapter) => ({
     ...chapter,
-    state: ui.activeStop === chapter.id ? 'active' : 'default',
+    // Активная важнее посещённой: у текущей главы — заливка, у уже просмотренных — галочка.
+    state:
+      ui.activeStop === chapter.id
+        ? 'active'
+        : ui.visitedStops.has(chapter.id)
+          ? 'visited'
+          : 'default',
   })),
 )
 

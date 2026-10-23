@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { ChapterId } from '../content/chapters'
+import { ROUTE, type ChapterId } from '../content/chapters'
 import { palette } from '../theme/palette'
 
 export type Lang = 'en' | 'ru'
@@ -18,6 +18,8 @@ const KEY = {
   lang: 'aboutme.lang',
   motionPaused: 'aboutme.motionPaused',
   sceneChoice: 'aboutme.sceneChoice',
+  /** sessionStorage: посещённые остановки живут до закрытия вкладки (решение 19 ревью). */
+  visited: 'aboutme.visited',
 } as const
 
 // localStorage может быть недоступен (приватный режим, квота, SSR) — настройки тогда живут только в памяти.
@@ -34,6 +36,24 @@ function save(key: string, value: string) {
     globalThis.localStorage?.setItem(key, value)
   } catch {
     /* хранилище недоступно — не критично */
+  }
+}
+
+function loadVisited(): Set<ChapterId> {
+  try {
+    const saved: unknown = JSON.parse(globalThis.sessionStorage?.getItem(KEY.visited) ?? '[]')
+    if (!Array.isArray(saved)) return new Set()
+    return new Set(ROUTE.map((stop) => stop.id).filter((id) => saved.includes(id)))
+  } catch {
+    return new Set()
+  }
+}
+
+function saveVisited(ids: Set<ChapterId>) {
+  try {
+    globalThis.sessionStorage?.setItem(KEY.visited, JSON.stringify([...ids]))
+  } catch {
+    /* хранилище недоступно — отметки живут только в памяти */
   }
 }
 
@@ -58,6 +78,8 @@ export const useUiStore = defineStore('ui', () => {
   const sceneState = ref<SceneState>('idle')
   const activeStop = ref<ChapterId | null>(null)
   const openWindow = ref<ChapterId | null>(null)
+  /** Остановки маршрута, чьи окна открывали в этой сессии: в баре — галочка (если остановка не активна). */
+  const visitedStops = ref<Set<ChapterId>>(loadVisited())
 
   function setTheme(next: Theme) {
     theme.value = next
@@ -124,10 +146,17 @@ export const useUiStore = defineStore('ui', () => {
     if (sceneState.value === 'failed') sceneState.value = 'idle'
   }
 
-  /** Клик по остановке/хотспоту/кнопке: окно открывается сразу (D5), остановка становится активной. */
+  /**
+   * Клик по остановке/хотспоту/кнопке/deep-link: окно открывается сразу (D5), остановка становится
+   * активной и посещённой; грузовик сцены едет к ней фоном (Truck.vue).
+   */
   function openChapter(id: ChapterId) {
     activeStop.value = id
     openWindow.value = id
+    if (ROUTE.some((stop) => stop.id === id) && !visitedStops.value.has(id)) {
+      visitedStops.value = new Set([...visitedStops.value, id])
+      saveVisited(visitedStops.value)
+    }
   }
 
   function closeWindow() {
@@ -143,6 +172,7 @@ export const useUiStore = defineStore('ui', () => {
     sceneState,
     activeStop,
     openWindow,
+    visitedStops,
     setTheme,
     previewTheme,
     cycleTheme,

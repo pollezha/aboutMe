@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Остров: ортокамера на орбите (поворот — useCamera), свет, вода, суша, дороги, здания остановок
-// с подписями и фоновые домики. Грузовик — T9. Цвета только из palette (TC-08).
+// с подписями, фоновые домики и грузовик (Truck.vue). Цвета только из palette (TC-08).
 import { useLoop, useTres } from '@tresjs/core'
 import { BoxGeometry, type OrthographicCamera } from 'three'
 import { computed, onBeforeUnmount, shallowRef } from 'vue'
@@ -12,6 +12,7 @@ import Labels from './Labels.vue'
 import { ISLAND_SIZE, island, roads, stops } from './layout'
 import { createSceneMaterials } from './materials'
 import { chapterClickHandler } from './pick'
+import Truck from './Truck.vue'
 import { useCamera } from './useCamera'
 
 const emit = defineEmits<{ hover: [boolean] }>()
@@ -44,10 +45,9 @@ const reducedMotion =
   typeof window !== 'undefined' && typeof window.matchMedia === 'function'
     ? window.matchMedia('(prefers-reduced-motion: reduce)')
     : null
-const rig = useCamera({
-  distance: CAMERA_DISTANCE,
-  instant: () => !!reducedMotion?.matches || ui.motionPaused,
-})
+/** Без анимации (поворот камеры, грузовик): prefers-reduced-motion или пауза движения. */
+const instant = () => !!reducedMotion?.matches || ui.motionPaused
+const rig = useCamera({ distance: CAMERA_DISTANCE, instant })
 const camera = shallowRef<OrthographicCamera>()
 const initialPosition = rig.position()
 
@@ -130,6 +130,8 @@ onBeforeUnmount(() => {
       :materials="materials"
     />
   </TresGroup>
+
+  <Truck :geometry="box" :materials="materials" :instant="instant" />
 
   <Labels />
 </template>

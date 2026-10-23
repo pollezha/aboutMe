@@ -180,3 +180,44 @@ describe('ui store', () => {
     expect(localStorage.getItem('aboutme.sceneChoice')).toBeNull()
   })
 })
+
+describe('visited stops (sessionStorage, review decision 19)', () => {
+  beforeEach(() => sessionStorage.clear())
+
+  it('marks a route stop visited when its window opens and saves it for the session', () => {
+    const ui = freshStore()
+    expect([...ui.visitedStops]).toEqual([])
+
+    ui.openChapter('timepath')
+    ui.openChapter('profile')
+
+    expect([...ui.visitedStops].sort()).toEqual(['profile', 'timepath'])
+    expect(JSON.parse(sessionStorage.getItem('aboutme.visited') ?? '[]').sort()).toEqual([
+      'profile',
+      'timepath',
+    ])
+  })
+
+  it('does not count windows outside the route', () => {
+    const ui = freshStore()
+
+    ui.openChapter('summary')
+    ui.openChapter('monitoring')
+
+    expect(ui.visitedStops.size).toBe(0)
+  })
+
+  it('restores visited stops on reload and ignores junk', () => {
+    sessionStorage.setItem('aboutme.visited', JSON.stringify(['contact', 'summary', 'nope', 7]))
+
+    const ui = freshStore()
+
+    expect([...ui.visitedStops]).toEqual(['contact'])
+  })
+
+  it('starts empty when the saved value is not JSON', () => {
+    sessionStorage.setItem('aboutme.visited', '{oops')
+
+    expect(freshStore().visitedStops.size).toBe(0)
+  })
+})

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { ref } from 'vue'
 import { palette } from '../../theme/palette'
 import type { Theme } from '../../stores/ui'
-import { buildingColors, createSceneMaterials, mixHex } from '../materials'
+import { buildingColors, createSceneMaterials, mixHex, truckColors } from '../materials'
 
 const hex = (value: string) => value.toLowerCase()
 
@@ -39,6 +39,25 @@ describe('createSceneMaterials', () => {
 
     expect(`#${wall.color.getHexString()}`).toBe(hex(palette.night['chapter/prospace']))
     expect(`#${materials.get('sea').color.getHexString()}`).toBe(hex(palette.night['scene/sea']))
+    materials.dispose()
+  })
+})
+
+describe('truck materials', () => {
+  it('paint the cab in the accent and the rest from scene colours of the theme', () => {
+    const theme = ref<Theme>('day')
+    const materials = createSceneMaterials(() => palette[theme.value])
+    const color = (role: Parameters<typeof materials.get>[0]) =>
+      `#${materials.get(role).color.getHexString()}`
+
+    expect(color('truck:cab')).toBe(hex(palette.day['accent/primary']))
+    expect(color('truck:cargo')).toBe(
+      mixHex(palette.day['bg/surface'], palette.day['scene/sand'], 0.2),
+    )
+    expect(color('truck:chassis')).toBe(truckColors(palette.day).chassis)
+
+    theme.value = 'night'
+    expect(color('truck:cab')).toBe(hex(palette.night['accent/primary']))
     materials.dispose()
   })
 })

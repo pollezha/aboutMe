@@ -46,8 +46,19 @@ export function houseColors(colors: ThemeColors): string[] {
   ]
 }
 
+/** Грузовик: кабина — акцент темы, кузов — светлый песочный, рама — тёмная дорога. */
+export function truckColors(colors: ThemeColors) {
+  return {
+    cab: colors['accent/primary'].toLowerCase(),
+    cargo: mixHex(colors['bg/surface'], colors['scene/sand'], 0.2),
+    chassis: mixHex(colors['scene/road'], colors['text/primary'], 0.5),
+  }
+}
+
+type TruckPart = keyof ReturnType<typeof truckColors>
+type TruckRole = `truck:${TruckPart}`
 type StopRole = `${'wall' | 'roof' | 'annex'}:${ChapterId}`
-export type MaterialRole = 'sea' | 'sand' | 'ground' | 'road' | 'pad' | StopRole
+export type MaterialRole = 'sea' | 'sand' | 'ground' | 'road' | 'pad' | TruckRole | StopRole
 
 function roleColor(colors: ThemeColors, role: MaterialRole): string {
   switch (role) {
@@ -62,6 +73,10 @@ function roleColor(colors: ThemeColors, role: MaterialRole): string {
     case 'pad':
       // Площадка остановки — чуть светлее плиты острова.
       return mixHex(colors['scene/ground'], colors['bg/surface'], 0.25)
+    case 'truck:cab':
+    case 'truck:cargo':
+    case 'truck:chassis':
+      return truckColors(colors)[role.slice('truck:'.length) as TruckPart]
     default: {
       const [part, id] = role.split(':') as ['wall' | 'roof' | 'annex', ChapterId]
       return buildingColors(colors, id)[part]
