@@ -7,7 +7,7 @@ import App from '../App.vue'
 import { CHAPTERS } from '../content/chapters'
 import { resolveChapter } from '../content/format'
 import type { ContentBundle } from '../content/types'
-import { createAppI18n } from '../i18n'
+import { appPlugins } from './appPlugins'
 import { useUiStore } from '../stores/ui'
 
 // Окна 01–08 в 2D-режиме (AC6 без 3D): WebGL нет → сцена не грузится, three не нужен.
@@ -58,7 +58,7 @@ async function mountAt(hash: string) {
   history.replaceState(null, '', `/${hash}`)
   const pinia = createPinia()
   setActivePinia(pinia)
-  wrapper = mount(App, { global: { plugins: [pinia, createAppI18n()] }, attachTo: document.body })
+  wrapper = mount(App, { global: { plugins: appPlugins(pinia) }, attachTo: document.body })
   await flushPromises()
   return { wrapper, ui: useUiStore() }
 }

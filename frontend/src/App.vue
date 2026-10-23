@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, shallowRef, watch, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
-import en from '../../content/en.json'
+import { useRoute, useRouter } from 'vue-router'
+import { CONTENT_LANGS, contentFor } from './content/bundles'
+import { BUILD_TIME } from './content/buildTime'
 import {
+  CHAPTERS,
   ROUTE,
   chapterInfo,
   isChapterId,
@@ -11,9 +14,10 @@ import {
 } from './content/chapters'
 import { resolveHighlights } from './content/experience'
 import { resolveChapter } from './content/format'
-import type { ContentBundle } from './content/types'
 import StaticMap from './fallback2d/StaticMap.vue'
+import { useSiteHead } from './head'
 import { useLocaleSync } from './i18n'
+import { langOf, pathFor } from './router'
 import { SCENE_TIMEOUT_MS, loadSceneWhenIdle, type SceneLoad } from './scene'
 import { MIN_3D_WIDTH, detectWebGL2, shouldUse3D } from './scene/shouldUse3D'
 import { mapRotation } from './scene/useCamera'
@@ -28,13 +32,41 @@ import { useBreakpoint } from './ui/useBreakpoint'
 import { WINDOWS } from './ui/windows'
 import ProofLinks from './ui/windows/blocks/ProofLinks.vue'
 
+const ui = useUiStore()
+const route = useRoute()
+const router = useRouter()
+
+// Язык страницы задаёт маршрут (/ или /ru/); переключатель (ui.setLang) меняет маршрут без перезагрузки.
+const routeLang = computed(() => langOf(route.path))
+watch(routeLang, (lang) => ui.syncLang(lang), { immediate: true })
+watch(
+  () => ui.lang,
+  (lang) => {
+    if (lang === routeLang.value) return
+    const hash = typeof window !== 'undefined' ? window.location.hash : route.hash
+    router.push({ path: pathFor(lang), query: route.query, hash })
+  },
+)
+
 useLocaleSync()
 const { t } = useI18n()
-const ui = useUiStore()
 const breakpoint = useBreakpoint()
 
-// Снимок контента EN; RU-контент и загрузка из content-api — этап 3.
-const content = en as ContentBundle
+// Снимок контента на языке страницы (пока RU-контента нет — EN); загрузка из content-api — этап 4.
+const content = computed(() => contentFor(ui.lang))
+// Даты в тексте — от времени сборки: предрендер и клиент показывают одно и то же.
+const now = BUILD_TIME
+
+useSiteHead(() => ({
+  content: content.value,
+  langs: CONTENT_LANGS,
+  origin: import.meta.env.VITE_SITE_ORIGIN,
+  now,
+}))
+
+// Предрендер (vite-ssg): окна закрыты, но текст всех глав должен быть в HTML (FR11). Клиент монтирует
+// приложение заново (без гидрации), поэтому этот блок есть только в статическом HTML и не дублирует окна.
+const prerender = import.meta.env.SSR || typeof window === 'undefined'
 
 // ?theme=night переопределяет сохранённую тему (ссылки на конкретную тему, скриншоты), но не запоминается.
 if (typeof window !== 'undefined') {
@@ -149,15 +181,15 @@ const mapVariant = computed(() => (breakpoint.value === 'mobile' ? 'phone' : 'ta
 const profile = computed(() => ({
   name: t('hero.name'),
   role: t('hero.role'),
-  status: content.profile.status,
-  workFormat: content.profile.workFormat,
-  location: content.profile.locationShort,
+  status: content.value.profile.status,
+  workFormat: content.value.profile.workFormat,
+  location: content.value.profile.locationShort,
 }))
-const highlights = resolveHighlights(content)
-const links = {
-  cv: content.profile.links.find((link) => link.kind === 'cv')?.href,
-  telegram: content.profile.links.find((link) => link.kind === 'telegram')?.href,
-}
+const highlights = computed(() => resolveHighlights(content.value, now))
+const links = computed(() => ({
+  cv: content.value.profile.links.find((link) => link.kind === 'cv')?.href,
+  telegram: content.value.profile.links.find((link) => link.kind === 'telegram')?.href,
+}))
 const barProfile = computed(() => ({ initials: 'YP', name: t('hero.name'), role: t('hero.role') }))
 
 const stops = computed<BottomBarStop[]>(() =>
@@ -183,7 +215,12 @@ function open(id: string) {
 
 const windowChapter = computed(() => (ui.openWindow ? chapterInfo(ui.openWindow) : null))
 // Шапка и подвал окна — из контента главы (даты подставлены); тело — из реестра окон.
-const windowText = computed(() => (ui.openWindow ? resolveChapter(content, ui.openWindow) : null))
+const windowText = computed(() =>
+  ui.openWindow ? resolveChapter(content.value, ui.openWindow, now) : null,
+)
+const chapterTexts = computed(() =>
+  prerender ? CHAPTERS.map(({ id }) => ({ id, ...resolveChapter(content.value, id, now) })) : [],
+)
 const windowEyebrow = computed(() => {
   if (!windowChapter.value || !windowText.value) return ''
   const { index } = windowChapter.value
@@ -361,9 +398,19 @@ onBeforeUnmount(() => {
       @prev="neighbours.prev && ui.openChapter(neighbours.prev.id)"
       @next="neighbours.next && ui.openChapter(neighbours.next.id)"
     >
-      <component :is="WINDOWS[windowChapter.id].body" :content="content" />
+      <component :is="WINDOWS[windowChapter.id].body" :content="content" :now="now" />
       <template #links><ProofLinks :links="windowText.proofLinks" /></template>
     </ChapterWindow>
+
+    <section v-if="prerender" id="chapters" hidden>
+      <article v-for="chapter in chapterTexts" :id="`chapter-${chapter.id}`" :key="chapter.id">
+        <p>{{ chapter.eyebrow }}</p>
+        <h2>{{ chapter.title }}</h2>
+        <p v-if="chapter.subtitle">{{ chapter.subtitle }}</p>
+        <component :is="WINDOWS[chapter.id].body" :content="content" :now="now" />
+        <ProofLinks :links="chapter.proofLinks" />
+      </article>
+    </section>
   </div>
 </template>
 

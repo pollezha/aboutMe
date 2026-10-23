@@ -3,7 +3,7 @@ import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { defineComponent, h, nextTick, onMounted } from 'vue'
 import App from '../App.vue'
-import { createAppI18n } from '../i18n'
+import { appPlugins } from './appPlugins'
 import { loadSceneWhenIdle } from '../scene'
 import { mapRotation } from '../scene/useCamera'
 import { useUiStore } from '../stores/ui'
@@ -21,6 +21,8 @@ vi.mock('../scene/Scene.vue', () => ({
     },
   }),
 }))
+// Даты в окнах считаются от времени сборки (content/buildTime.ts) — фиксируем его.
+vi.mock('../content/buildTime', () => ({ BUILD_TIME: new Date(2026, 9, 23) }))
 vi.mock('../scene', async (importOriginal) => {
   const original = await importOriginal<typeof import('../scene')>()
   return { ...original, loadSceneWhenIdle: vi.fn(original.loadSceneWhenIdle) }
@@ -79,8 +81,7 @@ afterEach(() => {
 function mountApp() {
   const pinia = createPinia()
   setActivePinia(pinia)
-  const i18n = createAppI18n()
-  wrapper = mount(App, { global: { plugins: [pinia, i18n] }, attachTo: document.body })
+  wrapper = mount(App, { global: { plugins: appPlugins(pinia) }, attachTo: document.body })
   return { wrapper, ui: useUiStore() }
 }
 
@@ -124,6 +125,33 @@ describe('App', () => {
     await nextTick()
 
     expect(document.documentElement.lang).toBe('en')
+  })
+
+  it('opens /ru/ in Russian without remembering it as the visitor’s choice', async () => {
+    history.replaceState(null, '', '/ru/')
+    const { wrapper, ui } = mountApp()
+    await flushPromises()
+
+    expect(ui.lang).toBe('ru')
+    expect(wrapper.get('.hero').text()).toContain('Яков Полежаев')
+    expect(localStorage.getItem('aboutme.lang')).toBeNull()
+  })
+
+  it('moves between / and /ru/ on a language switch without reloading, keeping the open chapter', async () => {
+    history.replaceState(null, '', '/#prospace')
+    const { wrapper, ui } = mountApp()
+    await flushPromises()
+
+    ui.setLang('ru')
+    await flushPromises()
+    expect(location.pathname).toBe('/ru/')
+    expect(location.hash).toBe('#prospace')
+    expect(openDialog(wrapper).exists()).toBe(true)
+
+    ui.setLang('en')
+    await flushPromises()
+    expect(location.pathname).toBe('/')
+    expect(localStorage.getItem('aboutme.lang')).toBe('en')
   })
 
   it('shows no language button until Russian content ships', () => {
@@ -413,8 +441,6 @@ describe('App', () => {
   })
 
   it('opens the ProSpace window with its body, dates and proof links from the #prospace deep link', async () => {
-    vi.useFakeTimers({ toFake: ['Date'] })
-    vi.setSystemTime(new Date(2026, 9, 23))
     history.replaceState(null, '', '/#prospace')
 
     const { wrapper } = mountApp()

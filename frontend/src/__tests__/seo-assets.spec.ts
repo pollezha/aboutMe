@@ -1,6 +1,10 @@
 // @vitest-environment node
 import { beforeAll, describe, expect, it } from 'vitest'
-import { build } from 'vite'
+import { build } from 'vite-ssg/node'
+import { contentFor } from '../content/bundles'
+import { CHAPTERS } from '../content/chapters'
+import { resolveChapter } from '../content/format'
+import { langOf } from '../router'
 import { palette } from '../theme/palette'
 
 // @types/node is not a project dependency, so fs is typed locally and imported by a non-literal specifier.
@@ -33,18 +37,25 @@ function attr(html: string, pattern: RegExp): string | undefined {
   return html.match(pattern)?.[1]
 }
 
+/** Built page; whitespace collapsed so attributes match in order. */
+function page(file: string): string {
+  return fs.readFileSync(new URL(file, outDir), 'utf8').replace(/\s+/g, ' ')
+}
+
+// The same build as `npm run build` (vite-ssg: client + server pass, prerender of every route).
+beforeAll(async () => {
+  await build(
+    {},
+    { root: toPath(frontendRoot), logLevel: 'silent', build: { outDir: toPath(outDir) } },
+  )
+}, 180_000)
+
 describe('built index.html (FR11, D12)', () => {
   let html = ''
 
-  beforeAll(async () => {
-    await build({
-      root: toPath(frontendRoot),
-      logLevel: 'silent',
-      build: { outDir: toPath(outDir), emptyOutDir: true },
-    })
-    // Prettier wraps long tags over several lines; collapse whitespace so attributes match in order.
-    html = fs.readFileSync(new URL('index.html', outDir), 'utf8').replace(/\s+/g, ' ')
-  }, 120_000)
+  beforeAll(() => {
+    html = page('index.html')
+  })
 
   it('has a descriptive title and a description of at most 160 characters', () => {
     expect(attr(html, /<title>([^<]+)<\/title>/)).toBe('Yakov Polezhaev — .NET Backend Developer')
@@ -73,8 +84,8 @@ describe('built index.html (FR11, D12)', () => {
     expect(html).toMatch(/<link rel="manifest" href="\/site\.webmanifest"/)
     // Тема сайта не следует prefers-color-scheme: applyTheme обновляет этот тег (src/stores/ui.ts).
     expect(html.match(/<meta name="theme-color"/g)).toHaveLength(1)
-    expect(html).toContain(
-      `<meta name="theme-color" id="theme-color" content="${palette.day['bg/canvas']}" />`,
+    expect(html).toMatch(
+      `<meta name="theme-color" id="theme-color" content="${palette.day['bg/canvas']}"`,
     )
   })
 
@@ -84,9 +95,16 @@ describe('built index.html (FR11, D12)', () => {
     )
   })
 
-  it('sets no canonical or og:url until the domain is chosen', () => {
-    expect(html).not.toMatch(/rel="canonical"/)
+  it('sets a relative canonical and no og:url until the domain is chosen (VITE_SITE_ORIGIN, T13)', () => {
+    expect(html).toMatch(/<link rel="canonical" href="\/">/)
     expect(html).not.toMatch(/property="og:url"/)
+  })
+
+  it('sets the theme in an inline script before any stylesheet, without flashing day on night', () => {
+    const boot = html.indexOf('aboutme.theme')
+    const firstStyle = html.search(/<link rel="stylesheet"|<style/)
+    expect(boot).toBeGreaterThan(html.indexOf('id="theme-color"'))
+    expect(firstStyle).toBeGreaterThan(boot)
   })
 
   it('ships the icons, manifest and OG image', () => {
@@ -99,6 +117,41 @@ describe('built index.html (FR11, D12)', () => {
     ]) {
       expect(fs.existsSync(new URL(file, outDir)), file).toBe(true)
     }
+  })
+})
+
+// TC-11: without JS (curl) both pages carry every chapter, title, description, OG and hreflang.
+describe.each([
+  ['/', 'index.html'],
+  ['/ru/', 'ru/index.html'],
+])('prerendered %s (TC-11)', (path, file) => {
+  const content = contentFor(langOf(path))
+  let html = ''
+
+  beforeAll(() => {
+    html = page(file)
+  })
+
+  it('has the heading of every chapter, all windows closed', () => {
+    for (const { id } of CHAPTERS) {
+      const title = resolveChapter(content, id)
+        .title.replace(/&/g, '&amp;')
+        .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      expect(html, id).toMatch(new RegExp(`<h2[^>]*>${title}</h2>`))
+    }
+    expect(html).not.toMatch(/<dialog[^>]*\sopen/)
+  })
+
+  it('has title, description, Open Graph and <html lang> of its content', () => {
+    expect(html).toContain(`<title>${content.profile.name} — ${content.profile.role}</title>`)
+    expect(html).toMatch(/<meta name="description" content="[^"]+">/)
+    expect(html).toMatch(/<meta property="og:title" content="[^"]+">/)
+    expect(html).toMatch(new RegExp(`<html lang="${content.lang}"`))
+  })
+
+  it('links the language versions with hreflang and x-default → /', () => {
+    expect(html).toContain('<link rel="alternate" hreflang="en" href="/">')
+    expect(html).toContain('<link rel="alternate" hreflang="x-default" href="/">')
   })
 })
 

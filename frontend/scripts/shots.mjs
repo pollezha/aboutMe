@@ -96,14 +96,12 @@ async function shoot(width, height, theme, lang = 'en') {
       deviceScaleFactor: 1,
       mobile: width < 768,
     })
-    // App не читает язык из URL: язык берётся из стора, а тот — из localStorage.
-    if (lang !== 'en') {
-      await page.send('Page.addScriptToEvaluateOnNewDocument', {
-        source: `localStorage.setItem('aboutme.lang', ${JSON.stringify(lang)})`,
-      })
-    }
+    // Язык страницы задаёт маршрут: `/` — EN, `/ru/` — RU (предрендер vite-ssg).
+    const path = lang === 'ru' ? '/ru/' : '/'
     const loaded = page.once('Page.loadEventFired')
-    await page.send('Page.navigate', { url: `http://localhost:${previewPort}/?theme=${theme}` })
+    await page.send('Page.navigate', {
+      url: `http://localhost:${previewPort}${path}?theme=${theme}`,
+    })
     await loaded
     await delay(SETTLE_MS)
     const { data } = await page.send('Page.captureScreenshot', { format: 'png' })

@@ -6,7 +6,7 @@ import en from '../../../content/en.json'
 import App from '../App.vue'
 import { serverTenure } from '../content/format'
 import type { ContentBundle } from '../content/types'
-import { createAppI18n } from '../i18n'
+import { appPlugins } from './appPlugins'
 import { useUiStore } from '../stores/ui'
 
 // Сценарии окна 04 Tech stack в составе App (TC-09). Окружение — как в App.spec.ts.
@@ -67,7 +67,7 @@ async function openTechStack(width: number) {
   const pinia = createPinia()
   setActivePinia(pinia)
   wrapper = mount(App, {
-    global: { plugins: [pinia, createAppI18n()] },
+    global: { plugins: appPlugins(pinia) },
     attachTo: document.body,
   })
   const ui = useUiStore()

@@ -1,11 +1,17 @@
 import { createPinia } from 'pinia'
-import { createApp } from 'vue'
+import { ViteSSG } from 'vite-ssg'
 import App from './App.vue'
 import { createAppI18n } from './i18n'
+import { routes } from './router'
 import './theme/tokens.css'
 import './theme/pins.css'
 import './theme/fonts.css'
 import './theme/typography.css'
 import './theme/base.css'
 
-createApp(App).use(createPinia()).use(createAppI18n()).mount('#app')
+// vite-ssg: при сборке — предрендер `/` и `/ru/` (FR11); в браузере — монтирование поверх статического HTML.
+// Гидрации нет (hydration: false по умолчанию): клиент рисует с настоящим состоянием (тема, режим,
+// брейкпоинт из localStorage/matchMedia), а не повторяет серверный снимок.
+export const createApp = ViteSSG(App, { routes }, ({ app }) => {
+  app.use(createPinia()).use(createAppI18n())
+})

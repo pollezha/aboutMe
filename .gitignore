@@ -17,6 +17,7 @@ build/
 out/
 coverage/
 .cache/
+.vite-ssg-temp/
 bin/
 obj/
 __pycache__/

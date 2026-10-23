@@ -106,9 +106,15 @@ export const useUiStore = defineStore('ui', () => {
       ?.setAttribute('content', palette[theme.value]['bg/canvas'])
   }
 
+  /** Выбор пользователя (переключатель): запоминается; App переводит маршрут на /ru/ или /. */
   function setLang(next: Lang) {
     lang.value = next
     save(KEY.lang, next)
+  }
+
+  /** Язык из маршрута (/ или /ru/): ссылка на страницу — не выбор пользователя, не запоминаем. */
+  function syncLang(next: Lang) {
+    lang.value = next
   }
 
   function toggleLang() {
@@ -178,6 +184,7 @@ export const useUiStore = defineStore('ui', () => {
     cycleTheme,
     applyTheme,
     setLang,
+    syncLang,
     toggleLang,
     toggleMotion,
     setMode,
