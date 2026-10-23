@@ -3,6 +3,9 @@
   <Folder Name="/services/gateway/">
     <Project Path="services/gateway/Gateway.csproj" />
   </Folder>
+  <Folder Name="/services/projector/">
+    <Project Path="services/projector/Projector.csproj" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/AppHost/AppHost.csproj" />
     <Project Path="src/ServiceDefaults/ServiceDefaults.csproj" />
@@ -11,6 +14,7 @@
     <Project Path="tests/AppHost.Tests/AppHost.Tests.csproj" />
     <Project Path="tests/Architecture.Tests/Architecture.Tests.csproj" />
     <Project Path="tests/Gateway.Tests/Gateway.Tests.csproj" />
+    <Project Path="tests/Projector.Tests/Projector.Tests.csproj" />
     <Project Path="tests/ServiceDefaults.Tests/ServiceDefaults.Tests.csproj" />
   </Folder>
 </Solution>
