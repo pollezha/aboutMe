@@ -26,9 +26,9 @@ export function useLocaleSync() {
   watch(
     () => ui.lang,
     (lang) => {
+      // <html lang> — язык контента, а не интерфейса (head.ts): пока RU-контента нет, на /ru/ остаётся «en»,
+      // иначе скринридер прочтёт английский текст как русский.
       locale.value = lang
-      // TODO(этап 3, FR8): выставлять <html lang> вместе с RU-контентом. Пока контент только EN,
-      // <html lang="en"> из index.html не меняем — иначе скринридер прочтёт английский текст как русский.
     },
     { immediate: true },
   )
