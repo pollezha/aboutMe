@@ -130,7 +130,7 @@ Roadmap: docs/plans/roadmap.md, этап 3 (E3-T1…T10) · ADR: 0003 (HTML по
     графики (замер в DevTools, приложить).
   - Зависит от: T7.
 
-- [ ] T9 — Грузовик и маршрут (FR3, AC3)
+- [x] T9 — Грузовик и маршрут (FR3, AC3)
   - Файлы: `scene/Truck.vue`, `scene/useRoute.ts` (путевые точки из `scene-layout.json`, `useLoop`, курс
     `atan2`, перенаправление при клике во время езды, телепорт при reduced-motion/паузе `motionPaused`),
     `stores/ui.ts` (`activeStop` ← прибытие), тесты (`useRoute`: чистая функция положения от времени).
