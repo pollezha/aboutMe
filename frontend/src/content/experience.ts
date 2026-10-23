@@ -8,7 +8,8 @@ export interface Duration {
   months: number
 }
 
-const MONTHS: Record<ContentLang, string[]> = {
+/** Полные названия месяцев после «since»/«с» (RU — родительный падеж). */
+export const SINCE_MONTHS: Record<ContentLang, string[]> = {
   en: [
     'January',
     'February',
@@ -124,7 +125,7 @@ export function sinceLabel(experience: ExperienceEntry[], lang: ContentLang = 'e
   const earliest = experience.map((entry) => entry.from).sort()[0]
   if (earliest === undefined) return ''
   const [year, month] = earliest.split('-').map(Number)
-  const name = MONTHS[lang][(month ?? 1) - 1]
+  const name = SINCE_MONTHS[lang][(month ?? 1) - 1]
   return lang === 'ru' ? `с ${name} ${year}` : `since ${name} ${year}`
 }
 

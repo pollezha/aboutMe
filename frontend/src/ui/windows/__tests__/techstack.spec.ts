@@ -3,6 +3,7 @@ import { mount, type VueWrapper } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import en from '../../../../../content/en.json'
 import { serverTenure } from '../../../content/format'
+import { createAppI18n } from '../../../i18n'
 import type { ContentBundle } from '../../../content/types'
 import { WINDOWS } from '..'
 import TechStackWindow from '../TechStackWindow.vue'
@@ -34,7 +35,11 @@ afterEach(() => {
 
 function mountWindow(width: number, bundle: ContentBundle = content) {
   setViewport(width)
-  wrapper = mount(TechStackWindow, { props: { content: bundle, now }, attachTo: document.body })
+  wrapper = mount(TechStackWindow, {
+    props: { content: bundle, now },
+    global: { plugins: [createAppI18n()] },
+    attachTo: document.body,
+  })
   return wrapper
 }
 

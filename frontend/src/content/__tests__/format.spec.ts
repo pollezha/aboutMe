@@ -117,4 +117,43 @@ describe('serverTenure', () => {
     ]
     expect(serverTenure(['a', 'b'], overlapping, now).label).toBe('1 y 6 m · since Jan 2025')
   })
+
+  it('says «с июл 2024» after the term in Russian', () => {
+    expect(serverTenure(['timepath', 'prospace'], experience, now, 'ru').label).toBe(
+      '2 г. 3 мес. · с июл 2024',
+    )
+  })
+})
+
+describe('fillDates in Russian', () => {
+  const ru = { experience, now, lang: 'ru' as const }
+
+  it('fills {since} in the genitive case: every RU text puts it after «с»', () => {
+    expect(fillDates('в пути с {since}', ru)).toBe('в пути с июля 2024')
+  })
+
+  it('fills {sinceShort} with a short genitive month', () => {
+    expect(fillDates('с {sinceShort}', ru)).toBe('с июл 2024')
+    const may: ExperienceEntry[] = [
+      { id: 'x', company: 'X', role: 'Dev', from: '2024-05', to: '2024-06' },
+    ]
+    expect(fillDates('с {sinceShort}', { ...ru, experience: may })).toBe('с мая 2024')
+  })
+
+  it('fills {experience} with years and months in Russian', () => {
+    expect(fillDates('{experience} в продакшене', ru)).toBe('2 г. 3 мес. в продакшене')
+  })
+
+  it('fills {span} the same way as in English', () => {
+    expect(fillDates('Дата-центр · {span}', ru)).toBe('Дата-центр · 2024 – 2026')
+  })
+
+  it('fills {period} with short Russian months', () => {
+    expect(fillDates('{period}', { ...ru, experienceId: 'timepath' })).toBe('июл 2024 – дек 2025')
+    expect(fillDates('{period}', { ...ru, experienceId: 'prospace' })).toBe('янв – окт 2026')
+  })
+
+  it('names May in the nominative inside a period', () => {
+    expect(formatPeriod({ from: '2025-05', to: '2025-05' }, now, 'ru')).toBe('май 2025')
+  })
 })

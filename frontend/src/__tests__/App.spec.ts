@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { defineComponent, h, nextTick, onMounted } from 'vue'
 import App from '../App.vue'
 import { appPlugins } from './appPlugins'
+import { contentFor } from '../content/bundles'
 import { loadSceneWhenIdle } from '../scene'
 import { mapRotation } from '../scene/useCamera'
 import { useUiStore } from '../stores/ui'
@@ -27,6 +28,8 @@ vi.mock('../scene', async (importOriginal) => {
   const original = await importOriginal<typeof import('../scene')>()
   return { ...original, loadSceneWhenIdle: vi.fn(original.loadSceneWhenIdle) }
 })
+
+const ruContent = contentFor('ru')
 
 // jsdom: нет matchMedia, WebGL и showModal() — минимальные подмены.
 function setViewport(width: number) {
@@ -85,6 +88,13 @@ function mountApp() {
   return { wrapper, ui: useUiStore() }
 }
 
+/** unhead пишет `<html lang>` в DOM не синхронно — ждём условие. */
+async function waitFor(condition: () => boolean) {
+  for (let i = 0; i < 50 && !condition(); i++) {
+    await new Promise((resolve) => setTimeout(resolve, 0))
+  }
+}
+
 /** jsdom выполняет history.back() асинхронно. */
 async function waitForHash(hash: string) {
   for (let i = 0; i < 50 && location.hash !== hash; i++) {
@@ -117,14 +127,63 @@ describe('App', () => {
     expect(hero.text()).not.toContain('Yakov Polezhaev')
   })
 
-  it('keeps <html lang="en"> while only English content exists (RU content — stage 3)', async () => {
-    document.documentElement.lang = 'en'
-    const { ui } = mountApp()
+  // TC-06: /ru/ — весь первый экран и окна на русском, из RU-бандла.
+  it('renders the hero, the bar and windows from the Russian bundle on /ru/', async () => {
+    history.replaceState(null, '', '/ru/#prospace')
+    const { wrapper } = mountApp()
+    await flushPromises()
 
-    ui.setLang('ru')
-    await nextTick()
+    const hero = wrapper.get('.hero')
+    expect(hero.text()).toContain(ruContent.profile.status)
+    expect(hero.text()).toContain(ruContent.profile.workFormat)
+    expect(hero.text()).toContain('Связаться')
+    expect(hero.get('a.btn--secondary').attributes('href')).toBe('/cv/Yakov_Polezhaev_CV_RU.pdf')
+    expect(hero.get('a.btn--secondary').text()).toBe('Резюме (PDF)')
 
-    expect(document.documentElement.lang).toBe('en')
+    const bar = wrapper.get('nav.bottom-bar')
+    expect(bar.attributes('aria-label')).toBe('Главы')
+    expect(bar.findAll('.route-stop__title').map((title) => title.text())).toEqual([
+      'Профиль',
+      'ProSpace',
+      'TimePath',
+      'Стек',
+      'Учёба',
+      'Контакты',
+    ])
+
+    const dialog = openDialog(wrapper)
+    expect(dialog.get('h2').text()).toBe(ruContent.chapters.prospace.title)
+    expect(dialog.get('.window__eyebrow').text()).toBe(
+      'Остановка 2 из 6 · Накладная · Текущее место · янв – окт 2026',
+    )
+    expect(dialog.text()).toContain('Далее: 03 TimePath')
+    expect(dialog.find('button[aria-label="Закрыть"]').exists()).toBe(true)
+    await waitFor(() => document.documentElement.lang === 'ru')
+    expect(document.documentElement.lang).toBe('ru')
+  })
+
+  it('switches EN → RU from the bar button without a reload: content, URL and <html lang>', async () => {
+    const { wrapper } = mountApp()
+    await flushPromises()
+    await waitFor(() => document.documentElement.lang === 'en')
+    const hero = wrapper.get('.hero')
+    expect(hero.text()).toContain('Open to work')
+
+    await wrapper
+      .get('nav.bottom-bar button[aria-label="Language: English. Switch to Russian"]')
+      .trigger('click')
+    await flushPromises()
+
+    expect(location.pathname).toBe('/ru/')
+    expect(wrapper.get('.hero').element).toBe(hero.element)
+    expect(hero.text()).toContain(ruContent.profile.status)
+    expect(wrapper.get('.route-stop__title').text()).toBe('Профиль')
+    await waitFor(() => document.documentElement.lang === 'ru')
+    expect(document.documentElement.lang).toBe('ru')
+    expect(localStorage.getItem('aboutme.lang')).toBe('ru')
+    expect(
+      wrapper.find('button[aria-label="Язык: русский. Переключить на английский"]').exists(),
+    ).toBe(true)
   })
 
   it('opens /ru/ in Russian without remembering it as the visitor’s choice', async () => {
@@ -154,11 +213,13 @@ describe('App', () => {
     expect(localStorage.getItem('aboutme.lang')).toBe('en')
   })
 
-  it('shows no language button until Russian content ships', () => {
+  it('has a language button in the top bar of the stacked layout', () => {
     setViewport(768)
     const { wrapper } = mountApp()
 
-    expect(wrapper.find('button[aria-label="Language"]').exists()).toBe(false)
+    expect(
+      wrapper.find('.top-bar button[aria-label="Language: English. Switch to Russian"]').exists(),
+    ).toBe(true)
   })
 
   it('renders the hero card and the chapters bar on desktop', () => {

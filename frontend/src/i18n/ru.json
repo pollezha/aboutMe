@@ -1,12 +1,55 @@
 {
   "hero": {
     "name": "Яков Полежаев",
-    "role": ".NET backend-разработчик"
+    "role": ".NET backend-разработчик",
+    "contact": "Связаться"
+  },
+  "topBar": {
+    "rotate": "Повернуть карту",
+    "rotateHint": "Повернуть карту · R",
+    "pause": "Остановить анимацию"
+  },
+  "theme": {
+    "label": "Тема: {current}. Переключить на {next}",
+    "day": "день",
+    "evening": "вечер",
+    "night": "ночь"
+  },
+  "lang": {
+    "label": "Язык: русский. Переключить на английский"
+  },
+  "bar": {
+    "nav": "Главы",
+    "contact": "Связаться",
+    "monitoring": "Мониторинг"
   },
   "window": {
     "stop": "Остановка {n} из {total}",
+    "close": "Закрыть",
+    "links": "Доказательства и ссылки",
+    "next": "Далее",
     "monitoring": {
       "offline": "офлайн · бэкенд появится на этапе 4"
     }
+  },
+  "scene": {
+    "loading": "Загружаем 3D-остров…",
+    "hint": "Карта работает и без него.",
+    "skip": "Продолжить без 3D",
+    "failed": "3D-сцена не загрузилась — показываем карту",
+    "dismiss": "Скрыть"
+  },
+  "map": {
+    "alt": "Изометрический остров: каждое здание — глава резюме"
+  },
+  "chapters": {
+    "profile": { "title": "Профиль", "subtitle": "Обо мне" },
+    "prospace": { "title": "ProSpace", "subtitle": "Сейчас" },
+    "timepath": { "title": "TimePath", "subtitle": "До этого" },
+    "techstack": { "title": "Стек", "subtitle": "Технологии" },
+    "education": { "title": "Учёба", "subtitle": "Бакалавр 2025" },
+    "contact": { "title": "Контакты", "subtitle": "Ваша команда" },
+    "monitoring": { "title": "Мониторинг", "subtitle": "Сайт вживую" },
+    "summary": { "title": "Выжимка", "subtitle": "Для рекрутеров" }
   }
 }

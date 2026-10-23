@@ -28,21 +28,16 @@ withDefaults(
     profile: BottomBarProfile
     /** Без значения — по ширине окна: ≥ 1366 desktop, 768–1365 compact, < 768 — 2D-бар внизу. */
     variant?: 'desktop' | 'compact'
-    /** Кнопка языка — только когда есть RU-контент (этап 3, FR8). */
+    /** Кнопка языка — только когда есть контент на обоих языках (FR8). */
     showLang?: boolean
-    contactLabel?: string
-    monitoringLabel?: string
-    themeLabel?: string
-    langLabel?: string
+    /** Подписи — строки интерфейса из i18n (контейнер), компонент языка не знает. */
+    navLabel: string
+    contactLabel: string
+    monitoringLabel: string
+    themeLabel: string
+    langLabel: string
   }>(),
-  {
-    variant: undefined,
-    showLang: false,
-    contactLabel: 'Contact',
-    monitoringLabel: 'Monitoring',
-    themeLabel: 'Theme',
-    langLabel: 'Language',
-  },
+  { variant: undefined, showLang: false },
 )
 
 const emit = defineEmits<{
@@ -55,7 +50,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <nav class="bottom-bar" :class="`bottom-bar--${variant ?? 'auto'}`" aria-label="Chapters">
+  <nav class="bottom-bar" :class="`bottom-bar--${variant ?? 'auto'}`" :aria-label="navLabel">
     <div class="bottom-bar__profile">
       <span class="bottom-bar__avatar t-heading-section" aria-hidden="true">{{
         profile.initials
@@ -231,8 +226,10 @@ const emit = defineEmits<{
     padding: 0;
   }
 
+  /* Остановка 56 px: длинное слово переносится по слогам, где браузер умеет (lang страницы), UX16. */
   .bottom-bar--auto :deep(.route-stop__title) {
     font-size: var(--font-size-xs);
+    hyphens: auto;
   }
 
   .bottom-bar--auto :deep(.route-stop__subtitle) {

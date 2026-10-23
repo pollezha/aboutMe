@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import map from '../../scripts/design/figma-2d-map.json'
 import type { ChapterId } from '../content/chapters'
+import { useChapterLabel } from '../i18n'
 
 // 2D-режим (FR10): статичная картинка острова + кнопки-хотспоты поверх (Figma Tablet 34:771, Phone 56:1398).
-// Геометрия — проценты от рамки карты, снимок figma-2d-map.json.
+// Геометрия — проценты от рамки карты, снимок figma-2d-map.json; имена хотспотов — подписи глав из i18n
+// («Profile · About me»), а не `label` снимка (он только на английском).
 
 interface Hotspot {
   id: ChapterId
   index: string
-  label: string
   left: number
   top: number
   width: number
@@ -21,14 +23,21 @@ const props = withDefaults(
     variant: 'tablet' | 'phone'
     /** Рендер острова (этап 3); пока файла нет — видна заливка моря. */
     src?: string
-    alt?: string
   }>(),
-  { src: '/img/island-day.webp', alt: 'Isometric island: each building is a chapter of the CV' },
+  { src: '/img/island-day.webp' },
 )
 
 const emit = defineEmits<{ open: [id: ChapterId] }>()
 
-const hotspots = computed(() => map.hotspots[props.variant] as Hotspot[])
+const { t } = useI18n()
+const chapterLabel = useChapterLabel()
+
+const hotspots = computed(() =>
+  (map.hotspots[props.variant] as Hotspot[]).map((spot) => {
+    const { title, subtitle } = chapterLabel(spot.id)
+    return { ...spot, label: `${title} · ${subtitle}` }
+  }),
+)
 const imageFailed = ref(false)
 
 function boxStyle(spot: Hotspot) {
@@ -47,7 +56,7 @@ function boxStyle(spot: Hotspot) {
       v-if="!imageFailed"
       class="static-map__image"
       :src="src"
-      :alt="alt"
+      :alt="t('map.alt')"
       fetchpriority="high"
       @error="imageFailed = true"
     />

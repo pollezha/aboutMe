@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, nextTick } from 'vue'
 import { useUiStore } from '../../stores/ui'
 import { stops } from '../layout'
 import Labels from '../Labels.vue'
@@ -46,6 +46,17 @@ describe('Labels', () => {
       expect(button.attributes('type')).toBe('button')
     }
     expect(buttons[1]!.text()).toBe('ProSpace')
+  })
+
+  it('follows the interface language without a remount', async () => {
+    const { wrapper, ui } = mountLabels()
+
+    ui.syncLang('ru')
+    await nextTick()
+
+    const buttons = wrapper.findAll('button')
+    expect(buttons[0]!.attributes('aria-label')).toBe('01 Профиль')
+    expect(buttons[3]!.text()).toBe('Стек')
   })
 
   it('anchors each label in world space above the top of its building', () => {

@@ -19,9 +19,10 @@ withDefaults(
     whatLabel: string
     /** sheet: в шапке срок и кнопка закрытия. */
     variant?: 'panel' | 'sheet'
+    /** Обязателен у sheet (кнопка ×); строка интерфейса из i18n. */
     closeLabel?: string
   }>(),
-  { variant: 'panel', closeLabel: 'Close' },
+  { variant: 'panel', closeLabel: '' },
 )
 
 const emit = defineEmits<{ close: [] }>()

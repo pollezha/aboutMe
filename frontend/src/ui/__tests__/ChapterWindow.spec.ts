@@ -33,6 +33,9 @@ const base = {
   title: 'ProSpace',
   subtitle: 'Backend developer, 2024 — now',
   open: true,
+  closeLabel: 'Close',
+  linksLabel: 'Proof & links',
+  nextLabel: 'Next',
 } as const
 
 function mountWindow(props: Record<string, unknown> = {}) {

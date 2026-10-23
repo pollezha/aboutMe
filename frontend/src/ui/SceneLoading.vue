@@ -1,19 +1,22 @@
 <script setup lang="ts">
 // Figma `Screen/State/Loading scene` 34:964, LoadingCard 34:1119: карточка справа внизу над баром, не над Hero;
 // неопределённый индикатор без ложной шкалы и явный выход в 2D (FR10, UX9).
+import { useI18n } from 'vue-i18n'
 import BaseButton from './BaseButton.vue'
 
 defineEmits<{ skip: [] }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
-  <section class="scene-loading" role="status" aria-label="Loading the 3D island">
+  <section class="scene-loading" role="status" :aria-label="t('scene.loading')">
     <span class="scene-loading__spinner" aria-hidden="true" />
     <div class="scene-loading__text">
-      <p class="t-body-strong">Loading the 3D island…</p>
-      <p class="t-body-small scene-loading__hint">The map works without it.</p>
+      <p class="t-body-strong">{{ t('scene.loading') }}</p>
+      <p class="t-body-small scene-loading__hint">{{ t('scene.hint') }}</p>
     </div>
-    <BaseButton variant="secondary" @click="$emit('skip')">Continue without 3D</BaseButton>
+    <BaseButton variant="secondary" @click="$emit('skip')">{{ t('scene.skip') }}</BaseButton>
   </section>
 </template>
 

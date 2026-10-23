@@ -3,7 +3,9 @@
 // каждый кадр, поэтому при повороте камеры подпись остаётся над своим зданием.
 // tabindex=-1: Tab идёт по бару (Specs §3), подписи — дополнительный вход для мыши.
 import { Html } from '@tresjs/cientos'
+import { computed } from 'vue'
 import { ROUTE } from '../content/chapters'
+import { chapterLabel } from '../i18n'
 import { useUiStore } from '../stores/ui'
 import { stops } from './layout'
 
@@ -11,16 +13,14 @@ defineOptions({ name: 'SceneLabels' })
 
 const ui = useUiStore()
 
-const labels = stops.map((stop) => {
-  const chapter = ROUTE.find((item) => item.id === stop.id)
-  if (!chapter) throw new Error(`scene: stop ${stop.id} is not on the route`)
-  return {
-    id: stop.id,
-    position: stop.label,
-    title: chapter.title,
-    name: `${chapter.index} ${chapter.title}`,
-  }
-})
+const labels = computed(() =>
+  stops.map((stop) => {
+    const chapter = ROUTE.find((item) => item.id === stop.id)
+    if (!chapter) throw new Error(`scene: stop ${stop.id} is not on the route`)
+    const { title } = chapterLabel(chapter.id, ui.lang)
+    return { id: chapter.id, position: stop.label, title, name: `${chapter.index} ${title}` }
+  }),
+)
 </script>
 
 <template>

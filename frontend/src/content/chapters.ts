@@ -1,5 +1,6 @@
-// Главы острова: порядок маршрута и подписи остановок (Figma BottomBar 19:450, figma-components.md).
-// Контент окон — этап 3; здесь только навигационные данные.
+// Главы острова: порядок маршрута (Figma BottomBar 19:450, figma-components.md). Подписи остановок
+// в баре, пинах и prev/next — строки интерфейса: i18n `chapters.<id>.title/subtitle` (useChapterLabel).
+// Тексты окон — контент (content/<lang>.json); здесь только навигационные данные.
 
 export type ChapterId =
   | 'profile'
@@ -15,24 +16,22 @@ export interface ChapterInfo {
   id: ChapterId
   /** '01'…'06' для остановок маршрута, '' — вне маршрута. */
   index: string
-  title: string
-  subtitle: string
 }
 
 /** Шесть остановок маршрута по порядку. */
 export const ROUTE: readonly ChapterInfo[] = [
-  { id: 'profile', index: '01', title: 'Profile', subtitle: 'About me' },
-  { id: 'prospace', index: '02', title: 'ProSpace', subtitle: 'Latest role' },
-  { id: 'timepath', index: '03', title: 'TimePath', subtitle: 'Previous role' },
-  { id: 'techstack', index: '04', title: 'Tech stack', subtitle: 'Skills' },
-  { id: 'education', index: '05', title: 'Education', subtitle: 'BSc 2025' },
-  { id: 'contact', index: '06', title: 'Contact', subtitle: 'Your team' },
+  { id: 'profile', index: '01' },
+  { id: 'prospace', index: '02' },
+  { id: 'timepath', index: '03' },
+  { id: 'techstack', index: '04' },
+  { id: 'education', index: '05' },
+  { id: 'contact', index: '06' },
 ]
 
 /** Окна вне маршрута: открываются кнопками и deep-link, без prev/next. */
 export const EXTRA: readonly ChapterInfo[] = [
-  { id: 'monitoring', index: '', title: 'Monitoring', subtitle: 'This site, live' },
-  { id: 'summary', index: '', title: '30-sec summary', subtitle: 'For recruiters' },
+  { id: 'monitoring', index: '' },
+  { id: 'summary', index: '' },
 ]
 
 export const CHAPTERS: readonly ChapterInfo[] = [...ROUTE, ...EXTRA]

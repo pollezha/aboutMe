@@ -4,6 +4,7 @@ import {
   formatExperience,
   formatTerm,
   serverExperience,
+  SINCE_MONTHS,
   sinceLabel,
   totalExperience,
 } from './experience'
@@ -12,30 +13,53 @@ import type { ChapterMetric, Chapters, ContentBundle, ContentLang, ExperienceEnt
 // Токены дат в текстах глав (схема `chapters`): даты не хранятся строками, а считаются из `experience[]`.
 // {since} «July 2024», {sinceShort} «Jul 2024», {experience} «2 yrs 3 mo», {span} «2024 – 2026»,
 // {period} «Jan – Oct 2026» (роль главы, `to: null` — по текущий месяц). Неизвестный токен остаётся как есть.
+// RU: {since}/{sinceShort} — в родительном падеже («июля 2024», «июл 2024», «мая 2024»): в ru.json они
+// всегда стоят после «с»; {period} — в именительном («май 2025», «янв – окт 2026»).
 
 interface MonthNames {
-  long: string[]
+  /** {since} */
+  since: string[]
+  /** {sinceShort} и «since …» у срока сервера */
+  sinceShort: string[]
+  /** {period} */
   short: string[]
 }
 
-// RU — задача T6 (склонения); пока любой язык форматируется как EN.
-const MONTHS: Partial<Record<ContentLang, MonthNames>> & { en: MonthNames } = {
-  en: {
-    long: [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ],
-    short: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+const EN_SHORT = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+]
+const RU_SHORT = [
+  'янв',
+  'фев',
+  'мар',
+  'апр',
+  'май',
+  'июн',
+  'июл',
+  'авг',
+  'сен',
+  'окт',
+  'ноя',
+  'дек',
+]
+
+const MONTHS: Record<ContentLang, MonthNames> = {
+  en: { since: SINCE_MONTHS.en, sinceShort: EN_SHORT, short: EN_SHORT },
+  ru: {
+    since: SINCE_MONTHS.ru,
+    sinceShort: RU_SHORT.map((name) => (name === 'май' ? 'мая' : name)),
+    short: RU_SHORT,
   },
 }
 
@@ -65,7 +89,7 @@ function endOf(entry: Pick<ExperienceEntry, 'to'>, now: Date): YearMonth {
 }
 
 function names(lang: ContentLang): MonthNames {
-  return MONTHS[lang] ?? MONTHS.en
+  return MONTHS[lang]
 }
 
 function monthYear(at: YearMonth, style: keyof MonthNames, lang: ContentLang): string {
@@ -103,11 +127,11 @@ type Resolver = (ctx: Required<Omit<DateContext, 'experienceId'>> & DateContext)
 const TOKENS: Record<string, Resolver> = {
   since: ({ experience, lang }) => {
     const at = earliest(experience)
-    return at ? monthYear(at, 'long', lang) : null
+    return at ? monthYear(at, 'since', lang) : null
   },
   sinceShort: ({ experience, lang }) => {
     const at = earliest(experience)
-    return at ? monthYear(at, 'short', lang) : null
+    return at ? monthYear(at, 'sinceShort', lang) : null
   },
   experience: ({ experience, now, lang }) =>
     experience.length > 0 ? formatExperience(totalExperience(experience, now), lang) : null,
@@ -170,7 +194,7 @@ export function serverTenure(
   const roles = experience.filter((entry) => usedIn.includes(entry.id))
   const term = formatTerm(serverExperience(usedIn, experience, now), lang)
   const start = earliest(roles)
-  const since = start ? `${SINCE[lang]} ${monthYear(start, 'short', lang)}` : ''
+  const since = start ? `${SINCE[lang]} ${monthYear(start, 'sinceShort', lang)}` : ''
   return { term, since, label: since ? `${term} · ${since}` : term }
 }
 

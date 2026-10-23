@@ -16,7 +16,7 @@ import { resolveHighlights } from './content/experience'
 import { resolveChapter } from './content/format'
 import StaticMap from './fallback2d/StaticMap.vue'
 import { useSiteHead } from './head'
-import { useLocaleSync } from './i18n'
+import { useChapterLabel, useLocaleSync } from './i18n'
 import { langOf, pathFor } from './router'
 import { SCENE_TIMEOUT_MS, loadSceneWhenIdle, type SceneLoad } from './scene'
 import { MIN_3D_WIDTH, detectWebGL2, shouldUse3D } from './scene/shouldUse3D'
@@ -186,15 +186,19 @@ const profile = computed(() => ({
   location: content.value.profile.locationShort,
 }))
 const highlights = computed(() => resolveHighlights(content.value, now))
-const links = computed(() => ({
-  cv: content.value.profile.links.find((link) => link.kind === 'cv')?.href,
-  telegram: content.value.profile.links.find((link) => link.kind === 'telegram')?.href,
-}))
+// CV и Telegram — из ссылок бандла: на /ru/ ведут на RU-PDF и подписаны по-русски.
+const cvLink = computed(() => content.value.profile.links.find((link) => link.kind === 'cv'))
+const telegramLink = computed(() =>
+  content.value.profile.links.find((link) => link.kind === 'telegram'),
+)
+const links = computed(() => ({ cv: cvLink.value?.href, telegram: telegramLink.value?.href }))
 const barProfile = computed(() => ({ initials: 'YP', name: t('hero.name'), role: t('hero.role') }))
 
+const chapterLabel = useChapterLabel()
 const stops = computed<BottomBarStop[]>(() =>
   ROUTE.map((chapter) => ({
     ...chapter,
+    ...chapterLabel(chapter.id),
     // Активная важнее посещённой: у текущей главы — заливка, у уже просмотренных — галочка.
     state:
       ui.activeStop === chapter.id
@@ -207,7 +211,11 @@ const stops = computed<BottomBarStop[]>(() =>
 
 // Три темы по кругу — не toggle, поэтому без aria-pressed: в имени текущая и следующая тема.
 const NEXT_THEME: Record<Theme, Theme> = { day: 'evening', evening: 'night', night: 'day' }
-const themeLabel = computed(() => `Theme: ${ui.theme}. Switch to ${NEXT_THEME[ui.theme]}`)
+const themeLabel = computed(() =>
+  t('theme.label', { current: t(`theme.${ui.theme}`), next: t(`theme.${NEXT_THEME[ui.theme]}`) }),
+)
+// Кнопка языка — когда есть контент на обоих языках (FR8); имя — текущий язык и куда переключит.
+const showLang = CONTENT_LANGS.length > 1
 
 function open(id: string) {
   if (isChapterId(id)) ui.openChapter(id)
@@ -232,11 +240,11 @@ const windowEyebrow = computed(() => {
 const neighbours = computed(() => (ui.openWindow ? routeNeighbours(ui.openWindow) : {}))
 const prevLink = computed(() => {
   const prev = neighbours.value.prev
-  return prev ? { number: prev.index, title: prev.title } : undefined
+  return prev ? { number: prev.index, title: chapterLabel(prev.id).title } : undefined
 })
 const nextLink = computed(() => {
   const next = neighbours.value.next
-  return next ? { number: next.index, title: next.title } : undefined
+  return next ? { number: next.index, title: chapterLabel(next.id).title } : undefined
 })
 
 // Окно ↔ URL-хэш (#prospace) и история (design §4 «Окна»): ссылку на главу можно отправить,
@@ -331,23 +339,28 @@ onBeforeUnmount(() => {
           v-if="ui.mode === '3d'"
           class="top-bar__rotate"
           icon="rotate"
-          label="Rotate map"
-          title="Rotate map · R"
+          :label="t('topBar.rotate')"
+          :title="t('topBar.rotateHint')"
           @click="mapRotation.rotate()"
         />
         <IconButton
           v-if="ui.mode === '3d'"
           :icon="ui.motionPaused ? 'play' : 'pause'"
-          label="Pause animation"
+          :label="t('topBar.pause')"
           :pressed="ui.motionPaused"
           @click="ui.toggleMotion()"
         />
-        <!-- Кнопка языка — с RU-контентом (этап 3, FR8). -->
         <IconButton
           v-if="layout === 'stacked'"
           icon="theme"
           :label="themeLabel"
           @click="ui.cycleTheme()"
+        />
+        <IconButton
+          v-if="layout === 'stacked' && showLang"
+          icon="lang"
+          :label="t('lang.label')"
+          @click="ui.toggleLang()"
         />
       </div>
     </header>
@@ -364,6 +377,9 @@ onBeforeUnmount(() => {
         :profile="profile"
         :highlights="highlights"
         :links="links"
+        :contact-label="t('hero.contact')"
+        :cv-label="cvLink?.label ?? ''"
+        :telegram-label="telegramLink?.label ?? ''"
         @contact="ui.openChapter('contact')"
       />
       <StaticMap v-if="ui.mode === '2d'" class="app__map" :variant="mapVariant" @open="open" />
@@ -374,8 +390,12 @@ onBeforeUnmount(() => {
       :variant="barVariant"
       :stops="stops"
       :profile="barProfile"
+      :nav-label="t('bar.nav')"
+      :contact-label="t('bar.contact')"
+      :monitoring-label="t('bar.monitoring')"
       :theme-label="themeLabel"
-      :show-lang="false"
+      :lang-label="t('lang.label')"
+      :show-lang="showLang"
       @open="open"
       @contact="ui.openChapter('contact')"
       @monitoring="ui.openChapter('monitoring')"
@@ -394,6 +414,9 @@ onBeforeUnmount(() => {
       :subtitle="windowText.subtitle"
       :prev="prevLink"
       :next="nextLink"
+      :close-label="t('window.close')"
+      :links-label="t('window.links')"
+      :next-label="t('window.next')"
       @update:open="onWindowOpen"
       @prev="neighbours.prev && ui.openChapter(neighbours.prev.id)"
       @next="neighbours.next && ui.openChapter(neighbours.next.id)"

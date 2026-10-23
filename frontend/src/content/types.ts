@@ -51,6 +51,7 @@ export interface ExperienceEntry {
 // --- Окна глав (`chapters`). Тексты могут содержать токены дат, их подставляет код из `experience[]`:
 // {since} «July 2024», {sinceShort} «Jul 2024», {experience} «2 yrs 3 mo», {span} «2024 – 2026»,
 // {period} «Jan – Oct 2026» (только в главе с `experienceId`). Префикс «Stop N of 6» — код, не контент.
+// RU: {since}/{sinceShort} — родительный падеж («с июля 2024», «с июл 2024»), {period} — «янв – окт 2026».
 
 /** Ссылка подвала на внешнюю страницу или файл. */
 export interface HrefProofLink {

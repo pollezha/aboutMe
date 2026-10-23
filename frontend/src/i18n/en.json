@@ -1,12 +1,55 @@
 {
   "hero": {
     "name": "Yakov Polezhaev",
-    "role": ".NET Backend Developer"
+    "role": ".NET Backend Developer",
+    "contact": "Contact"
+  },
+  "topBar": {
+    "rotate": "Rotate map",
+    "rotateHint": "Rotate map · R",
+    "pause": "Pause animation"
+  },
+  "theme": {
+    "label": "Theme: {current}. Switch to {next}",
+    "day": "day",
+    "evening": "evening",
+    "night": "night"
+  },
+  "lang": {
+    "label": "Language: English. Switch to Russian"
+  },
+  "bar": {
+    "nav": "Chapters",
+    "contact": "Contact",
+    "monitoring": "Monitoring"
   },
   "window": {
     "stop": "Stop {n} of {total}",
+    "close": "Close",
+    "links": "Proof & links",
+    "next": "Next",
     "monitoring": {
       "offline": "offline · backend arrives with stage 4"
     }
+  },
+  "scene": {
+    "loading": "Loading the 3D island…",
+    "hint": "The map works without it.",
+    "skip": "Continue without 3D",
+    "failed": "3D scene didn't load — showing the map",
+    "dismiss": "Dismiss"
+  },
+  "map": {
+    "alt": "Isometric island: each building is a chapter of the CV"
+  },
+  "chapters": {
+    "profile": { "title": "Profile", "subtitle": "About me" },
+    "prospace": { "title": "ProSpace", "subtitle": "Latest role" },
+    "timepath": { "title": "TimePath", "subtitle": "Previous role" },
+    "techstack": { "title": "Tech stack", "subtitle": "Skills" },
+    "education": { "title": "Education", "subtitle": "BSc 2025" },
+    "contact": { "title": "Contact", "subtitle": "Your team" },
+    "monitoring": { "title": "Monitoring", "subtitle": "This site, live" },
+    "summary": { "title": "30-sec summary", "subtitle": "For recruiters" }
   }
 }

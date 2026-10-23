@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useId } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { resolveChapter, serverTenure } from '../../content/format'
 import type { ContentBundle } from '../../content/types'
 import { useBreakpoint } from '../useBreakpoint'
@@ -14,6 +15,7 @@ const props = withDefaults(defineProps<{ content: ContentBundle; now?: Date }>()
   now: () => new Date(),
 })
 
+const { t } = useI18n()
 const breakpoint = useBreakpoint()
 const mobile = computed(() => breakpoint.value === 'mobile')
 
@@ -85,7 +87,12 @@ const details = computed(() => ({
       </section>
     </WindowColumns>
     <BottomSheet v-if="mobile && sheetOpen" :labelled-by="nameId" @close="closeSheet">
-      <ServerDetails v-bind="details" variant="sheet" @close="closeSheet" />
+      <ServerDetails
+        v-bind="details"
+        variant="sheet"
+        :close-label="t('window.close')"
+        @close="closeSheet"
+      />
     </BottomSheet>
   </div>
 </template>

@@ -17,7 +17,8 @@ const profile = {
 const links = { cv: '/cv.pdf', telegram: 'https://t.me/poll_ezha' }
 
 function mountHero(extra: Record<string, unknown> = {}) {
-  return mount(HeroCard, { props: { profile, highlights, links, ...extra } })
+  const labels = { contactLabel: 'Contact', cvLabel: 'CV (PDF)', telegramLabel: 'Telegram' }
+  return mount(HeroCard, { props: { profile, highlights, links, ...labels, ...extra } })
 }
 
 describe('HeroCard', () => {

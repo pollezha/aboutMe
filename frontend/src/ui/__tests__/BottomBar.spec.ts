@@ -14,8 +14,16 @@ const stops: BottomBarStop[] = [
 
 const profile = { initials: 'YP', name: 'Yakov Polezhaev', role: '.NET Backend Developer' }
 
+const labels = {
+  navLabel: 'Chapters',
+  contactLabel: 'Contact',
+  monitoringLabel: 'Monitoring',
+  themeLabel: 'Theme',
+  langLabel: 'Language',
+}
+
 function mountBar(extra: Record<string, unknown> = {}) {
-  return mount(BottomBar, { props: { stops, profile, ...extra } })
+  return mount(BottomBar, { props: { stops, profile, ...labels, ...extra } })
 }
 
 function stopButtons(wrapper: ReturnType<typeof mountBar>) {
@@ -46,7 +54,7 @@ describe('BottomBar', () => {
     ])
   })
 
-  it('hides the language toggle until Russian content ships (stage 3)', () => {
+  it('hides the language toggle without showLang', () => {
     const wrapper = mountBar()
 
     expect(wrapper.find('button[aria-label="Language"]').exists()).toBe(false)

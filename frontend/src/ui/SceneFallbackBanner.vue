@@ -1,14 +1,17 @@
 <script setup lang="ts">
 // Компактный баннер после таймаута/ошибки загрузки сцены (UX9): полоса с ×, не перекрывает Hero.
+import { useI18n } from 'vue-i18n'
 import IconButton from './IconButton.vue'
 
 defineEmits<{ dismiss: [] }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
   <div class="scene-banner" role="status">
-    <p class="t-body-small scene-banner__text">3D scene didn't load — showing the map</p>
-    <IconButton icon="close" label="Dismiss" @click="$emit('dismiss')" />
+    <p class="t-body-small scene-banner__text">{{ t('scene.failed') }}</p>
+    <IconButton icon="close" :label="t('scene.dismiss')" @click="$emit('dismiss')" />
   </div>
 </template>
 

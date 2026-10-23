@@ -69,7 +69,7 @@
       "items": { "$ref": "#/$defs/experience" }
     },
     "chapters": {
-      "description": "Texts of the eight chapter windows (Figma Window/01…08). Route order, sign icons and the \"Stop N of 6\" prefix are code (src/content/chapters.ts), not content. Chapter texts may contain date tokens that are filled from experience[] at render time and never stored as dates: {since} \"July 2024\" and {sinceShort} \"Jul 2024\" (earliest start), {experience} \"2 yrs 3 mo\" (total), {span} \"2024 – 2026\" (years of all roles), {period} \"Jan – Oct 2026\" (only in a chapter with experienceId)",
+      "description": "Texts of the eight chapter windows (Figma Window/01…08). Route order, sign icons and the \"Stop N of 6\" prefix are code (src/content/chapters.ts), not content. Chapter texts may contain date tokens that are filled from experience[] at render time and never stored as dates: {since} \"July 2024\" and {sinceShort} \"Jul 2024\" (earliest start), {experience} \"2 yrs 3 mo\" (total), {span} \"2024 – 2026\" (years of all roles), {period} \"Jan – Oct 2026\" (only in a chapter with experienceId). In Russian {since} and {sinceShort} are genitive (\"июля 2024\", \"июл 2024\"): write them after «с»",
       "type": "object",
       "additionalProperties": false,
       "required": [

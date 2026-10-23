@@ -24,18 +24,16 @@ const props = withDefaults(
     prev?: ChapterLink
     next?: ChapterLink
     open: boolean
-    closeLabel?: string
-    linksLabel?: string
-    nextLabel?: string
+    /** Строки интерфейса из i18n (контейнер). */
+    closeLabel: string
+    linksLabel: string
+    nextLabel: string
   }>(),
   {
     subtitle: undefined,
     sign: undefined,
     prev: undefined,
     next: undefined,
-    closeLabel: 'Close',
-    linksLabel: 'Proof & links',
-    nextLabel: 'Next',
   },
 )
 

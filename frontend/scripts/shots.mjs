@@ -140,6 +140,9 @@ const browser = spawn(
     `--remote-debugging-port=${debugPort}`,
     '--no-first-run',
     '--hide-scrollbars',
+    // Иначе на русской системе inline-скрипт уведёт `/` на `/ru/` (navigator.language) и EN-кадры выйдут RU.
+    '--lang=en-US',
+    '--accept-lang=en-US',
     'about:blank',
   ],
   { stdio: 'ignore' },

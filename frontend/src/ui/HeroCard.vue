@@ -37,16 +37,12 @@ const props = withDefaults(
     /** Три готовые метрики; стаж уже посчитан контейнером из `experience[]`. */
     highlights: HeroMetric[]
     links: HeroLinks
-    contactLabel?: string
-    cvLabel?: string
-    telegramLabel?: string
+    /** Подписи: «Contact» — i18n, CV и Telegram — подписи ссылок из контента (контейнер). */
+    contactLabel: string
+    cvLabel: string
+    telegramLabel: string
   }>(),
-  {
-    variant: 'desktop',
-    contactLabel: 'Contact',
-    cvLabel: 'CV (PDF)',
-    telegramLabel: 'Telegram',
-  },
+  { variant: 'desktop' },
 )
 
 const emit = defineEmits<{ contact: [] }>()
@@ -146,6 +142,12 @@ const compact = computed(() => props.variant !== 'mobile')
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
+}
+
+/* Узкий Hero (телефон 358, laptop 360): «Связаться» + «Резюме (PDF)» + Telegram — в одну строку с полями 16 px. */
+.hero--mobile .hero__actions :deep(.btn),
+.hero--laptop .hero__actions :deep(.btn) {
+  padding-inline: var(--space-4);
 }
 
 .hero__metrics {
