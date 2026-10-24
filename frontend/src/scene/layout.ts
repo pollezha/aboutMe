@@ -2,7 +2,7 @@
 // Плоскость концепта 1100×1100 px, x → восток, y → юг; 1 unit = 10 px, центр острова в начале координат:
 // x концепта → +X, y концепта → +Z, высота → +Y.
 import layout from '../../scripts/design/scene-layout.json'
-import type { ChapterId } from '../content/chapters'
+import type { ChapterId } from '../content'
 
 export const PX_PER_UNIT = 10
 const HALF = layout.canvas.w / 2

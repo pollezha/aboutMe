@@ -23,10 +23,7 @@ export interface HeroLinks {
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import BaseButton from './BaseButton.vue'
-import Icon from './Icon.vue'
-import IconButton from './IconButton.vue'
-import StatusPill from './StatusPill.vue'
+import { BaseButton, Icon, IconButton, StatusPill } from '../shared/ui'
 
 // Hero не закрывает сцену (figma-brief): на desktop/laptop — компактная карточка 400/360 с метриками
 // в одну строку; на телефоне — без метрик, чтобы карта целиком вошла в первый экран.

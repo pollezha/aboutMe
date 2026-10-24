@@ -2,8 +2,8 @@
 // Смена темы перекрашивает те же материалы, а не создаёт новые: меньше программ и draw-call-ов.
 import { MeshLambertMaterial } from 'three'
 import { watchEffect } from 'vue'
-import type { ChapterId } from '../content/chapters'
-import type { palette } from '../theme/palette'
+import type { ChapterId } from '../content'
+import type { palette } from '../theme'
 
 export type ThemeColors = Record<keyof (typeof palette)['day'], string>
 

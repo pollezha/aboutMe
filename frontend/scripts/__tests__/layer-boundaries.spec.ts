@@ -46,9 +46,41 @@ describe('frontend layer boundaries', () => {
   it('lets the 2D fallback use content, i18n and stores', async () => {
     const errors = await boundaryErrors(
       'src/fallback2d/Fixture.ts',
-      "import { chapters } from '../content/chapters'\nimport { useUiStore } from '../stores/ui'\nexport const x = [chapters, useUiStore]\n",
+      "import { CHAPTERS } from '../content'\nimport { useUiStore } from '../stores/ui'\nexport const x = [CHAPTERS, useUiStore]\n",
     )
     expect(errors).toEqual([])
+  })
+
+  it('lets the lower modules be imported only through their index (M5)', async () => {
+    expect(
+      await boundaryErrors(
+        'src/scene/X.ts',
+        "import { palette } from '../theme/palette'\nexport const x = palette\n",
+      ),
+    ).toHaveLength(1)
+    expect(
+      await boundaryErrors(
+        'src/scene/X.ts',
+        "import { palette } from '../theme'\nexport const x = palette\n",
+      ),
+    ).toEqual([])
+    expect(
+      await boundaryErrors(
+        'src/stores/X.ts',
+        "import { ROUTE } from '../content/chapters'\nexport const x = ROUTE\n",
+      ),
+    ).toHaveLength(1)
+    expect(
+      await boundaryErrors(
+        'src/Fixture.ts',
+        "import { contentFor } from './content/bundles'\nimport { load } from './shared/lib/storage'\nimport { contentFor as c, palette } from './content'\nexport const x = [contentFor, load, c, palette]\n",
+      ),
+    ).toHaveLength(2)
+  })
+
+  it('lets main.ts pull theme stylesheets directly', async () => {
+    expect(await boundaryErrors('src/main.ts', "import './theme/tokens.css'\n")).toEqual([])
+    expect(await boundaryErrors('src/main.ts', "import './theme/boot'\n")).toHaveLength(1)
   })
 
   it('keeps content below ui, scene and stores', async () => {

@@ -3,7 +3,7 @@
 import { TresCanvas } from '@tresjs/core'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useUiStore } from '../stores/ui'
-import { palette } from '../theme/palette'
+import { palette } from '../theme'
 import SceneContent from './SceneContent.vue'
 import { isRotateHotkey, mapRotation } from './useCamera'
 

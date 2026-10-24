@@ -3,9 +3,11 @@
 // Только текст: IBM Plex Mono (подписи) и cyrillic-ext не предзагружаются — замер не показал выигрыша LCP.
 import bricolageLatin from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url'
 import onestCyrillic from '@fontsource-variable/onest/files/onest-cyrillic-wght-normal.woff2?url'
-import type { ContentLang } from '../content/types'
 
-export const TEXT_FONT_PRELOADS: Readonly<Record<ContentLang, readonly string[]>> = {
+/** Языки сайта; совпадает с ContentLang модуля content (тема от контента не зависит, ADR-0007). */
+export type FontLang = 'en' | 'ru'
+
+export const TEXT_FONT_PRELOADS: Readonly<Record<FontLang, readonly string[]>> = {
   en: [bricolageLatin],
   ru: [bricolageLatin, onestCyrillic],
 }
