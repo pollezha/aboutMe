@@ -3,4 +3,4 @@
 export * from '../scene'
 export { default as SceneFallbackBanner } from './SceneFallbackBanner.vue'
 export { default as SceneLoading } from './SceneLoading.vue'
-export { isTheme, useUiStore, type Mode, type SceneState, type Theme } from '../stores/ui'
+export { useUiStore, type Mode, type SceneState } from '../stores/ui'
