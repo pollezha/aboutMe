@@ -207,7 +207,7 @@
 Каждая R-задача — перенос без изменения поведения: существующие тесты остаются зелёными, новые — на хендлеры без Docker.
 Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён как warning (компилятор проверяет namespace = папка).
 
-- [ ] R1 — `src/BuildingBlocks`: каркас общей библиотеки
+- [x] R1 — `src/BuildingBlocks`: каркас общей библиотеки
   - Файлы: `src/BuildingBlocks/BuildingBlocks.csproj` (без ссылки на Contracts); `Http/{RequestBodyReader,HttpProblems}.cs` (тело с лимитом → 413,
     ProblemDetails 400/413/429/503); `Observability/{UrlRedactionProcessor,UrlRedactionExtensions}.cs` (обобщение из events-api/Telegram);
     `.editorconfig` (`IDE0130` = warning); `aboutMe.slnx`; `tests/BuildingBlocks.Tests` (RequestBodyReader: лимит, пустое тело; redaction);
@@ -269,7 +269,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
 - [ ] R8 — Architecture.Tests на слои + документация
   - Файлы: `tests/Architecture.Tests/LayerRulesTests.cs` (System.Reflection.Metadata по TypeRef/AssemblyRef сборок сервисов, без новых пакетов:
     Domain → только BCL/Contracts; Application ↛ Infrastructure и пакеты AspNetCore/EF/Npgsql/Confluent.Kafka, ↛ `BuildingBlocks.Http`, `BuildingBlocks.Messaging`;
-    Api/Workers ↛ Infrastructure кроме Program/DependencyInjection), `services/CLAUDE.md` (раскладка и правила из ADR-0007), `docs/design/architecture.md` §5.1 (ссылка на ADR-0007),
+    Api/Workers ↛ Infrastructure кроме Program/DependencyInjection), `services/CLAUDE.md` (раскладка и правила из ADR-0007), включить `IDE0130` (исключение для `src/ServiceDefaults/Extensions.cs` — шаблонный namespace Aspire), `docs/design/architecture.md` §5.1 (ссылка на ADR-0007),
     `docs/adr/0007` → accepted.
   - Готово, когда: тест падает на искусственном нарушении (проверить локально) и проходит на текущем коде.
   - Зависит от: R3–R7
