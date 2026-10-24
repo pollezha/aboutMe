@@ -286,7 +286,7 @@ frontend/src/
   - Готово, когда: в `App.vue` нет вычислений Hero.
   - Зависит от: M14.
 
-- [ ] M16 — `windows`: хост окна, история и предрендер текста глав
+- [x] M16 — `windows`: хост окна, история и предрендер текста глав
   - Файлы: `windows/useChapterWindow.ts` (текст, eyebrow «Stop N of 6», prev/next), `windows/useWindowHistory.ts`
     (pushState/replaceState/back, popstate/hashchange), `windows/WindowHost.vue`, `windows/PrerenderedChapters.vue`;
     `App.windows.spec`, `App.windows-nav` (или `App.history`/`App.deeplink`) → `windows/__tests__/`.
