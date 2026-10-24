@@ -259,7 +259,7 @@ frontend/src/
   - Готово, когда: `ui.spec` без маршрута; ключ `aboutme.visited` в sessionStorage прежний.
   - Зависит от: M8, M9, M11.
 
-- [ ] M13 — `mode`: стор режима и выбор 3D/2D; `stores/` удалён
+- [x] M13 — `mode`: стор режима и выбор 3D/2D; `stores/` удалён
   - Файлы: `mode/useModeStore.ts` (mode, userChoice, sceneState и их экшены), `git mv scene/shouldUse3D.ts`
     (+ spec) → `mode/`, `mode/useViewMode.ts` (`?mode=`, `isWide`, `use3D`, `detectMode`, `canSwitchMode`,
     `switchMode`); `scene/index.ts` больше не реэкспортирует `shouldUse3D`; `App.mode.spec` и остаток `ui.spec`
