@@ -150,7 +150,7 @@ frontend/src/
     без изменений; целевые модули есть в графе с `facade: false`.
   - Зависит от: — (идёт параллельно с T12b: не трогает его файлы).
 
-- [ ] M2 — Глобальные инварианты не зависят от раскладки
+- [x] M2 — Глобальные инварианты не зависят от раскладки
   - Файлы: `src/ui/__tests__/tokens-only.spec.ts` → `src/__tests__/tokens-only.spec.ts` (glob
     `../**/*.vue` без `scene/**` и `__tests__`), `src/i18n/__tests__/messages.spec.ts` (glob всех `.vue`
     кроме `scene/**`, плюс `scene/Labels.vue`), `src/ui/windows/__tests__/windows.spec.ts` (glob сырых исходников).
