@@ -216,7 +216,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
   - Зависит от: — (параллельно с T8b/T8c)
 
 - [ ] R2 — Kafka из `ServiceDefaults` в `BuildingBlocks/Messaging/Kafka`
-  - Файлы: перенос `KafkaTracePropagation`, `KafkaDefaults`; новые `KafkaConsumerLoop<T>` (consume → handler → commit после успеха,
+  - Файлы: `Persistence/{IUnitOfWork,EfUnitOfWork}.cs` (транзакция соединения; тест на реальной PostgreSQL: rollback при Dispose без Commit); перенос `KafkaTracePropagation`, `KafkaDefaults`; новые `KafkaConsumerLoop<T>` (consume → handler → commit после успеха,
     poison-счётчик; обобщение projector/live-hub) и `AddKafkaTracing()` (`ConfigureOpenTelemetryTracerProvider(t => t.AddSource(...))`);
     `ServiceDefaults/Extensions.cs` больше не знает о Kafka (ссылки ServiceDefaults → BuildingBlocks НЕТ); `AddKafkaTracing()` вызывают
     events-api, projector, live-hub из Program.cs (до R3–R6) — спаны produce/process не должны пропасть: тест на регистрацию источника
@@ -236,7 +236,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
 
 - [ ] R4 — content-api по слоям
   - Файлы: `Api/ContentEndpoint.cs`; `Application/GetContent/{GetContentQuery,GetContentHandler}.cs`,
-    `Application/SeedContent/{SeedContentCommand,SeedContentHandler}.cs`, `Application/Abstractions/{IContentBundleRepository,IContentSource}.cs`;
+    `Application/SeedContent/{SeedContentCommand,SeedContentHandler}.cs`, `Application/Abstractions/{IContentBundleRepository,IContentSource}.cs` (`GetByLangAsync`, `UpsertAsync`; реализация `Infrastructure/Persistence/ContentBundleRepository.cs`);
     `Domain/{ContentBundle,ContentBundleValidator}.cs`; `Infrastructure/Persistence/{ContentDbContext,ContentBundleRepository,Migrations/}`,
     `Infrastructure/Files/JsonContentSource.cs`, `Infrastructure/Health/ContentSeedHealthCheck.cs`; `Workers/ContentSeedWorker.cs`.
     Тесты: `GetContentHandlerTests` (ETag/304 на фейковом репозитории), `SeedContentHandlerTests`.
@@ -246,15 +246,15 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
 - [ ] R5 — projector по слоям
   - Файлы: `Domain/{Aggregator,StatsDelta,VitalBuckets}.cs`; `Application/ProjectEvents/{ProjectEventsCommand,ProjectEventsHandler}.cs`,
     `Application/RebuildStats/{RebuildStatsCommand,RebuildStatsHandler}.cs`,
-    `Application/Abstractions/{IStatsStore,IConsumerOffsets}.cs` (`IStatsStore.ApplyAsync(batch, computeDeltas, ct)` владеет транзакцией — ADR-0007);
-    `Infrastructure/Persistence/{StatsDbContext,StatsStore,Migrations/}`,
+    `Application/Abstractions/{IProcessedEventsRepository,IStatsRepository,IConsumerOffsets}.cs` (+ `IUnitOfWork` из BuildingBlocks; ADR-0007 «Репозитории, Unit of Work»);
+    `Infrastructure/Persistence/{StatsDbContext,ProcessedEventsRepository,StatsRepository,Migrations/}` (репозитории через `DbContext` в транзакции `EfUnitOfWork<StatsDbContext>`),
     `Infrastructure/Messaging/KafkaConsumerOffsets.cs`, `Infrastructure/Health/KafkaHealthCheck.cs`; `Workers/ProjectorWorker.cs`
-    (`KafkaConsumerLoop` → `ProjectEventsHandler`; офсет после успеха). Тесты: `ProjectEventsHandlerTests` на фейковом `IStatsStore` (дубль eventId → без дельты; poison).
+    (`KafkaConsumerLoop` → `ProjectEventsHandler`; офсет после успеха). Тесты: `ProjectEventsHandlerTests` на фейковых репозиториях (дубль eventId → без дельты; poison; сбой до Commit → ничего не записано — интеграционно).
   - Готово, когда: `tests/Projector.Tests` зелёный (включая Integration).
   - Зависит от: R1, R2
 
 - [ ] R6 — live-hub по слоям
-  - Файлы: `Domain/LiveState.cs`; `Application/ApplyLiveEvent/*`, `Application/GetLiveSnapshot/*`, `Application/Abstractions/{ILiveStateStore,ILiveNotifier}.cs`;
+  - Файлы: `Domain/LiveState.cs`; `Application/ApplyLiveEvent/*`, `Application/GetLiveSnapshot/*`, `Application/Abstractions/{ILiveStateRepository,ILiveNotifier}.cs` (`Infrastructure/InMemory/InMemoryLiveStateRepository.cs`);
     `Infrastructure/Messaging/StartOfDayRewind.cs`, `Infrastructure/Realtime/SignalRLiveNotifier.cs` (реализация `ILiveNotifier`; Workers не ссылаются на хаб); `Api/Hubs/LiveHub.cs`;
     `Workers/{LiveConsumerWorker,LiveBroadcastWorker}.cs`. Тесты: существующие + `ApplyLiveEventHandlerTests`.
   - Готово, когда: `tests/LiveHub.Tests` зелёный.

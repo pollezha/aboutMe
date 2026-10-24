@@ -42,8 +42,8 @@ KafkaHealthCheck); `content-api/Seeding`, `live-hub/Live`, `gateway/Policies` �
 |---|---|---|
 | content-api | `GetContent`, `SeedContent` | `IContentBundleRepository`, `IContentSource` |
 | events-api | `IngestEvents`, `SendContactMessage` («записка в бутылке») | `IEventPublisher`, `IContactMessageDelivery`, `IDailySalt` |
-| projector | `ProjectEvents`, `RebuildStats` | `IStatsStore`, `IConsumerOffsets` |
-| live-hub | `ApplyLiveEvent`, `GetLiveSnapshot` | `ILiveStateStore`, `ILiveNotifier` |
+| projector | `ProjectEvents`, `RebuildStats` | `IProcessedEventsRepository`, `IStatsRepository`, `IUnitOfWork`, `IConsumerOffsets` |
+| live-hub | `ApplyLiveEvent`, `GetLiveSnapshot` | `ILiveStateRepository` (in-memory), `ILiveNotifier` |
 | gateway | — (нет домена: маршруты и политики; слои `Application/Domain` отсутствуют осознанно) | — |
 
 Слово «Messaging» зарезервировано за Kafka (`Infrastructure/Messaging`, `BuildingBlocks/Messaging`); записки — `Contact`.
@@ -82,11 +82,22 @@ Namespace = путь без префикса: `<Svc>.<Layer>[.<Feature>]` (на�
   `Infrastructure` — только из `Program.cs` и `DependencyInjection.cs`.
 - `BuildingBlocks` не ссылается на `Contracts` и сервисы; `ServiceDefaults` не ссылается на `BuildingBlocks`.
 
-### Транзакции и идемпотентность
-Граница транзакции — один метод адаптера, не цепочка вызовов из хендлера. Projector: порт
-`IStatsStore.ApplyAsync(batch, computeDeltas, ct)` сам открывает транзакцию, вставляет `processed_events`
-(`ON CONFLICT DO NOTHING RETURNING`), считает дельты только для новых событий через переданную чистую функцию
-и пишет UPSERT в той же транзакции (ADR-0002). Обобщённых `IRepository<T>`/`IUnitOfWork` в BuildingBlocks нет.
+### Репозитории, Unit of Work, идемпотентность
+Любой доступ к хранилищу — только через репозиторий: интерфейс в `Application/Abstractions`, реализация в
+`Infrastructure/Persistence`. Один репозиторий — один агрегат/таблица-владелец; методы названы по смыслу
+(`MarkProcessedAsync(eventIds) → новые`, `ApplyDeltasAsync(deltas)`, `GetByLangAsync(lang)`, `UpsertAsync(bundle)`),
+без обобщённого `IRepository<T>` с CRUD (у нас нет сущностей с одинаковым жизненным циклом). Хендлеры и домен не
+знают об EF, Npgsql и SQL.
+
+Транзакция — через `IUnitOfWork` сервиса (`BeginAsync(ct)` → `CommitAsync(ct)`, `DisposeAsync` = rollback), который открывает
+**настоящую транзакцию соединения** (не `SaveChanges`), а репозитории работают через тот же `DbContext`/соединение и
+автоматически попадают в неё. Projector: `ProjectEventsHandler` → `uow.BeginAsync` → `processed.MarkProcessedAsync`
+(`INSERT … ON CONFLICT DO NOTHING RETURNING`) → `Aggregator` (чистая функция, только новые события) →
+`stats.ApplyDeltasAsync` (UPSERT) → `uow.CommitAsync`; офсет Kafka воркер коммитит после успешного возврата хендлера
+(ADR-0002). Тест на уровне хендлера: при падении между `MarkProcessed` и `Commit` отметка не сохраняется — проверяется
+интеграционным тестом с инъекцией сбоя в фейковый `IStatsRepository` поверх реальной БД.
+Интерфейсы `IUnitOfWork` — в `BuildingBlocks/Persistence` (один контракт для всех сервисов), реализация
+`EfUnitOfWork<TDbContext>` там же; репозитории — только в сервисах.
 
 ### Общие проекты
 - `src/Contracts` — публичные контракты (события, DTO API, сообщения хаба). Без изменений.
@@ -97,8 +108,9 @@ Namespace = путь без префикса: `<Svc>.<Layer>[.<Feature>]` (на�
     вызывается из `Add<Svc>Infrastructure()` каждого Kafka-сервиса, поэтому ServiceDefaults о Kafka не знает;
   - `Http/` — `RequestBodyReader` (тело с лимитом → 413), `HttpProblems` (ProblemDetails 400/413/429/503);
   - `Observability/` — `UrlRedactionProcessor` (обобщение редакции токена Telegram) и его регистрация.
+  - `Persistence/` — `IUnitOfWork`, `EfUnitOfWork<TDbContext>` (транзакция соединения через `Database.BeginTransactionAsync`).
   - Не выносим: `IClock` (есть `TimeProvider`), обобщённые `ICommandHandler/IQueryHandler` (без медиатора они
-    ничего не дают — хендлер = конкретный класс с `HandleAsync`), snake_case-конфиг EF (нужен двум сервисам).
+    ничего не дают — хендлер = конкретный класс с `HandleAsync`), обобщённый CRUD-`IRepository<T>`, snake_case-конфиг EF.
 - Хендлеры — обычные классы в DI, вызываются явно: `await handler.HandleAsync(command, ct)`. Без медиатора.
 
 ### Переезд существующего кода (R1–R8 плана этапа 4)
@@ -110,7 +122,7 @@ Namespace = путь без префикса: `<Svc>.<Layer>[.<Feature>]` (на�
 - Поведение не меняется: существующие интеграционные тесты остаются зелёными; добавляются юнит-тесты хендлеров на фейках.
 
 ## Последствия
-- Становится проще: агент по имени задачи знает файлы («новый агрегат» = `Domain/Aggregator` + `Infrastructure/Persistence/StatsStore`);
+- Становится проще: агент по имени задачи знает файлы («новый агрегат» = `Domain/Aggregator` + `Infrastructure/Persistence/StatsRepository`);
   юнит-тесты хендлеров без Docker; замена Telegram или Kafka — один класс в `Infrastructure`.
 - Становится сложнее: больше файлов и интерфейсов на сервис из двух эндпоинтов; Architecture.Tests нужно поддерживать;
   переезд — отдельная группа задач до T10/T11.
