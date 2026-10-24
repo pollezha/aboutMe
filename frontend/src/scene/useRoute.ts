@@ -4,7 +4,7 @@
 // скоростью; новая цель во время езды строит маршрут от текущей точки; instant — телепорт.
 // Координаты — плоскость острова в units (x → восток, z → юг), как в layout.ts.
 import layout from '../../scripts/design/scene-layout.json'
-import { ROUTE, type ChapterId } from '../content/chapters'
+import { ROUTE, type ChapterId } from '../content'
 import { PX_PER_UNIT } from './layout'
 
 export interface Point {

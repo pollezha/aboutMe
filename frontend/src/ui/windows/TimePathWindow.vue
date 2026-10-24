@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { resolveChapter, resolveMetric } from '../../content/format'
-import type { ContentBundle } from '../../content/types'
+import { type ContentBundle, resolveChapter, resolveMetric } from '../../content'
 import ChipList from './blocks/ChipList.vue'
 import KeyResultList from './blocks/KeyResultList.vue'
 import MetricGrid from './blocks/MetricGrid.vue'

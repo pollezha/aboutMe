@@ -7,15 +7,16 @@ const shared = ['shared/lib', 'shared/ui']
 
 /**
  * deps — стрелки ADR-0007; legacyDeps — сегодняшние стрелки к ещё не переехавшим папкам (уходят в M5–M18);
- * facade — у модуля есть index.ts, глубокий импорт снаружи запрещён (до M5–M6 у всех false);
- * legacy — переходная запись со старыми запретами дословно (bans), уходит по мере переезда.
+ * facade — у модуля есть index.ts, глубокий импорт снаружи запрещён (включается в M5–M6);
+ * legacy — переходная запись со старыми запретами дословно (bans), уходит по мере переезда; модули с фасадом
+ *   и ей доступны только через index.ts, кроме путей из deepAllow ({ модуль: regex хвоста пути }).
  */
 export const MODULES = {
-  'shared/lib': { deps: [], facade: false },
-  'shared/ui': { deps: ['shared/lib'], facade: false },
-  content: { deps: [], facade: false },
-  // fontPreload.ts берёт тип ContentLang из content — до переезда типа (M5/M10).
-  theme: { deps: ['shared/lib'], legacyDeps: ['content'], facade: false },
+  // shared/lib, shared/ui реэкспортируют из ui/ до переезда (M7).
+  'shared/lib': { deps: [], legacyDeps: ['ui'], facade: true },
+  'shared/ui': { deps: ['shared/lib'], legacyDeps: ['ui'], facade: true },
+  content: { deps: [], facade: true },
+  theme: { deps: ['shared/lib'], facade: true },
   locale: { deps: ['content', 'shared/lib'], facade: false },
   route: { deps: ['content', 'locale', ...shared], facade: false },
   hero: { deps: ['content', 'locale', ...shared], facade: false },
@@ -89,6 +90,8 @@ export const MODULES = {
     facade: false,
     legacy: true,
     files: ['src/*.{ts,vue}'],
+    // main.ts подключает глобальные стили темы: CSS через index.ts не реэкспортируется.
+    deepAllow: { theme: '[^/]+\\.css$' },
     bans: [
       [
         '^\\./scene/(?!(index|shouldUse3D|useCamera)$)',
@@ -171,11 +174,27 @@ function graphBans(name, spec, modules) {
   return bans
 }
 
+/** Переходная запись тоже ходит в модули с фасадом только через index.ts; корень видит их как `./M`. */
+function legacyFacadeBans(spec, modules) {
+  const up = spec.files ? '(\\.\\.?/)+' : '(\\.\\./)+'
+  return Object.entries(modules)
+    .filter(([, other]) => other.facade && isFolderModule(other))
+    .map(([other]) => {
+      const allow = spec.deepAllow?.[other]
+      return [
+        `^${up}${other}/${allow ? `(?!${allow})` : ''}.+`,
+        `Модуль ${other} — только через ${other}/index.ts.`,
+      ]
+    })
+}
+
 export function moduleBoundaries(modules) {
   const syntax = lazySyntax(modules)
   return Object.entries(modules).flatMap(([name, spec]) => {
     const files = spec.files ?? [`src/${name}/**/*.{ts,vue}`]
-    if (spec.legacy) return [boundary(files, [NO_3D, ...spec.bans], syntax)]
+    if (spec.legacy) {
+      return [boundary(files, [NO_3D, ...spec.bans, ...legacyFacadeBans(spec, modules)], syntax)]
+    }
     const bans = graphBans(name, spec, modules)
     const ownSyntax = spec.prerendered
       ? [

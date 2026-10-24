@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import IconButton from '../../IconButton.vue'
+import { IconButton } from '../../../shared/ui'
 import MetaRow from './MetaRow.vue'
 import SectionHeading from './SectionHeading.vue'
 

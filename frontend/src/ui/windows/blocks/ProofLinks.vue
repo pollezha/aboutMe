@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import type { ProofLink } from '../../../content/types'
+import type { ProofLink } from '../../../content'
 import { useUiStore } from '../../../stores/ui'
-import BaseButton from '../../BaseButton.vue'
-import Icon from '../../Icon.vue'
+import { BaseButton, Icon } from '../../../shared/ui'
 
 // Футер окна «Proof & links»: внешние ссылки — в новой вкладке, файлы — download, ссылка на главу — окно.
 defineProps<{ links: ProofLink[] }>()
