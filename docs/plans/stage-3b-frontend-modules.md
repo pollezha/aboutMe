@@ -248,7 +248,7 @@ frontend/src/
   - Готово, когда: `src/i18n/`, `src/router.ts` удалены; в `App.vue` один вызов `useRouteLang()`.
   - Зависит от: M10.
 
-- [ ] M12 — `route`: стор маршрута и `RouteBar`
+- [x] M12 — `route`: стор маршрута и `RouteBar`
   - Файлы: `route/useRouteStore.ts` (activeStop, openWindow, visitedStops, motionPaused, openChapter,
     closeWindow, toggleMotion), `route/RouteBar.vue` (BottomBar + `stops`, `barProfile`, подписи; события
     темы/языка наружу); потребители стора: `App.vue`, `scene/{Labels,Scene,SceneContent,Truck}.vue`,
