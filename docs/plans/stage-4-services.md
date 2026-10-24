@@ -123,7 +123,7 @@
   - Готово, когда: тесты зелёные; `--rebuild` на тестовой БД пересчитывает агрегаты из журнала в те же числа.
   - Зависит от: T0, T1, T3
 
-- [ ] T5 — content-api: схема `content`, миграция, сид из JSON, `GET /api/content/{lang}` с ETag (E4-T3)
+- [x] T5 — content-api: схема `content`, миграция, сид из JSON, `GET /api/content/{lang}` с ETag (E4-T3)
   - Файлы: `services/content-api/` (`ContentApi.csproj`, `Data/ContentDbContext.cs` — `content.bundles(lang pk,
     content_version, version_hash, json jsonb, updated_at)`, `Data/Migrations/*`, `Seeding/ContentSeeder.cs` —
     при старте читает `content/{en,ru}.json` (путь из конфига `Content:Path`, в AppHost — корень репо; в образе —
