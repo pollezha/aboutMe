@@ -2,20 +2,23 @@
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { CONTENT_LANGS, contentFor } from './content/bundles'
-import { BUILD_TIME } from './content/buildTime'
 import {
+  BUILD_TIME,
   CHAPTERS,
+  CONTENT_LANGS,
   ROUTE,
   chapterInfo,
+  contentFor,
   isChapterId,
+  resolveChapter,
+  resolveHighlights,
   routeNeighbours,
   type ChapterId,
-} from './content/chapters'
-import { resolveHighlights } from './content/experience'
-import { resolveChapter } from './content/format'
+} from './content'
 import StaticMap from './fallback2d/StaticMap.vue'
 import { useSiteHead } from './head'
+import { useBreakpoint } from './shared/lib'
+import { IconButton } from './shared/ui'
 import { useChapterLabel, useLocaleSync } from './i18n'
 import { langOf, pathFor } from './router'
 import { SCENE_TIMEOUT_MS, loadScene, type SceneLoad } from './scene'
@@ -25,10 +28,8 @@ import { isTheme, useUiStore, type Mode, type Theme } from './stores/ui'
 import BottomBar, { type BottomBarStop } from './ui/BottomBar.vue'
 import ChapterWindow from './ui/ChapterWindow.vue'
 import HeroCard from './ui/HeroCard.vue'
-import IconButton from './ui/IconButton.vue'
 import SceneFallbackBanner from './ui/SceneFallbackBanner.vue'
 import SceneLoading from './ui/SceneLoading.vue'
-import { useBreakpoint } from './ui/useBreakpoint'
 import { WINDOWS } from './ui/windows'
 import ProofLinks from './ui/windows/blocks/ProofLinks.vue'
 

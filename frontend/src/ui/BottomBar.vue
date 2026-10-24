@@ -18,8 +18,7 @@ export interface BottomBarProfile {
 </script>
 
 <script setup lang="ts">
-import BaseButton from './BaseButton.vue'
-import IconButton from './IconButton.vue'
+import { BaseButton, IconButton } from '../shared/ui'
 import RouteStop from './RouteStop.vue'
 
 withDefaults(

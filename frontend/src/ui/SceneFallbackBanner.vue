@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Компактный баннер после таймаута/ошибки загрузки сцены (UX9): полоса с ×, не перекрывает Hero.
 import { useI18n } from 'vue-i18n'
-import IconButton from './IconButton.vue'
+import { IconButton } from '../shared/ui'
 
 defineEmits<{ dismiss: [] }>()
 

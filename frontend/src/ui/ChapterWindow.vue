@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useId, watch } from 'vue'
-import BaseButton from './BaseButton.vue'
-import Dialog from './Dialog.vue'
-import Icon from './Icon.vue'
-import IconButton from './IconButton.vue'
-import type { IconName } from './icon-registry'
-import type { Chapter } from './ChapterTag.vue'
+import { BaseButton, type Chapter, Dialog, Icon, IconButton, type IconName } from '../shared/ui'
 
 interface ChapterLink {
   number: string

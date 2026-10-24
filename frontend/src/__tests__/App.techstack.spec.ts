@@ -6,7 +6,7 @@ import en from '../../../content/en.json'
 import App from '../App.vue'
 import { serverTenure } from '../content/format'
 import type { ContentBundle } from '../content/types'
-import { appPlugins } from './appPlugins'
+import { appPlugins } from '../app/__tests__/appPlugins'
 import { useUiStore } from '../stores/ui'
 
 // Сценарии окна 04 Tech stack в составе App (TC-09). Окружение — как в App.spec.ts.

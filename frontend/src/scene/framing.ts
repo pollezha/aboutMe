@@ -1,7 +1,7 @@
 // Кадр ортокамеры сцены. Чистая математика без three: модуль импортирует сцена (кадр камеры) и тест
 // 2D-карты (хотспоты figma-2d-map.json против проекции зданий на рендер острова, npm run island).
 // Координаты кадра — «вид» камеры: x вправо, y вверх по экрану, в units сцены (ортопроекция).
-import { ROUTE, type ChapterId } from '../content/chapters'
+import { ROUTE, type ChapterId } from '../content'
 import { HOUSE_SEED, placeHouses } from './buildings/houses'
 import { island, stops, type Box } from './layout'
 import { ISO_AZIMUTH_DEG, cameraPosition } from './useCamera'

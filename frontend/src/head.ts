@@ -1,9 +1,8 @@
 import { useHead, type ReactiveHead } from '@unhead/vue'
 import { computed } from 'vue'
-import { resolveHighlights } from './content/experience'
-import type { ContentBundle, ContentLang } from './content/types'
+import { type ContentBundle, type ContentLang, resolveHighlights } from './content'
 import { pathFor } from './router'
-import { TEXT_FONT_PRELOADS } from './theme/fontPreload'
+import { TEXT_FONT_PRELOADS } from './theme'
 
 /** Подмножество тегов unhead, которое строит siteHead. */
 export interface HeadTag {

@@ -1,6 +1,6 @@
 import { watch } from 'vue'
 import { createI18n, useI18n } from 'vue-i18n'
-import type { ChapterId } from '../content/chapters'
+import type { ChapterId } from '../content'
 import { useUiStore, type Lang } from '../stores/ui'
 import { compileMessage } from './compile'
 import en from './en.json'

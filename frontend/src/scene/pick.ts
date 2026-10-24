@@ -1,6 +1,6 @@
 // Клик по сцене → глава. Здание остановки — группа с userData.chapter; луч попадает в её меш.
 import type { Object3D } from 'three'
-import { isChapterId, type ChapterId } from '../content/chapters'
+import { isChapterId, type ChapterId } from '../content'
 
 export function pickChapter(object: Object3D | null | undefined): ChapterId | null {
   for (let node = object; node; node = node.parent) {

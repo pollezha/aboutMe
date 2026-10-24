@@ -4,7 +4,7 @@
 // tabindex=-1: Tab идёт по бару (Specs §3), подписи — дополнительный вход для мыши.
 import { Html } from '@tresjs/cientos'
 import { computed } from 'vue'
-import { ROUTE } from '../content/chapters'
+import { ROUTE } from '../content'
 import { chapterLabel } from '../i18n'
 import { useUiStore } from '../stores/ui'
 import { stops } from './layout'

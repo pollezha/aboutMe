@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, useId } from 'vue'
-import type { WindowMetric } from '../../../content/format'
-import type { Chapter } from '../../ChapterTag.vue'
-import MetricCard from '../../MetricCard.vue'
-import { useBreakpoint } from '../../useBreakpoint'
+import type { WindowMetric } from '../../../content'
+import { type Chapter, MetricCard } from '../../../shared/ui'
+import { useBreakpoint } from '../../../shared/lib'
 
 // Figma Card/Metric в окнах: md на desktop, sm на mobile (по 2 в ряд); `size` фиксирует размер (Profile — sm).
 const props = withDefaults(

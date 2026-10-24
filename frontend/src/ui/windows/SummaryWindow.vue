@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { resolveChapter, resolveMetric } from '../../content/format'
-import type { ContentBundle } from '../../content/types'
+import { type ContentBundle, resolveChapter, resolveMetric } from '../../content'
 import { useUiStore } from '../../stores/ui'
-import BaseButton from '../BaseButton.vue'
-import Icon from '../Icon.vue'
+import { BaseButton, Icon } from '../../shared/ui'
 import KeyResultList from './blocks/KeyResultList.vue'
 import MetricGrid from './blocks/MetricGrid.vue'
 import SectionHeading from './blocks/SectionHeading.vue'

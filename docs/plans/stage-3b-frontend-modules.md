@@ -4,7 +4,7 @@
 Заменяет пункт D5 из `docs/plans/agent-dx.md` (тонкий `App.vue`, разбивка `App.spec.ts`): он закрывается
 задачами M3–M4 и M10–M17.
 
-Статус: **proposed 2026-10-24**. Новых зависимостей нет. Старт — после слияния T12b этапа 3 (кроме M1, M2).
+Статус: **approved 2026-10-24**. Новых зависимостей нет. Старт — после слияния T12b этапа 3 (кроме M1, M2).
 
 Цель: одна предметная область — одна папка `src/<module>/` с публичным `index.ts`, своими сторами,
 компонентами и тестами; `App.vue` — композиция модулей ≤ 250 строк; граф модулей проверяют `boundary()` и
@@ -14,10 +14,10 @@
 ## Базовая линия (снимает оркестратор перед M1, пишет сюда)
 | Что | Как | Значение |
 |---|---|---|
-| vitest | `npx vitest run` → строка `Tests` | 686 |
+| vitest | `npx vitest run` → строка `Tests` | 696 (после T12b) |
 | e2e | `npx playwright test --list` → последняя строка | 42 |
-| `expect(` в спеках | `grep -r "expect(" src scripts --include=*.spec.ts \| wc -l` | снять |
-| size-limit | `npm run build && npm run size` | main / Scene / fonts — снять |
+| `expect(` в спеках | `grep -r "expect(" src scripts --include=*.spec.ts | wc -l` | 1038 |
+| size-limit | `npm run build && npm run size` | 86.29 КБ gzip / 835.86 КБ / 114.39 КБ |
 | скриншоты | `npm run shots` → `docs/design/shots/` | снять (сравнение после M14–M17) |
 
 Правило каждой задачи: число vitest ≥ базовой линии + добавленные тесты; число `expect(` в перенесённых спеках
@@ -140,7 +140,7 @@ frontend/src/
 (переименования `git mv` не считаются). После переноса файлов — `npx vitest --clearCache`. Проверка —
 `bash scripts/check.sh frontend` + `npm run test:e2e`; счётчики — по базовой линии.
 
-- [ ] M1 — Граф модулей, генератор границ, `max-lines`
+- [x] M1 — Граф модулей, генератор границ, `max-lines`
   - Файлы: `frontend/scripts/module-graph.mjs` (новый), `frontend/eslint.config.js` (записи слоёв →
     `...moduleBoundaries(MODULES)`, `max-lines`), `frontend/scripts/__tests__/layer-boundaries.spec.ts`.
   - Тест сначала: синтетический граф — глубокий импорт `../route/useRouteStore` из модуля с `deps: ['route']`
@@ -150,7 +150,7 @@ frontend/src/
     без изменений; целевые модули есть в графе с `facade: false`.
   - Зависит от: — (идёт параллельно с T12b: не трогает его файлы).
 
-- [ ] M2 — Глобальные инварианты не зависят от раскладки
+- [x] M2 — Глобальные инварианты не зависят от раскладки
   - Файлы: `src/ui/__tests__/tokens-only.spec.ts` → `src/__tests__/tokens-only.spec.ts` (glob
     `../**/*.vue` без `scene/**` и `__tests__`), `src/i18n/__tests__/messages.spec.ts` (glob всех `.vue`
     кроме `scene/**`, плюс `scene/Labels.vue`), `src/ui/windows/__tests__/windows.spec.ts` (glob сырых исходников).
@@ -159,7 +159,7 @@ frontend/src/
   - Готово, когда: переезд файлов в следующих задачах не может молча сузить покрытие (glob пустеет → тест красный).
   - Зависит от: — (параллельно с T12b и M1).
 
-- [ ] M3 — `App.spec.ts`: общая обвязка и первые три спека
+- [x] M3 — `App.spec.ts`: общая обвязка и первые три спека
   - Файлы: `src/app/__tests__/mountApp.ts` (шапка App.spec: моки matchMedia/WebGL, монтирование),
     `src/__tests__/appPlugins.ts` → `src/app/__tests__/`, новые `src/__tests__/App.locale.spec.ts` (7 тестов,
     стр. 110–216), `App.theme.spec.ts` (3: 520–548), `App.layout.spec.ts` (5: 225–257, 473–498); из

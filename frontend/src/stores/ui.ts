@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { ROUTE, type ChapterId } from '../content/chapters'
-import { palette } from '../theme/palette'
+import { ROUTE, type ChapterId } from '../content'
+import { load, loadSession, save, saveSession } from '../shared/lib'
+import { palette } from '../theme'
 
 export type Lang = 'en' | 'ru'
 export type Theme = 'day' | 'evening' | 'night'
@@ -22,26 +23,10 @@ const KEY = {
   visited: 'aboutme.visited',
 } as const
 
-// localStorage может быть недоступен (приватный режим, квота, SSR) — настройки тогда живут только в памяти.
-function load(key: string): string | null {
-  try {
-    return globalThis.localStorage?.getItem(key) ?? null
-  } catch {
-    return null
-  }
-}
-
-function save(key: string, value: string) {
-  try {
-    globalThis.localStorage?.setItem(key, value)
-  } catch {
-    /* хранилище недоступно — не критично */
-  }
-}
-
+// Хранилище недоступно или в нём мусор — отметки живут только в памяти.
 function loadVisited(): Set<ChapterId> {
   try {
-    const saved: unknown = JSON.parse(globalThis.sessionStorage?.getItem(KEY.visited) ?? '[]')
+    const saved: unknown = JSON.parse(loadSession(KEY.visited) ?? '[]')
     if (!Array.isArray(saved)) return new Set()
     return new Set(ROUTE.map((stop) => stop.id).filter((id) => saved.includes(id)))
   } catch {
@@ -50,11 +35,7 @@ function loadVisited(): Set<ChapterId> {
 }
 
 function saveVisited(ids: Set<ChapterId>) {
-  try {
-    globalThis.sessionStorage?.setItem(KEY.visited, JSON.stringify([...ids]))
-  } catch {
-    /* хранилище недоступно — отметки живут только в памяти */
-  }
+  saveSession(KEY.visited, JSON.stringify([...ids]))
 }
 
 function pick<T extends string>(value: string | null, allowed: readonly T[], fallback: T): T {

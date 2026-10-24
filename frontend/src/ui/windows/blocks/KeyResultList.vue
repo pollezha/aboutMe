@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { KeyResult } from '../../../content/types'
-import Icon from '../../Icon.vue'
+import type { KeyResult } from '../../../content'
+import { Icon } from '../../../shared/ui'
 
 // Figma List/KeyResult: галочка декоративная (без label → aria-hidden), смысл — в тексте.
 defineProps<{ items: KeyResult[] }>()

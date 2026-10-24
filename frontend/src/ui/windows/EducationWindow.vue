@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { resolveChapter } from '../../content/format'
-import type { ContentBundle } from '../../content/types'
+import { type ContentBundle, resolveChapter } from '../../content'
 import BulletList from './blocks/BulletList.vue'
 import ChipList from './blocks/ChipList.vue'
 import MetaRow from './blocks/MetaRow.vue'

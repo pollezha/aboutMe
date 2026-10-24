@@ -2,7 +2,7 @@
 // Figma `Screen/State/Loading scene` 34:964, LoadingCard 34:1119: карточка справа внизу над баром, не над Hero;
 // неопределённый индикатор без ложной шкалы и явный выход в 2D (FR10, UX9).
 import { useI18n } from 'vue-i18n'
-import BaseButton from './BaseButton.vue'
+import { BaseButton } from '../shared/ui'
 
 defineEmits<{ skip: [] }>()
 
