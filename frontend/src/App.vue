@@ -15,23 +15,30 @@ import {
   routeNeighbours,
   type ChapterId,
 } from './content'
-import StaticMap from './fallback2d/StaticMap.vue'
+import { WINDOWS } from './chapters'
+import { StaticMap } from './fallback2d'
 import { useSiteHead } from './head'
+import { HeroCard } from './hero'
+import { langOf, pathFor, useChapterLabel, useLocaleSync } from './locale'
+import {
+  MIN_3D_WIDTH,
+  SCENE_TIMEOUT_MS,
+  SceneFallbackBanner,
+  SceneLoading,
+  detectWebGL2,
+  isTheme,
+  loadScene,
+  mapRotation,
+  shouldUse3D,
+  useUiStore,
+  type Mode,
+  type SceneLoad,
+  type Theme,
+} from './mode'
+import { BottomBar, type BottomBarStop } from './route'
 import { useBreakpoint } from './shared/lib'
 import { IconButton } from './shared/ui'
-import { useChapterLabel, useLocaleSync } from './i18n'
-import { langOf, pathFor } from './router'
-import { SCENE_TIMEOUT_MS, loadScene, type SceneLoad } from './scene'
-import { MIN_3D_WIDTH, detectWebGL2, shouldUse3D } from './scene/shouldUse3D'
-import { mapRotation } from './scene/useCamera'
-import { isTheme, useUiStore, type Mode, type Theme } from './stores/ui'
-import BottomBar, { type BottomBarStop } from './ui/BottomBar.vue'
-import ChapterWindow from './ui/ChapterWindow.vue'
-import HeroCard from './ui/HeroCard.vue'
-import SceneFallbackBanner from './ui/SceneFallbackBanner.vue'
-import SceneLoading from './ui/SceneLoading.vue'
-import { WINDOWS } from './ui/windows'
-import ProofLinks from './ui/windows/blocks/ProofLinks.vue'
+import { ChapterWindow, ProofLinks } from './windows'
 
 const ui = useUiStore()
 const route = useRoute()
