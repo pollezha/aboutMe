@@ -29,7 +29,13 @@ const { t } = useI18n()
 const chapterLabel = useChapterLabel()
 const ui = useUiStore()
 const src = computed(() => islandRenderUrl(ui.theme))
-const srcset = computed(() => `${islandRenderUrl(ui.theme)} 1x, ${islandRenderUrl(ui.theme, 2)} 2x`)
+// Ширины рендеров, а не плотности: браузер берёт 1x, пока его хватает на ширину карты × DPR (телефон с DPR < 2
+// не качает @2x). Карта не шире колонки 736 px; на телефоне — во всю ширину окна (cover в квадрате).
+const srcset = computed(
+  () =>
+    `${islandRenderUrl(ui.theme)} ${ISLAND_RENDER_WIDTH}w, ${islandRenderUrl(ui.theme, 2)} ${ISLAND_RENDER_WIDTH * 2}w`,
+)
+const SIZES = '(min-width: 768px) 736px, 100vw'
 
 const hotspots = computed(() =>
   (map.hotspots[props.variant] as Hotspot[]).map((spot) => {
@@ -62,6 +68,7 @@ function boxStyle(spot: Hotspot) {
       class="static-map__image"
       :src="src"
       :srcset="srcset"
+      :sizes="SIZES"
       :width="ISLAND_RENDER_WIDTH"
       :height="ISLAND_RENDER_HEIGHT"
       :alt="t('map.alt')"

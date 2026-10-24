@@ -49,12 +49,46 @@ public sealed class ProjectReferenceRulesTests
     }
 
     [Fact]
+    public void BuildingBlocks_referencing_Contracts_is_a_violation()
+    {
+        var violations = ProjectReferenceRules.FindViolations(Graph(
+            ("src/BuildingBlocks", ["src/Contracts"]),
+            ("src/Contracts", [])));
+
+        var violation = Assert.Single(violations);
+        Assert.Contains("src/BuildingBlocks -> src/Contracts", violation, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BuildingBlocks_referencing_service_is_a_violation()
+    {
+        var violations = ProjectReferenceRules.FindViolations(Graph(
+            ("src/BuildingBlocks", ["services/a"]),
+            ("services/a", [])));
+
+        var violation = Assert.Single(violations);
+        Assert.Contains("src/BuildingBlocks -> services/a", violation, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ServiceDefaults_referencing_BuildingBlocks_is_a_violation()
+    {
+        var violations = ProjectReferenceRules.FindViolations(Graph(
+            ("src/ServiceDefaults", ["src/BuildingBlocks"]),
+            ("src/BuildingBlocks", [])));
+
+        var violation = Assert.Single(violations);
+        Assert.Contains("src/ServiceDefaults -> src/BuildingBlocks", violation, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Allowed_references_produce_no_violations()
     {
         var violations = ProjectReferenceRules.FindViolations(Graph(
-            ("services/a", ["src/ServiceDefaults", "src/Contracts"]),
+            ("services/a", ["src/ServiceDefaults", "src/Contracts", "src/BuildingBlocks"]),
             ("services/b", ["src/ServiceDefaults"]),
             ("src/ServiceDefaults", []),
+            ("src/BuildingBlocks", []),
             ("src/Contracts", []),
             ("src/AppHost", ["services/a", "services/b", "src/ServiceDefaults"])));
 
@@ -69,6 +103,7 @@ public sealed class ProjectReferenceRulesTests
         Assert.Contains(graph.Keys, p => p.StartsWith("services/", StringComparison.Ordinal));
         Assert.Contains(ProjectReferenceRules.AppHost, graph.Keys);
         Assert.Contains("src/ServiceDefaults", graph.Keys);
+        Assert.Contains("src/BuildingBlocks", graph.Keys);
         Assert.Contains("services/gateway", graph[ProjectReferenceRules.AppHost]);
         Assert.Empty(ProjectReferenceRules.FindViolations(graph));
     }

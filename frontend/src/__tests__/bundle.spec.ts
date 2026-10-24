@@ -12,6 +12,7 @@ interface ManifestChunk {
   isEntry?: boolean
   imports?: string[]
   dynamicImports?: string[]
+  css?: string[]
 }
 type Manifest = Record<string, ManifestChunk>
 
@@ -60,5 +61,27 @@ describe('bundle split (design §4, spec T3)', () => {
 
     const sceneChunks = [...staticClosure(manifest, 'src/scene/Scene.vue')]
     expect(sceneChunks.some((key) => THREE_SIGNATURE.test(code(key)))).toBe(true)
+  })
+  // T12b: Vue devtools (через @tresjs/core) и FPS-мониторы stats-gl/stats.js (через @tresjs/cientos) в проде не
+  // нужны, а это ~30 КБ gzip чанка сцены — на критическом пути scene_ready.
+  it('ships no Vue devtools or FPS monitors in the scene chunk', () => {
+    // Вход (index.html) исключён: эта сборка идёт под NODE_ENV=test, и в main-чанке dev-рантайм Vue с хуками devtools.
+    const sceneOwn = [...staticClosure(manifest, 'src/scene/Scene.vue')].filter(
+      (key) => key !== 'index.html',
+    )
+    for (const key of sceneOwn) {
+      expect(/__VUE_DEVTOOLS_|stats-gl/.test(code(key)), `${key} → ${manifest[key]!.file}`).toBe(
+        false,
+      )
+    }
+  })
+
+  it('preloads the scene chunk from the HTML head, before the entry script (desktop only, see scene/preload)', () => {
+    const scene = manifest['src/scene/Scene.vue']!
+    const html = fs.readFileSync(new URL('index.html', outDir), 'utf8')
+    const preload = html.indexOf(`"/${scene.file}"`)
+    expect(preload, 'scene chunk URL in an inline <head> script').toBeGreaterThan(0)
+    for (const css of scene.css ?? []) expect(html).toContain(`"/${css}"`)
+    expect(preload).toBeLessThan(html.indexOf('<script type="module"'))
   })
 })

@@ -149,6 +149,28 @@ describe.each([
     expect(html).toMatch(new RegExp(`<html lang="${content.lang}"`))
   })
 
+  // T12b: текстовые шрифты первого экрана качаются вместе с CSS, а не после него (цепочка короче на RTT).
+  it('preloads the text font faces of its language, the same files the stylesheet uses', () => {
+    const preloads = [...html.matchAll(/<link[^>]*rel="preload"[^>]*>/g)]
+      .map(([tag]) => tag)
+      .filter((tag) => tag.includes('as="font"'))
+    const files = preloads.map((tag) => /href="\/assets\/([^"]+)"/.exec(tag)?.[1] ?? '')
+    const faces = files.map((file) => file.replace(/-[\w-]{8}\.woff2$/, ''))
+    expect(faces).toEqual(
+      content.lang === 'ru'
+        ? ['bricolage-grotesque-latin-wght-normal', 'onest-cyrillic-wght-normal']
+        : ['bricolage-grotesque-latin-wght-normal'],
+    )
+    for (const tag of preloads) {
+      expect(tag).toMatch(/type="font\/woff2"[^>]*crossorigin|crossorigin[^>]*type="font\/woff2"/)
+      // Выше main-чанка: запрос шрифта встаёт в очередь раньше скрипта (замер: LCP на `/` −150 мс).
+      expect(html.indexOf(tag)).toBeLessThan(html.indexOf('<script type="module"'))
+    }
+    const stylesheet = /<link rel="stylesheet"[^>]*href="\/([^"]+\.css)"/.exec(html)?.[1] ?? ''
+    const css = fs.readFileSync(new URL(stylesheet, outDir), 'utf8')
+    for (const file of files) expect(css).toContain(`/assets/${file}`)
+  })
+
   it('links the language versions with hreflang and x-default → /', () => {
     expect(html).toContain('<link rel="alternate" hreflang="en" href="/">')
     expect(html).toContain('<link rel="alternate" hreflang="x-default" href="/">')

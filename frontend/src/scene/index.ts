@@ -1,12 +1,10 @@
-// Ленивая загрузка 3D-сцены (design §4 «Загрузка», п. 3): чанк three + TresJS запрашивается только
-// после того, как браузер освободился, и только если shouldUse3D() — решает вызывающий код (App.vue).
+// Ленивая загрузка 3D-сцены (design §4 «Загрузка», п. 3): чанк three + TresJS запрашивается сразу после
+// монтирования приложения и только если shouldUse3D() — решает вызывающий код (App.vue). На десктопе чанк к этому
+// моменту уже качается: его preload ставит inline-скрипт в <head> (scene/preload.ts), ожидание простоя
+// откладывало scene_ready за бюджет 4 с (T12b).
 // Этот модуль в main-чанке: он не должен статически импортировать ничего из three/TresJS.
 import type { Component } from 'vue'
 
-/** Сколько ждать без requestIdleCallback (Safari): первый кадр HTML-слоя успевает отрисоваться. */
-export const IDLE_FALLBACK_MS = 200
-/** Верхняя граница ожидания простоя: на постоянно занятом потоке сцена всё равно начнёт грузиться. */
-export const IDLE_MAX_WAIT_MS = 2000
 /** Нет `scene_ready` за это время с начала загрузки → 2D и баннер (review-consolidated п. 23, UX9). */
 export const SCENE_TIMEOUT_MS = 8000
 
@@ -19,29 +17,23 @@ export interface SceneLoad {
   cancel: () => void
 }
 
-export function loadSceneWhenIdle(importer: SceneImporter = importScene): SceneLoad {
+export function loadScene(importer: SceneImporter = importScene): SceneLoad {
   let cancelled = false
-  let cancelIdle = () => {}
+  let handle: ReturnType<typeof setTimeout> | undefined
 
+  // Следующая задача, а не сразу: монтирование и первый кадр HTML-слоя не ждут разбора чанка.
   const promise = new Promise<Component>((resolve, reject) => {
-    const start = () => {
+    handle = setTimeout(() => {
       if (cancelled) return
       importer().then((module) => resolve(module.default), reject)
-    }
-    if (typeof globalThis.requestIdleCallback === 'function') {
-      const handle = globalThis.requestIdleCallback(start, { timeout: IDLE_MAX_WAIT_MS })
-      cancelIdle = () => globalThis.cancelIdleCallback?.(handle)
-    } else {
-      const handle = setTimeout(start, IDLE_FALLBACK_MS)
-      cancelIdle = () => clearTimeout(handle)
-    }
+    }, 0)
   })
 
   return {
     promise,
     cancel() {
       cancelled = true
-      cancelIdle()
+      clearTimeout(handle)
     },
   }
 }
