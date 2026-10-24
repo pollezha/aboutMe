@@ -4,7 +4,7 @@
 Заменяет пункт D5 из `docs/plans/agent-dx.md` (тонкий `App.vue`, разбивка `App.spec.ts`): он закрывается
 задачами M3–M4 и M10–M17.
 
-Статус: **proposed 2026-10-24**. Новых зависимостей нет. Старт — после слияния T12b этапа 3 (кроме M1, M2).
+Статус: **approved 2026-10-24**. Новых зависимостей нет. Старт — после слияния T12b этапа 3 (кроме M1, M2).
 
 Цель: одна предметная область — одна папка `src/<module>/` с публичным `index.ts`, своими сторами,
 компонентами и тестами; `App.vue` — композиция модулей ≤ 250 строк; граф модулей проверяют `boundary()` и
@@ -14,10 +14,10 @@
 ## Базовая линия (снимает оркестратор перед M1, пишет сюда)
 | Что | Как | Значение |
 |---|---|---|
-| vitest | `npx vitest run` → строка `Tests` | 686 |
+| vitest | `npx vitest run` → строка `Tests` | 696 (после T12b) |
 | e2e | `npx playwright test --list` → последняя строка | 42 |
-| `expect(` в спеках | `grep -r "expect(" src scripts --include=*.spec.ts \| wc -l` | снять |
-| size-limit | `npm run build && npm run size` | main / Scene / fonts — снять |
+| `expect(` в спеках | `grep -r "expect(" src scripts --include=*.spec.ts | wc -l` | 1038 |\| wc -l` | снять |
+| size-limit | `npm run build && npm run size` | 86.29 КБ gzip / 835.86 КБ / 114.39 КБ |
 | скриншоты | `npm run shots` → `docs/design/shots/` | снять (сравнение после M14–M17) |
 
 Правило каждой задачи: число vitest ≥ базовой линии + добавленные тесты; число `expect(` в перенесённых спеках
