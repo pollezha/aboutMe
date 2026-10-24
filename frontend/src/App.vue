@@ -10,14 +10,13 @@ import {
   contentFor,
   isChapterId,
   resolveChapter,
-  resolveHighlights,
   routeNeighbours,
   type ChapterId,
 } from './content'
 import { WINDOWS } from './chapters'
 import { StaticMap } from './fallback2d'
 import { useSiteHead } from './head'
-import { HeroCard } from './hero'
+import { HeroHost } from './hero'
 import { useChapterLabel, useRouteLang } from './locale'
 import { SceneFallbackBanner, SceneHost, mapRotation, useViewMode } from './mode'
 import { RouteBar, useRouteStore } from './route'
@@ -74,21 +73,6 @@ const barVariant = computed(() => {
   return breakpoint.value === 'desktop' && layout.value === 'overlay' ? 'desktop' : 'compact'
 })
 const mapVariant = computed(() => (breakpoint.value === 'mobile' ? 'phone' : 'tablet'))
-
-const profile = computed(() => ({
-  name: t('hero.name'),
-  role: t('hero.role'),
-  status: content.value.profile.status,
-  workFormat: content.value.profile.workFormat,
-  location: content.value.profile.locationShort,
-}))
-const highlights = computed(() => resolveHighlights(content.value, now))
-// CV и Telegram — из ссылок бандла: на /ru/ ведут на RU-PDF и подписаны по-русски.
-const cvLink = computed(() => content.value.profile.links.find((link) => link.kind === 'cv'))
-const telegramLink = computed(() =>
-  content.value.profile.links.find((link) => link.kind === 'telegram'),
-)
-const links = computed(() => ({ cv: cvLink.value?.href, telegram: telegramLink.value?.href }))
 
 const chapterLabel = useChapterLabel()
 // Кнопка языка в верхних контролах — когда есть контент на обоих языках (FR8); в баре её показывает RouteBar.
@@ -241,15 +225,9 @@ onBeforeUnmount(() => {
           class="app__scene-banner"
           @dismiss="ui.dismissSceneBanner()"
         />
-        <HeroCard
+        <HeroHost
           class="app__hero"
           :variant="heroVariant"
-          :profile="profile"
-          :highlights="highlights"
-          :links="links"
-          :contact-label="t('hero.contact')"
-          :cv-label="cvLink?.label ?? ''"
-          :telegram-label="telegramLink?.label ?? ''"
           @contact="route.openChapter('contact')"
         />
         <StaticMap v-if="ui.mode === '2d'" class="app__map" :variant="mapVariant" @open="open" />
