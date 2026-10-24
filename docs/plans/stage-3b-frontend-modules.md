@@ -176,7 +176,7 @@ frontend/src/
   - Готово, когда: в `src/__tests__/` нет файла > 250 строк.
   - Зависит от: M3.
 
-- [ ] M5 — Фасады нижних модулей: `shared/lib`, `shared/ui`, `content`, `theme`
+- [x] M5 — Фасады нижних модулей: `shared/lib`, `shared/ui`, `content`, `theme`
   - Файлы: `src/shared/lib/{index.ts,storage.ts}` (`load/save/loadSession/saveSession` из `stores/ui.ts`,
     `ui.ts` их импортирует), `src/shared/lib/index.ts` реэкспортирует `../../ui/useBreakpoint`,
     `src/shared/ui/index.ts` (реэкспорт 9 компонентов и `IconName` из `../../ui/*`), `src/content/index.ts`,
