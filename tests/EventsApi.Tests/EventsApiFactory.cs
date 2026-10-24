@@ -33,6 +33,8 @@ public sealed class EventsApiFactory : WebApplicationFactory<Program>
 
         builder.ConfigureTestServices(services =>
         {
+            // Брокера нет: создание топика при старте только ждало бы таймаут
+            services.Remove(services.Single(sd => sd.ImplementationType == typeof(TopicInitializer)));
             services.RemoveAll<IEventProducer>();
             services.AddSingleton<IEventProducer>(Producer);
             services.RemoveAll<TimeProvider>();

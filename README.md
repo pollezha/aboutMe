@@ -31,11 +31,31 @@ One-time setup of the Aspire CLI bundle (DCP and dashboard; takes a few minutes)
 dotnet dnx --yes aspire.cli@13.6.1 -- setup --install-path ~/.aspire
 ```
 
-Run everything (opens the Aspire dashboard with logs, traces and metrics):
+Run everything with one command:
 
 ```bash
 dotnet run --project src/AppHost
 ```
+
+This starts, in Docker and as local processes:
+
+- PostgreSQL with databases `content` and `stats` (migrations are applied on start, content is seeded from `content/`);
+- Kafka (KRaft) with Kafka UI; events-api creates the topic `site.events.v1` (3 partitions) on start;
+- 5 services: gateway, content-api, events-api, projector, live-hub — each waits for its dependencies.
+
+The Aspire dashboard (link in the console output, `https://localhost:17236`) shows resource state, logs,
+traces and metrics. Everything is ready when all resources are Running/Healthy (about a minute; the first run
+pulls the images and takes longer). The gateway — the only public entry — listens on `http://localhost:5080`:
+
+```bash
+curl http://localhost:5080/alive                 # gateway process is up
+curl http://localhost:5080/health                # 200 when all 4 backends are healthy (localhost only)
+curl -i http://localhost:5080/api/content/en     # content with ETag
+curl -i -X POST http://localhost:5080/api/events -H "Content-Type: application/json"   -d '{"eventId":"019a1b2c-0000-7000-8000-000000000001","type":"cta_click","occurredAt":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'","sessionId":"s1","lang":"en","theme":"day","payload":{"cta":"github"}}'   # 202
+```
+
+Optional: `Telegram__BotToken` / `Telegram__ChatId` for the message-in-a-bottle form (without them
+`POST /api/messages` returns 503, the rest works).
 
 Frontend only (works without the backend, on the content snapshot):
 
@@ -57,8 +77,8 @@ cd frontend && npm run lint && npm run format:check && npm run typecheck && npm 
 | Path | What |
 |---|---|
 | `frontend/` | Vue 3 + TypeScript + Vite, tests (Vitest) |
-| `services/` | Deployable .NET services: gateway (more in stage 4) |
-| `src/` | Shared .NET projects: ServiceDefaults, AppHost (Aspire) |
+| `services/` | Deployable .NET services: gateway, content-api, events-api, projector, live-hub |
+| `src/` | Shared .NET projects: ServiceDefaults, Contracts, AppHost (Aspire) |
 | `tests/` | .NET tests (xUnit v3, Aspire integration tests) |
 | `content/` | Site content EN/RU as JSON + JSON Schema |
 | `docs/` | Spec, design, ADRs, plans, learnings |

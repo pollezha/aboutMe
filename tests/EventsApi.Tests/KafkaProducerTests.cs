@@ -9,41 +9,18 @@ using Contracts.Events;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using ServiceDefaults.Kafka;
-using Testcontainers.Kafka;
 using Xunit;
 
 namespace EventsApi.Tests;
 
-// Один контейнер Kafka (KRaft) на класс тестов; топик создаётся заранее, как в проде (3 партиции).
-public sealed class KafkaFixture : IAsyncLifetime
+// Топик создаётся заранее, как в проде (3 партиции): events-api при старте видит его и ничего не меняет.
+public sealed class KafkaFixture : KafkaContainerFixture
 {
-    private const string Image = "apache/kafka:4.1.1";
-    private static readonly TimeSpan StartTimeout = TimeSpan.FromSeconds(90);
-
-    private readonly KafkaContainer _container = new KafkaBuilder(Image).Build();
-
-    public string BootstrapServers => _container.GetBootstrapAddress();
-
-    public async ValueTask InitializeAsync()
+    protected override async Task OnStartedAsync()
     {
-        using var cts = new CancellationTokenSource(StartTimeout);
-        try
-        {
-            await _container.StartAsync(cts.Token);
-        }
-        catch (Exception ex) when (ex is not OutOfMemoryException)
-        {
-            throw new InvalidOperationException(
-                $"Kafka ({Image}) не запустилась за {StartTimeout.TotalSeconds:0} с. "
-                + "Интеграционным тестам (Category=Integration) нужен запущенный Docker: проверьте `docker info`.",
-                ex);
-        }
-
         using var admin = new AdminClientBuilder(new AdminClientConfig { BootstrapServers = BootstrapServers }).Build();
         await admin.CreateTopicsAsync([new TopicSpecification { Name = Topics.SiteEvents, NumPartitions = 3, ReplicationFactor = 1 }]);
     }
-
-    public ValueTask DisposeAsync() => _container.DisposeAsync();
 }
 
 [Trait("Category", "Integration")]

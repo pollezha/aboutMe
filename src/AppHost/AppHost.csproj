@@ -7,7 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" />
+    <PackageReference Include="Aspire.Hosting.Kafka" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\services\gateway\Gateway.csproj" />
+    <ProjectReference Include="..\..\services\content-api\ContentApi.csproj" />
+    <ProjectReference Include="..\..\services\events-api\EventsApi.csproj" />
+    <ProjectReference Include="..\..\services\projector\Projector.csproj" />
+    <ProjectReference Include="..\..\services\live-hub\LiveHub.csproj" />
   </ItemGroup>
 
 </Project>

@@ -24,6 +24,7 @@ builder.Services.TryAddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<EventValidator>();
 builder.Services.AddSingleton<Anonymizer>();
 builder.Services.AddSingleton<IEventProducer, KafkaEventProducer>();
+builder.Services.AddHostedService<TopicInitializer>();
 builder.Services.AddTelegramClient();
 
 var app = builder.Build();
