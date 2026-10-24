@@ -1,5 +1,8 @@
 <Solution>
   <Folder Name="/services/" />
+  <Folder Name="/services/events-api/">
+    <Project Path="services/events-api/EventsApi.csproj" />
+  </Folder>
   <Folder Name="/services/gateway/">
     <Project Path="services/gateway/Gateway.csproj" />
   </Folder>
@@ -12,6 +15,7 @@
     <Project Path="tests/AppHost.Tests/AppHost.Tests.csproj" />
     <Project Path="tests/Architecture.Tests/Architecture.Tests.csproj" />
     <Project Path="tests/Contracts.Tests/Contracts.Tests.csproj" />
+    <Project Path="tests/EventsApi.Tests/EventsApi.Tests.csproj" />
     <Project Path="tests/Gateway.Tests/Gateway.Tests.csproj" />
     <Project Path="tests/ServiceDefaults.Tests/ServiceDefaults.Tests.csproj" />
   </Folder>
