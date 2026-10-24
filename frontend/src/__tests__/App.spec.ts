@@ -5,7 +5,7 @@ import { defineComponent, h, nextTick, onMounted } from 'vue'
 import App from '../App.vue'
 import { appPlugins } from './appPlugins'
 import { contentFor } from '../content/bundles'
-import { loadSceneWhenIdle } from '../scene'
+import { loadScene } from '../scene'
 import { mapRotation } from '../scene/useCamera'
 import { useUiStore } from '../stores/ui'
 
@@ -26,7 +26,7 @@ vi.mock('../scene/Scene.vue', () => ({
 vi.mock('../content/buildTime', () => ({ BUILD_TIME: new Date(2026, 9, 23) }))
 vi.mock('../scene', async (importOriginal) => {
   const original = await importOriginal<typeof import('../scene')>()
-  return { ...original, loadSceneWhenIdle: vi.fn(original.loadSceneWhenIdle) }
+  return { ...original, loadScene: vi.fn(original.loadScene) }
 })
 
 const ruContent = contentFor('ru')
@@ -74,7 +74,7 @@ afterEach(() => {
   wrapper?.unmount()
   wrapper = undefined
   vi.restoreAllMocks()
-  vi.mocked(loadSceneWhenIdle).mockClear()
+  vi.mocked(loadScene).mockClear()
   vi.useRealTimers()
   sceneStub.drawsFirstFrame = false
   dialogProto.showModal = originalDialog.showModal
@@ -402,7 +402,7 @@ describe('App', () => {
 
       expect(ui.mode).toBe('2d')
       expect(wrapper.findAll('.static-map button.hotspot')).toHaveLength(7)
-      expect(loadSceneWhenIdle).not.toHaveBeenCalled()
+      expect(loadScene).not.toHaveBeenCalled()
       expect(localStorage.getItem('aboutme.sceneChoice')).toBeNull()
     })
 
@@ -646,7 +646,17 @@ describe('App', () => {
       setViewport(390)
       mountApp()
 
-      expect(loadSceneWhenIdle).not.toHaveBeenCalled()
+      expect(loadScene).not.toHaveBeenCalled()
+    })
+
+    // Контекст WebGL2 дорог (десятки мс при CPU 4×): на телефоне он не нужен — 3D там не бывает (T12b).
+    it('does not probe WebGL on a phone', () => {
+      setViewport(390)
+      const getContext = vi.mocked(HTMLCanvasElement.prototype.getContext)
+      getContext.mockClear()
+      mountApp()
+
+      expect(getContext).not.toHaveBeenCalled()
     })
 
     it('marks scene_ready and replaces the placeholder once the first frame is drawn', async () => {
@@ -656,7 +666,7 @@ describe('App', () => {
 
       await vi.advanceTimersByTimeAsync(2000)
 
-      expect(loadSceneWhenIdle).toHaveBeenCalledTimes(1)
+      expect(loadScene).toHaveBeenCalledTimes(1)
       expect(mark).toHaveBeenCalledWith('scene_ready')
       expect(ui.sceneState).toBe('ready')
       expect(wrapper.find('.scene-stub').exists()).toBe(true)
@@ -698,12 +708,12 @@ describe('App', () => {
       await vi.advanceTimersByTimeAsync(10_000)
       expect(first.wrapper.find('.scene-banner').exists()).toBe(false)
       first.wrapper.unmount()
-      vi.mocked(loadSceneWhenIdle).mockClear()
+      vi.mocked(loadScene).mockClear()
 
       const next = mountApp()
 
       expect(next.ui.mode).toBe('2d')
-      expect(loadSceneWhenIdle).not.toHaveBeenCalled()
+      expect(loadScene).not.toHaveBeenCalled()
     })
   })
 })

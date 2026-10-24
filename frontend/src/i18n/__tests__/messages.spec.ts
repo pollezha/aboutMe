@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { CHAPTERS, ROUTE } from '../../content/chapters'
+import { createAppI18n } from '..'
 import en from '../en.json'
 import ru from '../ru.json'
 
@@ -20,6 +21,25 @@ function lookup(messages: Messages, path: string): unknown {
 describe('i18n messages', () => {
   it('has the same keys in English and Russian', () => {
     expect(keys(ru).sort()).toEqual(keys(en).sort())
+  })
+
+  // Сборка без компилятора сообщений vue-i18n (vite.config, T12b): строки выводятся как написаны, подставляются
+  // только {name} — ни `@`, ни `|`, ни апострофы не должны превращаться в синтаксис.
+  it('renders every message verbatim, substituting only {name} placeholders', () => {
+    for (const [lang, messages] of [
+      ['en', en],
+      ['ru', ru],
+    ] as const) {
+      const { t } = createAppI18n(lang).global
+      for (const key of keys(messages)) {
+        const raw = lookup(messages, key) as string
+        const names = [...raw.matchAll(/\{(\w+)\}/g)].map((match) => match[1]!)
+        const values = Object.fromEntries(names.map((name) => [name, `<${name}>`]))
+        const expected = raw.replace(/\{(\w+)\}/g, (_, name: string) => `<${name}>`)
+        expect(t(key, values), `${lang}:${key}`).toBe(expected)
+      }
+    }
+    expect(createAppI18n('en').global.t('window.stop', { n: 2, total: 6 })).toBe('Stop 2 of 6')
   })
 
   it('has no empty strings', () => {

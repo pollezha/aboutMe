@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { IDLE_FALLBACK_MS, loadSceneWhenIdle } from '..'
+import { loadScene } from '..'
 
 const component = { name: 'SceneStub' }
 
@@ -12,53 +12,36 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe('loadSceneWhenIdle', () => {
-  it('imports the scene chunk only after the browser is idle', async () => {
-    let idle: (() => void) | undefined
-    vi.stubGlobal('requestIdleCallback', (cb: () => void) => {
-      idle = cb
-      return 1
-    })
+describe('loadScene', () => {
+  it('imports the scene chunk right after the current task, without waiting for idle', async () => {
+    const idle = vi.fn()
+    vi.stubGlobal('requestIdleCallback', idle)
     const importer = vi.fn(async () => ({ default: component }))
 
-    const pending = loadSceneWhenIdle(importer).promise
-    await vi.advanceTimersByTimeAsync(10_000)
+    const pending = loadScene(importer).promise
     expect(importer).not.toHaveBeenCalled()
 
-    idle?.()
-    await expect(pending).resolves.toBe(component)
+    await vi.advanceTimersByTimeAsync(0)
     expect(importer).toHaveBeenCalledTimes(1)
-  })
-
-  it('falls back to a timer where requestIdleCallback is missing (Safari)', async () => {
-    vi.stubGlobal('requestIdleCallback', undefined)
-    const importer = vi.fn(async () => ({ default: component }))
-
-    const pending = loadSceneWhenIdle(importer).promise
-    await vi.advanceTimersByTimeAsync(IDLE_FALLBACK_MS - 1)
-    expect(importer).not.toHaveBeenCalled()
-
-    await vi.advanceTimersByTimeAsync(1)
+    expect(idle).not.toHaveBeenCalled()
     await expect(pending).resolves.toBe(component)
   })
 
   it('never imports once cancelled', async () => {
-    vi.stubGlobal('requestIdleCallback', undefined)
     const importer = vi.fn(async () => ({ default: component }))
 
-    const load = loadSceneWhenIdle(importer)
+    const load = loadScene(importer)
     load.cancel()
-    await vi.advanceTimersByTimeAsync(IDLE_FALLBACK_MS * 2)
+    await vi.advanceTimersByTimeAsync(1000)
 
     expect(importer).not.toHaveBeenCalled()
   })
 
   it('rejects when the chunk fails to load', async () => {
-    vi.stubGlobal('requestIdleCallback', undefined)
-    const load = loadSceneWhenIdle(() => Promise.reject(new Error('offline')))
+    const load = loadScene(() => Promise.reject(new Error('offline')))
     const outcome = expect(load.promise).rejects.toThrow('offline')
 
-    await vi.advanceTimersByTimeAsync(IDLE_FALLBACK_MS)
+    await vi.advanceTimersByTimeAsync(0)
     await outcome
   })
 })

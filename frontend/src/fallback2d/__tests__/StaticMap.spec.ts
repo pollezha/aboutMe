@@ -70,19 +70,23 @@ describe('StaticMap', () => {
     expect(source).toMatch(/\.static-map--phone\s*\{[^}]*aspect-ratio:\s*1\s*\/\s*1/)
   })
 
-  it('shows the island render of the current theme, 1x and 2x', async () => {
+  // Ширины, а не плотности: телефон с DPR 1.75 (Lighthouse mobile) берёт 1x (26 КБ), а не @2x (60 КБ) — T12b.
+  it('shows the island render of the current theme, 1x and 2x by width with sizes of the map frame', async () => {
     const wrapper = mountMap()
     const ui = useUiStore()
 
     const img = wrapper.get('img')
     expect(img.attributes('src')).toBe('/img/island-day.webp')
-    expect(img.attributes('srcset')).toBe('/img/island-day.webp 1x, /img/island-day@2x.webp 2x')
+    expect(img.attributes('srcset')).toBe(
+      '/img/island-day.webp 1200w, /img/island-day@2x.webp 2400w',
+    )
+    expect(img.attributes('sizes')).toBe('(min-width: 768px) 736px, 100vw')
 
     ui.setTheme('night')
     await nextTick()
 
     expect(wrapper.get('img').attributes('src')).toBe('/img/island-night.webp')
-    expect(wrapper.get('img').attributes('srcset')).toContain('/img/island-night@2x.webp 2x')
+    expect(wrapper.get('img').attributes('srcset')).toContain('/img/island-night@2x.webp 2400w')
   })
 
   it('loads the render as the LCP image without layout shift', () => {

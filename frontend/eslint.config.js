@@ -29,7 +29,7 @@ const boundary = (files, patterns) => ({
       },
       {
         selector: 'ImportExpression[source.value=/^[.][.]?[/]([.][.][/])*scene([/]|$)/]',
-        message: 'Сцену лениво грузит только src/scene/index.ts (loadSceneWhenIdle).',
+        message: 'Сцену лениво грузит только src/scene/index.ts (loadScene).',
       },
     ],
   },
