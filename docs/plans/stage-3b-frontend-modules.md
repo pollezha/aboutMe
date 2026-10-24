@@ -189,7 +189,7 @@ frontend/src/
     пусто (кроме `index.ts` самих модулей); size-limit main не вырос > 1 КБ.
   - Зависит от: M1, T12b.
 
-- [ ] M6 — Фасады верхних модулей: `locale`, `route`, `hero`, `chapters`, `windows`, `mode`, `fallback2d`, `scene`
+- [x] M6 — Фасады верхних модулей: `locale`, `route`, `hero`, `chapters`, `windows`, `mode`, `fallback2d`, `scene`
   - Файлы: `index.ts` с шапкой в `src/{locale,route,hero,chapters,windows,mode,fallback2d}/` — реэкспорт из
     старых мест (`../i18n`, `../router`, `../ui/BottomBar.vue`, `../ui/windows` …); `src/scene/index.ts` —
     реэкспорт `mapRotation`, `isRotateHotkey`, `shouldUse3D`, `detectWebGL2`, `MIN_3D_WIDTH` (лёгкие модули без
