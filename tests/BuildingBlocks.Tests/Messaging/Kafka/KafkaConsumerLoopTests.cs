@@ -85,12 +85,12 @@ public sealed class KafkaConsumerLoopTests(KafkaFixture kafka) : IClassFixture<K
     }
 
     [Fact]
-    public async Task Batch_failing_with_a_poison_error_is_counted_skipped_and_committed()
+    public async Task Batch_failing_with_a_poison_error_is_replayed_one_by_one_and_only_the_failing_message_is_skipped()
     {
         var ct = TestContext.Current.CancellationToken;
         await CreateTopicAsync();
-        await ProduceAsync(["bad", "1"]);
-        var handler = new RecordingHandler { FailOn = "bad" };
+        await ProduceAsync(["1", "bad", "2"]);
+        var handler = new RecordingHandler { FailOn = ["bad"] };
         using var poison = new MetricCollector<long>(_meter, PoisonCounterName);
         var options = DefaultOptions() with
         {
@@ -101,13 +101,61 @@ public sealed class KafkaConsumerLoopTests(KafkaFixture kafka) : IClassFixture<K
 
         await using (Start(handler, options))
         {
-            await handler.Failed.Task.WaitAsync(WaitTimeout, ct);
-            await WaitForCommittedOffsetAsync(2);
-            Assert.Equal(2, poison.GetMeasurementSnapshot().EvaluateAsCounter());
-
-            await ProduceAsync(["2"]);
+            Assert.Equal(["1"], await handler.NextBatchAsync(ct));
             Assert.Equal(["2"], await handler.NextBatchAsync(ct));
             await WaitForCommittedOffsetAsync(3);
+            Assert.Equal(1, poison.GetMeasurementSnapshot().EvaluateAsCounter());
+
+            await ProduceAsync(["3"]);
+            Assert.Equal(["3"], await handler.NextBatchAsync(ct));
+            await WaitForCommittedOffsetAsync(4);
+        }
+    }
+
+    [Fact]
+    public async Task Single_message_failing_with_a_poison_error_is_counted_skipped_and_committed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await CreateTopicAsync();
+        await ProduceAsync(["bad"]);
+        var handler = new RecordingHandler { FailOn = ["bad"] };
+        using var poison = new MetricCollector<long>(_meter, PoisonCounterName);
+
+        await using (Start(handler, DefaultOptions() with
+        {
+            FirstRetryDelay = TimeSpan.FromMinutes(1),
+            IsPoison = ex => ex is FormatException,
+        }))
+        {
+            await WaitForCommittedOffsetAsync(1);
+            Assert.Equal(1, poison.GetMeasurementSnapshot().EvaluateAsCounter());
+
+            await ProduceAsync(["1"]);
+            Assert.Equal(["1"], await handler.NextBatchAsync(ct));
+        }
+    }
+
+    [Fact]
+    public async Task Batch_whose_every_message_fails_with_a_poison_error_is_retried_as_a_system_failure()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await CreateTopicAsync();
+        await ProduceAsync(["bad-1", "bad-2"]);
+        var handler = new RecordingHandler { FailOn = ["bad-1", "bad-2"] };
+        using var poison = new MetricCollector<long>(_meter, PoisonCounterName);
+        var options = DefaultOptions() with
+        {
+            BatchWindow = TimeSpan.FromSeconds(1),
+            FirstRetryDelay = TimeSpan.FromMilliseconds(100),
+            IsPoison = ex => ex is FormatException,
+        };
+
+        await using (Start(handler, options))
+        {
+            // Попытка = весь батч + два одиночных прогона; третья попытка значит, что батч ретраится, а не скипается
+            await handler.WaitForCallsAsync(7, ct);
+            Assert.Equal(0, poison.GetMeasurementSnapshot().EvaluateAsCounter());
+            Assert.Equal(Offset.Unset, await GetCommittedOffsetAsync());
         }
     }
 
@@ -224,17 +272,19 @@ public sealed class KafkaConsumerLoopTests(KafkaFixture kafka) : IClassFixture<K
     private sealed class RecordingHandler : IKafkaMessageHandler<string>
     {
         private readonly Channel<IReadOnlyList<string>> _batches = Channel.CreateUnbounded<IReadOnlyList<string>>();
+        private int _calls;
 
         public int FailuresLeft { get; set; }
 
-        /// <summary>Детерминированная ошибка: батч с этим сообщением падает всегда.</summary>
-        public string? FailOn { get; init; }
+        /// <summary>Детерминированная ошибка: батч с любым из этих сообщений падает всегда.</summary>
+        public IReadOnlyList<string> FailOn { get; init; } = [];
 
         public TaskCompletionSource Failed { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public Task HandleAsync(KafkaBatch<string> batch, CancellationToken cancellationToken)
         {
-            if (FailOn is not null && batch.Messages.Contains(FailOn))
+            Interlocked.Increment(ref _calls);
+            if (batch.Messages.Any(FailOn.Contains))
             {
                 Failed.TrySetResult();
                 throw new FormatException("deterministic failure");
@@ -253,6 +303,16 @@ public sealed class KafkaConsumerLoopTests(KafkaFixture kafka) : IClassFixture<K
 
         public async Task<IReadOnlyList<string>> NextBatchAsync(CancellationToken ct) =>
             await _batches.Reader.ReadAsync(ct).AsTask().WaitAsync(WaitTimeout, ct);
+
+        public async Task WaitForCallsAsync(int calls, CancellationToken ct)
+        {
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(WaitTimeout);
+            while (Volatile.Read(ref _calls) < calls)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(50), cts.Token);
+            }
+        }
     }
 
     /// <summary>Цикл в фоне; остановка — отмена токена и ожидание выхода (consumer закрывает сам цикл).</summary>

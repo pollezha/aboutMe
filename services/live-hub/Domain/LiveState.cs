@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Contracts.Events;
 using Contracts.Live;
 
@@ -40,10 +39,10 @@ public sealed class LiveState(TimeProvider time)
         switch (siteEvent.Type)
         {
             case EventTypes.StopOpened:
-                Increment(_byStop, PayloadString(siteEvent.Payload, "stop"));
+                Increment(_byStop, siteEvent.Payload.GetSafeString("stop"));
                 break;
             case EventTypes.CtaClick:
-                Increment(_byCta, PayloadString(siteEvent.Payload, "cta"));
+                Increment(_byCta, siteEvent.Payload.GetSafeString("cta"));
                 break;
         }
 
@@ -120,11 +119,4 @@ public sealed class LiveState(TimeProvider time)
 
         counters[key] = counters.GetValueOrDefault(key) + 1;
     }
-
-    private static string? PayloadString(JsonElement payload, string property) =>
-        payload.ValueKind == JsonValueKind.Object
-        && payload.TryGetProperty(property, out var value)
-        && value.ValueKind == JsonValueKind.String
-            ? value.GetString()
-            : null;
 }

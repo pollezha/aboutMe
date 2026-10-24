@@ -21,10 +21,10 @@ public static class Aggregator
         var payload = siteEvent.Payload;
         return siteEvent.Type switch
         {
-            EventTypes.Visit => new DailyVisitDelta(day, GetString(payload, "source") ?? UnknownSource, siteEvent.Device, 1),
-            EventTypes.StopOpened => GetString(payload, "stop") is { } stop ? new StopOpenDelta(day, stop, 1) : null,
-            EventTypes.CtaClick => GetString(payload, "cta") is { } cta
-                ? new CtaClickDelta(day, cta, GetString(payload, "source") ?? UnknownSource, 1)
+            EventTypes.Visit => new DailyVisitDelta(day, payload.GetSafeString("source") ?? UnknownSource, siteEvent.Device, 1),
+            EventTypes.StopOpened => payload.GetSafeString("stop") is { } stop ? new StopOpenDelta(day, stop, 1) : null,
+            EventTypes.CtaClick => payload.GetSafeString("cta") is { } cta
+                ? new CtaClickDelta(day, cta, payload.GetSafeString("source") ?? UnknownSource, 1)
                 : null,
             EventTypes.WebVital => ToWebVital(day, payload),
             // skill_opened: агрегат появится позже — событие отмечается обработанным, схема stats не меняется
@@ -47,7 +47,7 @@ public static class Aggregator
 
     private static WebVitalDelta? ToWebVital(DateOnly day, JsonElement payload)
     {
-        if (GetString(payload, "name") is not { } name
+        if (payload.GetSafeString("name") is not { } name
             || payload.ValueKind != JsonValueKind.Object
             || !payload.TryGetProperty("value", out var value)
             || value.ValueKind != JsonValueKind.Number
@@ -58,11 +58,4 @@ public static class Aggregator
 
         return new WebVitalDelta(day, name, bucket, 1);
     }
-
-    private static string? GetString(JsonElement payload, string property) =>
-        payload.ValueKind == JsonValueKind.Object
-        && payload.TryGetProperty(property, out var value)
-        && value.ValueKind == JsonValueKind.String
-            ? value.GetString()
-            : null;
 }

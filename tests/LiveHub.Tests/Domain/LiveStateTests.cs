@@ -113,4 +113,17 @@ public sealed class LiveStateTests
 
         Assert.Equal(1, before.ByStop["about"]);
     }
+
+    [Fact]
+    public void Stop_or_cta_with_an_unpaired_surrogate_is_not_counted()
+    {
+        _state.Apply(Event("a", Noon, EventTypes.StopOpened, """{"stop":"\ud800"}"""));
+        _state.Apply(Event("a", Noon, EventTypes.CtaClick, """{"cta":"\udfff"}"""));
+
+        var snapshot = _state.Snapshot();
+
+        Assert.Empty(snapshot.ByStop);
+        Assert.Empty(snapshot.ByCta);
+        Assert.Equal(2, snapshot.EventsToday);
+    }
 }

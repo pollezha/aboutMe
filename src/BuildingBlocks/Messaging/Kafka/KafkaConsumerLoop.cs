@@ -10,8 +10,10 @@ namespace BuildingBlocks.Messaging.Kafka;
 /// только после успешного обработчика. Батч — до <see cref="KafkaConsumerLoopOptions.MaxBatchSize"/> сообщений
 /// или <see cref="KafkaConsumerLoopOptions.BatchWindow"/> после первого из них. Ядовитое сообщение (десериализатор
 /// вернул null или бросил) считается, пропускается, его офсет коммитится вместе с батчем (DLQ в MVP нет).
-/// Ошибка обработчика не роняет цикл: батч повторяется с растущей паузой, офсет стоит на месте; если ошибка
-/// детерминированная (<see cref="KafkaConsumerLoopOptions.IsPoison"/>), весь батч считается ядовитым и пропускается.
+/// Ошибка обработчика не роняет цикл: батч повторяется с растущей паузой, офсет стоит на месте. Если ошибка
+/// детерминированная (<see cref="KafkaConsumerLoopOptions.IsPoison"/>), батч из нескольких сообщений один раз
+/// прогоняется поштучно: ядовитыми считаются и пропускаются только упавшие детерминированно; если так упали все —
+/// это скорее системная ошибка (например, сломанная миграция), и батч повторяется как при транзиентной.
 /// На каждое сообщение — спан <c>process</c>, продолжающий трейс продюсера.
 /// </summary>
 public sealed class KafkaConsumerLoop<TMessage>
@@ -142,6 +144,7 @@ public sealed class KafkaConsumerLoop<TMessage>
             if (TryDeserialize(result) is { } message)
             {
                 batch.Messages.Add(message);
+                batch.MessageLinks.Add(activity is null ? [] : [new ActivityLink(activity.Context)]);
             }
             else
             {
@@ -181,44 +184,97 @@ public sealed class KafkaConsumerLoop<TMessage>
         var delay = _options.FirstRetryDelay;
         for (var attempt = 1; ; attempt++)
         {
-            try
+            var error = await TryHandleAsync(kafkaBatch, stoppingToken);
+            if (error is not null && IsPoison(error))
             {
-                await _handler.HandleAsync(kafkaBatch, stoppingToken);
-                return;
-            }
-            catch (Exception ex) when (IsPoison(ex, stoppingToken))
-            {
-                SkipPoisonBatch(batch, ex);
-                return;
-            }
-#pragma warning disable CA1031 // любая ошибка обработчика: офсет не коммитим, повторяем батч
-            catch (Exception ex) when (ex is not OperationCanceledException || !stoppingToken.IsCancellationRequested)
-#pragma warning restore CA1031
-            {
-                KafkaConsumerLoopLog.HandlerFailed(_logger, ex, batch.Messages.Count, attempt, delay.TotalSeconds);
+                if (batch.Messages.Count == 1)
+                {
+                    SkipPoison(batch, error, 1);
+                    return;
+                }
+
+                error = await HandleOneByOneAsync(batch, stoppingToken);
             }
 
+            if (error is null)
+            {
+                return;
+            }
+
+            KafkaConsumerLoopLog.HandlerFailed(_logger, error, batch.Messages.Count, attempt, delay.TotalSeconds);
             await Task.Delay(delay, stoppingToken);
             delay = TimeSpan.FromTicks(Math.Min(delay.Ticks * 2, _options.MaxRetryDelay.Ticks));
         }
     }
 
-    private bool IsPoison(Exception exception, CancellationToken stoppingToken) =>
-        _options.IsPoison is { } isPoison
-        && !(exception is OperationCanceledException && stoppingToken.IsCancellationRequested)
-        && isPoison(exception);
+    /// <summary>Ошибка обработчика или null при успехе; отмена при остановке пробрасывается.</summary>
+    private async Task<Exception?> TryHandleAsync(KafkaBatch<TMessage> kafkaBatch, CancellationToken stoppingToken)
+    {
+        try
+        {
+            await _handler.HandleAsync(kafkaBatch, stoppingToken);
+            return null;
+        }
+#pragma warning disable CA1031 // любая ошибка обработчика: офсет не коммитим, решает вызывающий (скип или повтор)
+        catch (Exception ex) when (ex is not OperationCanceledException || !stoppingToken.IsCancellationRequested)
+#pragma warning restore CA1031
+        {
+            return ex;
+        }
+    }
+
+    private bool IsPoison(Exception exception) => _options.IsPoison is { } isPoison && isPoison(exception);
 
     /// <summary>
-    /// Детерминированная ошибка: повтор не поможет, весь батч уходит в ядовитые, офсет коммитит
-    /// <see cref="RunAsync"/>. Тело не логируем — только партиции и офсеты.
+    /// Поштучный прогон батча, упавшего детерминированно: ядовитые — только упавшие детерминированно сообщения.
+    /// Возвращает ошибку, если батч надо повторить целиком: транзиентная ошибка или детерминированно упали все
+    /// сообщения (вероятно, системная причина); повтор безопасен — обработчик идемпотентен.
     /// </summary>
-    private void SkipPoisonBatch(Batch batch, Exception exception)
+    private async Task<Exception?> HandleOneByOneAsync(Batch batch, CancellationToken stoppingToken)
     {
-        _poison.Add(batch.Messages.Count);
+        var poisoned = 0;
+        Exception? firstPoison = null;
+        for (var i = 0; i < batch.Messages.Count; i++)
+        {
+            var single = new KafkaBatch<TMessage>([batch.Messages[i]], batch.MessageLinks[i]);
+            if (await TryHandleAsync(single, stoppingToken) is not { } error)
+            {
+                continue;
+            }
+
+            if (!IsPoison(error))
+            {
+                return error;
+            }
+
+            poisoned++;
+            firstPoison ??= error;
+        }
+
+        if (poisoned == batch.Messages.Count)
+        {
+            return firstPoison;
+        }
+
+        if (firstPoison is not null)
+        {
+            SkipPoison(batch, firstPoison, poisoned);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Детерминированная ошибка: повтор не поможет, <paramref name="count"/> сообщений уходят в ядовитые, офсет
+    /// коммитит <see cref="RunAsync"/>. Тело не логируем — только партиции и офсеты.
+    /// </summary>
+    private void SkipPoison(Batch batch, Exception exception, int count)
+    {
+        _poison.Add(count);
         foreach (var (partition, next) in batch.Offsets)
         {
             KafkaConsumerLoopLog.PoisonBatch(
-                _logger, exception.GetType().Name, batch.Messages.Count, partition.Topic, partition.Partition.Value, next.Value - 1);
+                _logger, exception.GetType().Name, count, partition.Topic, partition.Partition.Value, next.Value - 1);
         }
     }
 
@@ -257,6 +313,9 @@ public sealed class KafkaConsumerLoop<TMessage>
         public List<TMessage> Messages { get; } = [];
 
         public List<ActivityLink> Links { get; } = [];
+
+        /// <summary>Ссылка на спан <c>process</c> каждого сообщения из <see cref="Messages"/> (для поштучного прогона).</summary>
+        public List<IReadOnlyList<ActivityLink>> MessageLinks { get; } = [];
 
         /// <summary>Сколько сообщений прочитано, включая ядовитые (предел батча — по ним, а не по партициям).</summary>
         public int Count { get; set; }

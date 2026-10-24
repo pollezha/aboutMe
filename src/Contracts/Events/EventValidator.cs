@@ -140,7 +140,7 @@ public sealed class EventValidator(TimeProvider timeProvider)
     }
 
     private static Func<JsonElement, string?> OneOf(IReadOnlyList<string> allowed) =>
-        value => ReadString(value) is { } s && allowed.Contains(s, StringComparer.Ordinal)
+        value => value.GetSafeString() is { } s && allowed.Contains(s, StringComparer.Ordinal)
             ? null
             : $"Must be one of: {string.Join(", ", allowed)}.";
 
@@ -157,30 +157,9 @@ public sealed class EventValidator(TimeProvider timeProvider)
 
     /// <summary>Non-empty string of plain text (see <see cref="IsPlainText"/>) up to <paramref name="maxLength"/>, otherwise null.</summary>
     private static string? NonEmptyString(JsonElement value, int maxLength) =>
-        ReadString(value) is { Length: > 0 } s && s.Length <= maxLength && IsPlainText(s) ? s : null;
+        value.GetSafeString() is { Length: > 0 } s && s.Length <= maxLength && IsPlainText(s) ? s : null;
 
-    /// <summary>
-    /// String value of the element, or null when it is not a string. A JSON escape with an unpaired surrogate
-    /// (<c>"\ud800"</c>) cannot be transcoded and makes <see cref="JsonElement.GetString"/> throw — that is bad input too.
-    /// </summary>
-    private static string? ReadString(JsonElement value)
-    {
-        if (value.ValueKind != JsonValueKind.String)
-        {
-            return null;
-        }
-
-        try
-        {
-            return value.GetString();
-        }
-        catch (InvalidOperationException)
-        {
-            return null;
-        }
-    }
-
-    /// <summary>Property name, or null when it is an escape with an unpaired surrogate (see <see cref="ReadString"/>).</summary>
+    /// <summary>Property name, or null when it is an escape with an unpaired surrogate (see <see cref="JsonElementExtensions.GetSafeString(JsonElement)"/>).</summary>
     private static string? ReadName(JsonProperty property)
     {
         try

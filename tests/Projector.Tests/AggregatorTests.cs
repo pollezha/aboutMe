@@ -111,6 +111,25 @@ public sealed class AggregatorTests
         Assert.Equal(bucket, VitalBuckets.Bucket(name, value));
     }
 
+    [Theory]
+    [InlineData(EventTypes.StopOpened, """{"stop":"\ud800"}""")]
+    [InlineData(EventTypes.CtaClick, """{"cta":"\udfff"}""")]
+    [InlineData(EventTypes.WebVital, """{"name":"\ud800","value":1}""")]
+    public void String_with_an_unpaired_surrogate_has_no_delta(string type, string payload)
+    {
+        var deltas = Aggregator.Aggregate([Event(type, payload, Noon)]);
+
+        Assert.Empty(deltas);
+    }
+
+    [Fact]
+    public void Visit_source_with_an_unpaired_surrogate_is_counted_as_unknown()
+    {
+        var delta = Aggregator.ToDelta(Event(EventTypes.Visit, """{"source":"\ud800"}""", Noon));
+
+        Assert.Equal(new DailyVisitDelta(Day, Aggregator.UnknownSource, Devices.Desktop, 1), delta);
+    }
+
     [Fact]
     public void Unknown_vital_has_no_bucket()
     {
