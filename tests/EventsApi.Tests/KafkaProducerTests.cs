@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -7,8 +9,12 @@ using Confluent.Kafka;
 using Confluent.Kafka.Admin;
 using Contracts;
 using Contracts.Events;
+using EventsApi.Infrastructure.Messaging;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace EventsApi.Tests;
@@ -120,4 +126,49 @@ public sealed class KafkaProducerTests(KafkaFixture kafka) : IClassFixture<Kafka
 
     private static string? Header(Message<string, string> message, string key) =>
         message.Headers.TryGetLastBytes(key, out var bytes) ? Encoding.UTF8.GetString(bytes) : null;
+}
+
+// Настоящий продюсер без Docker: брокер по адресу, где никто не слушает. Ответ ограничен таймаутом доставки
+// (KafkaDefaults.DeliveryTimeoutMs), а не повторами клиента.
+public sealed class UnreachableKafkaProducerTests
+{
+    private static readonly TimeSpan Deadline = TimeSpan.FromSeconds(5);
+
+    [Fact]
+    public async Task Unreachable_broker_returns_503_within_five_seconds()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+        {
+            builder.UseSetting("ConnectionStrings:kafka", "127.0.0.1:1");
+            // Только создание топика при старте: оно ждало бы брокер; IEventPublisher остаётся настоящим
+            builder.ConfigureTestServices(services =>
+                services.Remove(services.Single(sd => sd.ImplementationType == typeof(TopicInitializer))));
+        });
+        using var client = factory.CreateClient();
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(Deadline * 2);
+        using var content = new StringContent(
+            new JsonObject
+            {
+                ["eventId"] = Guid.CreateVersion7().ToString(),
+                ["type"] = EventTypes.CtaClick,
+                ["occurredAt"] = DateTimeOffset.UtcNow.ToString("O"),
+                ["sessionId"] = "session-42",
+                ["lang"] = "en",
+                ["theme"] = "day",
+                ["payload"] = new JsonObject { ["cta"] = "telegram" },
+            }.ToJsonString(),
+            Encoding.UTF8,
+            "application/json");
+
+        var watch = Stopwatch.StartNew();
+        var response = await client.PostAsync("/api/events", content, timeout.Token);
+        watch.Stop();
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>(ct);
+        Assert.Equal("Event log unavailable", problem?.Title);
+        Assert.True(watch.Elapsed <= Deadline, $"503 пришёл через {watch.Elapsed.TotalMilliseconds:0} мс");
+    }
 }

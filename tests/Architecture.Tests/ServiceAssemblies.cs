@@ -10,7 +10,7 @@ namespace Architecture.Tests;
 /// <summary>
 /// Читает скомпилированные сборки сервисов через System.Reflection.Metadata: для каждого типа — все типы, на которые
 /// он ссылается в сигнатурах, атрибутах и IL тел методов. Вложенные типы (замыкания, state machine) слиты во внешний,
-/// служебные типы компилятора (<c>&lt;PrivateImplementationDetails&gt;</c>, embedded-атрибуты, file-local типы генераторов) пропущены.
+/// служебные типы компилятора (<c>&lt;PrivateImplementationDetails&gt;</c>, embedded-атрибуты, file-local типы генераторов вне namespace сервиса) пропущены.
 /// </summary>
 public static class ServiceAssemblies
 {
@@ -43,6 +43,12 @@ public static class ServiceAssemblies
             throw new FileNotFoundException($"{dll} not found: build {project} first", dll);
         }
 
+        return LoadFile(name, dll);
+    }
+
+    /// <summary>Сборка по пути к dll; <paramref name="name"/> — имя сборки и корневой namespace сервиса.</summary>
+    public static ServiceAssembly LoadFile(string name, string dll)
+    {
         using var stream = File.OpenRead(dll);
         using var pe = new PEReader(stream);
         return Read(name, pe);
@@ -309,15 +315,18 @@ public static class ServiceAssemblies
         }
 
         /// <summary>
-        /// Служебный тип компилятора или генератора: имя в угловых скобках (file-local типы, анонимные типы,
-        /// <c>&lt;PrivateImplementationDetails&gt;</c>) или embedded-атрибут (<c>NullableAttribute</c> и т. п.).
+        /// Служебный тип компилятора или генератора: имя в угловых скобках вне корневого namespace сервиса
+        /// (анонимные типы, <c>&lt;PrivateImplementationDetails&gt;</c>, file-local типы генераторов) или
+        /// embedded-атрибут (<c>NullableAttribute</c> и т. п.). File-local тип в namespace сервиса
+        /// (<c>&lt;File&gt;F…__Name</c>) — обычный тип своего слоя, иначе <c>file class</c> обходит правила слоёв.
         /// </summary>
         public bool IsCompilerService(TypeDefinitionHandle handle)
         {
             var definition = Reader.GetTypeDefinition(Outermost(handle));
             if (Reader.GetString(definition.Name).StartsWith('<'))
             {
-                return true;
+                var ns = Reader.GetString(definition.Namespace);
+                return ns != Assembly && !ns.StartsWith(Assembly + ".", StringComparison.Ordinal);
             }
 
             foreach (var attribute in definition.GetCustomAttributes())
