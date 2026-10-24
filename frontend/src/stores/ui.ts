@@ -3,16 +3,13 @@ import { ref } from 'vue'
 import { ROUTE, type ChapterId } from '../content'
 import { load, loadSession, save, saveSession } from '../shared/lib'
 
-export type Lang = 'en' | 'ru'
 export type Mode = '3d' | '2d'
 /** idle — сцена не грузится; loading — ждём scene_ready; ready — сцена на экране; failed — таймаут/ошибка, показан баннер. */
 export type SceneState = 'idle' | 'loading' | 'ready' | 'failed'
 
-const LANGS: readonly Lang[] = ['en', 'ru']
 const MODES: readonly Mode[] = ['3d', '2d']
 
 const KEY = {
-  lang: 'aboutme.lang',
   motionPaused: 'aboutme.motionPaused',
   sceneChoice: 'aboutme.sceneChoice',
   /** sessionStorage: посещённые остановки живут до закрытия вкладки (решение 19 ревью). */
@@ -34,12 +31,7 @@ function saveVisited(ids: Set<ChapterId>) {
   saveSession(KEY.visited, JSON.stringify([...ids]))
 }
 
-function pick<T extends string>(value: string | null, allowed: readonly T[], fallback: T): T {
-  return allowed.includes(value as T) ? (value as T) : fallback
-}
-
 export const useUiStore = defineStore('ui', () => {
-  const lang = ref<Lang>(pick(load(KEY.lang), LANGS, 'en'))
   const motionPaused = ref(load(KEY.motionPaused) === 'true')
   const mode = ref<Mode>('3d')
   /** Явный выбор пользователя (FR10); null — не выбирал, режим решает shouldUse3D(). */
@@ -52,21 +44,6 @@ export const useUiStore = defineStore('ui', () => {
   const openWindow = ref<ChapterId | null>(null)
   /** Остановки маршрута, чьи окна открывали в этой сессии: в баре — галочка (если остановка не активна). */
   const visitedStops = ref<Set<ChapterId>>(loadVisited())
-
-  /** Выбор пользователя (переключатель): запоминается; App переводит маршрут на /ru/ или /. */
-  function setLang(next: Lang) {
-    lang.value = next
-    save(KEY.lang, next)
-  }
-
-  /** Язык из маршрута (/ или /ru/): ссылка на страницу — не выбор пользователя, не запоминаем. */
-  function syncLang(next: Lang) {
-    lang.value = next
-  }
-
-  function toggleLang() {
-    setLang(lang.value === 'en' ? 'ru' : 'en')
-  }
 
   function toggleMotion() {
     motionPaused.value = !motionPaused.value
@@ -124,7 +101,6 @@ export const useUiStore = defineStore('ui', () => {
   }
 
   return {
-    lang,
     mode,
     motionPaused,
     userChoice,
@@ -132,9 +108,6 @@ export const useUiStore = defineStore('ui', () => {
     activeStop,
     openWindow,
     visitedStops,
-    setLang,
-    syncLang,
-    toggleLang,
     toggleMotion,
     setMode,
     setSceneState,

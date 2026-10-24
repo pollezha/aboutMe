@@ -1,20 +1,20 @@
 import { describe, expect, it, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { nextTick } from 'vue'
-import { contentFor } from '../content/bundles'
+import { contentFor } from '../../content/bundles'
 import {
   mountApp,
   openDialog,
   setViewport,
   useAppTestEnv,
   waitFor,
-} from '../app/__tests__/mountApp'
+} from '../../app/__tests__/mountApp'
 
-vi.mock('../scene/Scene.vue', () => import('../app/__tests__/sceneStub'))
+vi.mock('../../scene/Scene.vue', () => import('../../app/__tests__/sceneStub'))
 // Даты в окнах считаются от времени сборки (content/buildTime.ts) — фиксируем его.
-vi.mock('../content/buildTime', () => ({ BUILD_TIME: new Date(2026, 9, 23) }))
-vi.mock('../scene', async (importOriginal) => {
-  const original = await importOriginal<typeof import('../scene')>()
+vi.mock('../../content/buildTime', () => ({ BUILD_TIME: new Date(2026, 9, 23) }))
+vi.mock('../../scene', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../../scene')>()
   return { ...original, loadScene: vi.fn(original.loadScene) }
 })
 
@@ -31,10 +31,10 @@ describe('App', () => {
     expect(hero.text()).toContain('.NET Backend Developer')
   })
 
-  it('switches the hero to Russian after ui.setLang("ru")', async () => {
-    const { wrapper, ui } = mountApp()
+  it('switches the hero to Russian after lang.setLang("ru")', async () => {
+    const { wrapper, lang } = mountApp()
 
-    ui.setLang('ru')
+    lang.setLang('ru')
     await nextTick()
 
     const hero = wrapper.get('.hero')
@@ -104,26 +104,26 @@ describe('App', () => {
 
   it('opens /ru/ in Russian without remembering it as the visitor’s choice', async () => {
     history.replaceState(null, '', '/ru/')
-    const { wrapper, ui } = mountApp()
+    const { wrapper, lang } = mountApp()
     await flushPromises()
 
-    expect(ui.lang).toBe('ru')
+    expect(lang.lang).toBe('ru')
     expect(wrapper.get('.hero').text()).toContain('Яков Полежаев')
     expect(localStorage.getItem('aboutme.lang')).toBeNull()
   })
 
   it('moves between / and /ru/ on a language switch without reloading, keeping the open chapter', async () => {
     history.replaceState(null, '', '/#prospace')
-    const { wrapper, ui } = mountApp()
+    const { wrapper, lang } = mountApp()
     await flushPromises()
 
-    ui.setLang('ru')
+    lang.setLang('ru')
     await flushPromises()
     expect(location.pathname).toBe('/ru/')
     expect(location.hash).toBe('#prospace')
     expect(openDialog(wrapper).exists()).toBe(true)
 
-    ui.setLang('en')
+    lang.setLang('en')
     await flushPromises()
     expect(location.pathname).toBe('/')
     expect(localStorage.getItem('aboutme.lang')).toBe('en')

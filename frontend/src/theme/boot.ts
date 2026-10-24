@@ -3,7 +3,7 @@
  * (`data-theme`, `color-scheme`, `meta#theme-color`) и один раз уводит на /ru/ (design §4 «Загрузка», FR8).
  * Функция сериализуется через toString(), поэтому самодостаточна: ни импортов, ни внешних констант.
  * Ключи и значения — те же, что в useThemeStore.ts и useTheme.ts (`aboutme.theme`, `?theme=`)
- * и в stores/ui.ts (`aboutme.lang`).
+ * и в locale/useLangStore.ts (`aboutme.lang`).
  */
 
 /** Цвет `bg/canvas` каждой темы — из palette.ts при сборке. */

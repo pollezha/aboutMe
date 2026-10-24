@@ -12,10 +12,9 @@ beforeEach(() => {
 })
 
 describe('ui store', () => {
-  it('starts with English, 3D, motion on and nothing open', () => {
+  it('starts with 3D, motion on and nothing open', () => {
     const ui = freshStore()
 
-    expect(ui.lang).toBe('en')
     expect(ui.mode).toBe('3d')
     expect(ui.motionPaused).toBe(false)
     expect(ui.activeStop).toBeNull()
@@ -41,23 +40,19 @@ describe('ui store', () => {
     expect(ui.activeStop).toBe('contact')
   })
 
-  it('persists lang and motionPaused to localStorage', () => {
+  it('persists motionPaused to localStorage', () => {
     const ui = freshStore()
 
-    ui.setLang('ru')
     ui.toggleMotion()
 
-    expect(localStorage.getItem('aboutme.lang')).toBe('ru')
     expect(localStorage.getItem('aboutme.motionPaused')).toBe('true')
   })
 
-  it('restores saved preferences and ignores invalid values', () => {
-    localStorage.setItem('aboutme.lang', 'de')
+  it('restores the saved motion preference', () => {
     localStorage.setItem('aboutme.motionPaused', 'true')
 
     const ui = freshStore()
 
-    expect(ui.lang).toBe('en')
     expect(ui.motionPaused).toBe(true)
   })
 

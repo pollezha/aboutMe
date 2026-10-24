@@ -16,8 +16,7 @@ export const MODULES = {
   'shared/ui': { deps: ['shared/lib'], facade: true },
   content: { deps: [], facade: true },
   theme: { deps: ['shared/lib'], facade: true },
-  // locale реэкспортирует i18n/ и тип Lang из stores/ (до M11); router.ts — файл корня, не модуль.
-  locale: { deps: ['content', 'shared/lib'], legacyDeps: ['i18n', 'stores'], facade: true },
+  locale: { deps: ['content', 'shared/lib'], facade: true },
   route: { deps: ['content', 'locale', ...shared], facade: true },
   hero: { deps: ['content', 'locale', ...shared], facade: true },
   // chapters, windows берут общий стор из stores/ (openWindow, openChapter) до M12.
@@ -33,15 +32,15 @@ export const MODULES = {
     facade: true,
     prerendered: true,
   },
-  // fallback2d, scene берут общий стор (до M10–M13) и i18n/ (до M11) напрямую.
+  // fallback2d, scene берут общий стор из stores/ (до M12–M13).
   fallback2d: {
     deps: ['content', 'locale', 'theme', ...shared],
-    legacyDeps: ['stores', 'i18n'],
+    legacyDeps: ['stores'],
     facade: true,
   },
   scene: {
     deps: ['content', 'locale', 'route', 'theme', 'shared/lib'],
-    legacyDeps: ['stores', 'i18n'],
+    legacyDeps: ['stores'],
     facade: true,
     lazy: true,
   },
@@ -78,21 +77,13 @@ export const MODULES = {
     facade: false,
     legacy: true,
     bans: [
-      ...['ui', 'scene', 'fallback2d', 'i18n'].map((name) =>
+      ...['ui', 'scene', 'fallback2d'].map((name) =>
         noLayer(name, 'стор не знает о представлении.'),
       ),
       ['\\.vue$', 'Стор не импортирует компоненты.'],
     ],
   },
-  i18n: {
-    deps: [],
-    facade: false,
-    legacy: true,
-    bans: ['ui', 'scene', 'fallback2d'].map((name) =>
-      noLayer(name, 'нижний слой не зависит от верхних.'),
-    ),
-  },
-  // Корень (App.vue, main.ts, router.ts, head.ts) — в главном чанке: сцену (ленивую точку входа и лёгкие
+  // Корень (App.vue, main.ts, head.ts) — в главном чанке: сцену (ленивую точку входа и лёгкие
   // модули без three.js) видит только через ./mode, как app.
   '.': {
     deps: [],

@@ -1,5 +1,5 @@
 import { expect, type Locator, type Page, type TestInfo } from '@playwright/test'
-import en from '../src/i18n/en.json' with { type: 'json' }
+import en from '../src/locale/en.json' with { type: 'json' }
 
 // Общие шаги e2e: открыть сайт в нужном режиме, найти остановки и окно. Имена — из i18n (как у getByRole).
 

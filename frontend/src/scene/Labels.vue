@@ -5,19 +5,20 @@
 import { Html } from '@tresjs/cientos'
 import { computed } from 'vue'
 import { ROUTE } from '../content'
-import { chapterLabel } from '../i18n'
+import { chapterLabel, useLangStore } from '../locale'
 import { useUiStore } from '../stores/ui'
 import { stops } from './layout'
 
 defineOptions({ name: 'SceneLabels' })
 
 const ui = useUiStore()
+const langStore = useLangStore()
 
 const labels = computed(() =>
   stops.map((stop) => {
     const chapter = ROUTE.find((item) => item.id === stop.id)
     if (!chapter) throw new Error(`scene: stop ${stop.id} is not on the route`)
-    const { title } = chapterLabel(chapter.id, ui.lang)
+    const { title } = chapterLabel(chapter.id, langStore.lang)
     return { id: chapter.id, position: stop.label, title, name: `${chapter.index} ${title}` }
   }),
 )

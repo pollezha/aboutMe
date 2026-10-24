@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute, useRouter } from 'vue-router'
 import {
   BUILD_TIME,
   CHAPTERS,
@@ -19,7 +18,7 @@ import { WINDOWS } from './chapters'
 import { StaticMap } from './fallback2d'
 import { useSiteHead } from './head'
 import { HeroCard } from './hero'
-import { langOf, pathFor, useChapterLabel, useLocaleSync } from './locale'
+import { useChapterLabel, useRouteLang } from './locale'
 import {
   MIN_3D_WIDTH,
   SCENE_TIMEOUT_MS,
@@ -40,28 +39,13 @@ import { useTheme } from './theme'
 import { ChapterWindow, ProofLinks } from './windows'
 
 const ui = useUiStore()
-const route = useRoute()
-const router = useRouter()
-
-// Язык страницы задаёт маршрут (/ или /ru/); переключатель (ui.setLang) меняет маршрут без перезагрузки.
-const routeLang = computed(() => langOf(route.path))
-watch(routeLang, (lang) => ui.syncLang(lang), { immediate: true })
-watch(
-  () => ui.lang,
-  (lang) => {
-    if (lang === routeLang.value) return
-    const hash = typeof window !== 'undefined' ? window.location.hash : route.hash
-    router.push({ path: pathFor(lang), query: route.query, hash })
-  },
-)
-
-useLocaleSync()
+const { store: langStore } = useRouteLang()
 const { t } = useI18n()
 const { store: themeStore, label: themeLabel } = useTheme(t)
 const breakpoint = useBreakpoint()
 
 // Снимок контента на языке страницы (пока RU-контента нет — EN); загрузка из content-api — этап 4.
-const content = computed(() => contentFor(ui.lang))
+const content = computed(() => contentFor(langStore.lang))
 // Даты в тексте — от времени сборки: предрендер и клиент показывают одно и то же.
 const now = BUILD_TIME
 
@@ -396,7 +380,7 @@ onBeforeUnmount(() => {
             v-if="layout === 'stacked' && showLang"
             icon="lang"
             :label="t('lang.label')"
-            @click="ui.toggleLang()"
+            @click="langStore.toggleLang()"
           />
         </div>
       </header>
@@ -436,7 +420,7 @@ onBeforeUnmount(() => {
         @contact="ui.openChapter('contact')"
         @monitoring="ui.openChapter('monitoring')"
         @toggle-theme="themeStore.cycleTheme()"
-        @toggle-lang="ui.toggleLang()"
+        @toggle-lang="langStore.toggleLang()"
       />
     </template>
 
