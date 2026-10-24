@@ -12,48 +12,8 @@ beforeEach(() => {
 })
 
 describe('ui store', () => {
-  it('starts with 3D, motion on and nothing open', () => {
-    const ui = freshStore()
-
-    expect(ui.mode).toBe('3d')
-    expect(ui.motionPaused).toBe(false)
-    expect(ui.activeStop).toBeNull()
-    expect(ui.openWindow).toBeNull()
-  })
-
-  it('openChapter sets the active stop and the open window at once', () => {
-    const ui = freshStore()
-
-    ui.openChapter('prospace')
-
-    expect(ui.activeStop).toBe('prospace')
-    expect(ui.openWindow).toBe('prospace')
-  })
-
-  it('closeWindow keeps the active stop', () => {
-    const ui = freshStore()
-    ui.openChapter('contact')
-
-    ui.closeWindow()
-
-    expect(ui.openWindow).toBeNull()
-    expect(ui.activeStop).toBe('contact')
-  })
-
-  it('persists motionPaused to localStorage', () => {
-    const ui = freshStore()
-
-    ui.toggleMotion()
-
-    expect(localStorage.getItem('aboutme.motionPaused')).toBe('true')
-  })
-
-  it('restores the saved motion preference', () => {
-    localStorage.setItem('aboutme.motionPaused', 'true')
-
-    const ui = freshStore()
-
-    expect(ui.motionPaused).toBe(true)
+  it('starts with 3D', () => {
+    expect(freshStore().mode).toBe('3d')
   })
 
   it('switches mode between 3d and 2d', () => {
@@ -113,46 +73,5 @@ describe('ui store', () => {
     expect(ui.sceneState).toBe('failed')
     expect(ui.userChoice).toBeNull()
     expect(localStorage.getItem('aboutme.sceneChoice')).toBeNull()
-  })
-})
-
-describe('visited stops (sessionStorage, review decision 19)', () => {
-  beforeEach(() => sessionStorage.clear())
-
-  it('marks a route stop visited when its window opens and saves it for the session', () => {
-    const ui = freshStore()
-    expect([...ui.visitedStops]).toEqual([])
-
-    ui.openChapter('timepath')
-    ui.openChapter('profile')
-
-    expect([...ui.visitedStops].sort()).toEqual(['profile', 'timepath'])
-    expect(JSON.parse(sessionStorage.getItem('aboutme.visited') ?? '[]').sort()).toEqual([
-      'profile',
-      'timepath',
-    ])
-  })
-
-  it('does not count windows outside the route', () => {
-    const ui = freshStore()
-
-    ui.openChapter('summary')
-    ui.openChapter('monitoring')
-
-    expect(ui.visitedStops.size).toBe(0)
-  })
-
-  it('restores visited stops on reload and ignores junk', () => {
-    sessionStorage.setItem('aboutme.visited', JSON.stringify(['contact', 'summary', 'nope', 7]))
-
-    const ui = freshStore()
-
-    expect([...ui.visitedStops]).toEqual(['contact'])
-  })
-
-  it('starts empty when the saved value is not JSON', () => {
-    sessionStorage.setItem('aboutme.visited', '{oops')
-
-    expect(freshStore().visitedStops.size).toBe(0)
   })
 })

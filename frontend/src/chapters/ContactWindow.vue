@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, useId } from 'vue'
 import { type ContentBundle, type ContentLink, type LinkKind, resolveChapter } from '../content'
-import { useUiStore } from '../stores/ui'
+import { useRouteStore } from '../route'
 import { BaseButton, Icon, type IconName, StatusPill } from '../shared/ui'
 import ChipList from './blocks/ChipList.vue'
 import MetaRow from './blocks/MetaRow.vue'
@@ -14,7 +14,7 @@ const props = withDefaults(defineProps<{ content: ContentBundle; now?: Date }>()
   now: () => new Date(),
 })
 
-const ui = useUiStore()
+const route = useRouteStore()
 const chapter = computed(() => resolveChapter(props.content, 'contact', props.now))
 const statusLabelId = useId()
 const mailboxHeadingId = useId()
@@ -46,7 +46,7 @@ const isExternal = (link: ContentLink) => /^https?:/.test(link.href)
         <ChipList v-bind="chapter.languages" />
         <ChipList v-bind="chapter.goodFit" />
         <div>
-          <BaseButton variant="ghost" @click="ui.openChapter(chapter.summaryLink.chapter)">
+          <BaseButton variant="ghost" @click="route.openChapter(chapter.summaryLink.chapter)">
             {{ chapter.summaryLink.label }}
             <template #icon><Icon name="arrow-right" /></template>
           </BaseButton>

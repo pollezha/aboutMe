@@ -7,7 +7,7 @@ import App from '../../App.vue'
 import { serverTenure } from '../../content/format'
 import type { ContentBundle } from '../../content/types'
 import { appPlugins } from '../../app/__tests__/appPlugins'
-import { useUiStore } from '../../stores/ui'
+import { useRouteStore } from '../../route'
 
 // Сценарии окна 04 Tech stack в составе App (TC-09). Окружение — как в App.spec.ts.
 vi.mock('../scene/Scene.vue', () => ({
@@ -70,12 +70,12 @@ async function openTechStack(width: number) {
     global: { plugins: appPlugins(pinia) },
     attachTo: document.body,
   })
-  const ui = useUiStore()
-  ui.openChapter('techstack')
+  const route = useRouteStore()
+  route.openChapter('techstack')
   await nextTick()
   const dialog = wrapper.get('dialog[open]')
   const kafkaButton = dialog.get('.rack-server[data-server="Kafka"]')
-  return { ui, dialog, kafkaButton }
+  return { route, dialog, kafkaButton }
 }
 
 describe('App · Tech stack window', () => {
@@ -92,7 +92,7 @@ describe('App · Tech stack window', () => {
   })
 
   it('on a phone opens a bottom sheet; Esc closes only the sheet, not the window', async () => {
-    const { ui, dialog, kafkaButton } = await openTechStack(390)
+    const { route, dialog, kafkaButton } = await openTechStack(390)
     ;(kafkaButton.element as HTMLElement).focus()
 
     await kafkaButton.trigger('click')
@@ -108,6 +108,6 @@ describe('App · Tech stack window', () => {
 
     expect(dialog.find('[role="dialog"]').exists()).toBe(false)
     expect(document.activeElement).toBe(kafkaButton.element)
-    expect(ui.openWindow).toBe('techstack')
+    expect(route.openWindow).toBe('techstack')
   })
 })

@@ -6,12 +6,12 @@ import { Html } from '@tresjs/cientos'
 import { computed } from 'vue'
 import { ROUTE } from '../content'
 import { chapterLabel, useLangStore } from '../locale'
-import { useUiStore } from '../stores/ui'
+import { useRouteStore } from '../route'
 import { stops } from './layout'
 
 defineOptions({ name: 'SceneLabels' })
 
-const ui = useUiStore()
+const route = useRouteStore()
 const langStore = useLangStore()
 
 const labels = computed(() =>
@@ -31,7 +31,7 @@ const labels = computed(() =>
       tabindex="-1"
       class="scene-label t-label-caption"
       :aria-label="label.name"
-      @click="ui.openChapter(label.id)"
+      @click="route.openChapter(label.id)"
     >
       {{ label.title }}
     </button>

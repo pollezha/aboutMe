@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { type ContentBundle, resolveChapter, resolveMetric } from '../content'
-import { useUiStore } from '../stores/ui'
+import { useRouteStore } from '../route'
 import { BaseButton, Icon } from '../shared/ui'
 import KeyResultList from './blocks/KeyResultList.vue'
 import MetricGrid from './blocks/MetricGrid.vue'
@@ -12,7 +12,7 @@ const props = withDefaults(defineProps<{ content: ContentBundle; now?: Date }>()
   now: () => new Date(),
 })
 
-const ui = useUiStore()
+const route = useRouteStore()
 const chapter = computed(() => resolveChapter(props.content, 'summary', props.now))
 const metrics = computed(() =>
   chapter.value.metrics.map((metric) => resolveMetric(metric, props.content, props.now)),
@@ -27,7 +27,7 @@ const metrics = computed(() =>
       <KeyResultList :items="chapter.whatIDo.items" />
     </section>
     <div class="cta">
-      <BaseButton variant="primary" @click="ui.openChapter(chapter.cta.contact.chapter)">
+      <BaseButton variant="primary" @click="route.openChapter(chapter.cta.contact.chapter)">
         {{ chapter.cta.contact.label }}
       </BaseButton>
       <BaseButton as="a" variant="secondary" :href="chapter.cta.cv.href" download="">

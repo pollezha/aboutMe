@@ -2,7 +2,7 @@
 // Корень ленивого чанка сцены: всё, что тянет three/TresJS, импортируется отсюда и только отсюда.
 import { TresCanvas } from '@tresjs/core'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { useUiStore } from '../stores/ui'
+import { useRouteStore } from '../route'
 import { palette, useThemeStore } from '../theme'
 import SceneContent from './SceneContent.vue'
 import { isRotateHotkey, mapRotation } from './useCamera'
@@ -19,7 +19,7 @@ withDefaults(
 
 const emit = defineEmits<{ ready: [] }>()
 
-const ui = useUiStore()
+const route = useRouteStore()
 const themeStore = useThemeStore()
 const sky = computed(() => palette[themeStore.theme]['scene/sky'])
 const hovered = ref(false)
@@ -33,7 +33,7 @@ function onRender() {
 
 // Клавиша R — поворот карты (tooltip кнопки «Rotate map · R»); живёт, пока на экране сцена.
 function onKeydown(event: KeyboardEvent) {
-  if (!isRotateHotkey(event, ui.openWindow !== null)) return
+  if (!isRotateHotkey(event, route.openWindow !== null)) return
   event.preventDefault()
   mapRotation.rotate()
 }

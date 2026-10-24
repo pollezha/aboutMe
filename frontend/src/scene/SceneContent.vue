@@ -4,7 +4,7 @@
 import { useLoop, useTres } from '@tresjs/core'
 import { BoxGeometry, type OrthographicCamera } from 'three'
 import { computed, onBeforeUnmount, shallowRef } from 'vue'
-import { useUiStore } from '../stores/ui'
+import { useRouteStore } from '../route'
 import { palette, useThemeStore } from '../theme'
 import BackgroundHouses from './buildings/BackgroundHouses.vue'
 import Building from './buildings/Building.vue'
@@ -32,7 +32,7 @@ const CAMERA_DISTANCE = 200 * Math.sqrt(3)
 const WATER_SIZE = ISLAND_SIZE * 8
 
 const { sizes } = useTres()
-const ui = useUiStore()
+const route = useRouteStore()
 const themeStore = useThemeStore()
 const colors = computed(() => palette[themeStore.theme])
 const materials = createSceneMaterials(() => colors.value)
@@ -49,7 +49,7 @@ const reducedMotion =
     ? window.matchMedia('(prefers-reduced-motion: reduce)')
     : null
 /** Без анимации (поворот камеры, грузовик): prefers-reduced-motion или пауза движения. */
-const instant = () => !!reducedMotion?.matches || ui.motionPaused
+const instant = () => !!reducedMotion?.matches || route.motionPaused
 const rig = useCamera({ distance: CAMERA_DISTANCE, instant })
 const camera = shallowRef<OrthographicCamera>()
 const initialPosition = rig.position()
@@ -63,7 +63,7 @@ onBeforeRender(({ delta }) => {
   target.lookAt(0, 0, 0)
 })
 
-const onClick = chapterClickHandler((id) => ui.openChapter(id))
+const onClick = chapterClickHandler((id) => route.openChapter(id))
 
 onBeforeUnmount(() => {
   materials.dispose()

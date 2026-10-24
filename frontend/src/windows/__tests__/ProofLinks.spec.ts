@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { useUiStore } from '../../stores/ui'
+import { useRouteStore } from '../../route'
 import ProofLinks from '../ProofLinks.vue'
 
 describe('ProofLinks', () => {
@@ -39,6 +39,6 @@ describe('ProofLinks', () => {
     })
 
     await wrapper.get('button').trigger('click')
-    expect(useUiStore().openWindow).toBe('summary')
+    expect(useRouteStore().openWindow).toBe('summary')
   })
 })
