@@ -12,13 +12,13 @@
 базовой линии.
 
 ## Базовая линия (снимает оркестратор перед M1, пишет сюда)
-| Что | Как | Значение |
-|---|---|---|
-| vitest | `npx vitest run` → строка `Tests` | 696 (после T12b) |
-| e2e | `npx playwright test --list` → последняя строка | 42 |
-| `expect(` в спеках | `grep -r "expect(" src scripts --include=*.spec.ts | wc -l` | 1038 |
-| size-limit | `npm run build && npm run size` | 86.29 КБ gzip / 835.86 КБ / 114.39 КБ |
-| скриншоты | `npm run shots` → `docs/design/shots/` | снять (сравнение после M14–M17) |
+| Что | Как | Значение | После M18 |
+|---|---|---|---|
+| vitest | `npx vitest run` → строка `Tests` | 696 (после T12b) | 783 (70 файлов) |
+| e2e | `npx playwright test --list` → последняя строка | 42 | 42 |
+| `expect(` в спеках | `grep -r "expect(" src scripts --include=*.spec.ts | wc -l` | 1038 | 1203 |
+| size-limit | `npm run build && npm run size` | 86.29 КБ gzip / 835.86 КБ / 114.39 КБ | 87.22 КБ gzip / 835.87 КБ / 114.39 КБ |
+| скриншоты | `npm run shots` → `docs/design/shots/` | снять (сравнение после M14–M17) | сняты в M14–M17 |
 
 Правило каждой задачи: число vitest ≥ базовой линии + добавленные тесты; число `expect(` в перенесённых спеках
 не меньше, чем было; e2e = 42. При переносе тестов меняются только импорты и имя стора, тексты `it()` и
