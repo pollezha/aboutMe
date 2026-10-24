@@ -2,16 +2,16 @@ using System.Text.Json;
 using Contracts.Events;
 using Contracts.Live;
 
-namespace LiveHub.Live;
+namespace LiveHub.Domain;
 
 // Живые счётчики в памяти (design §5.6). Онлайн — уникальные sessionHash с активностью за последние 5 мин;
 // «сегодня» — по receivedAt в текущих UTC-сутках, сброс при смене суток. Повторная доставка (и перечитывание
 // журнала при рестарте/ребалансе) не удваивает счётчики: eventId за сутки запоминается.
+// Не потокобезопасна: доступ сериализует репозиторий (Infrastructure/InMemory).
 public sealed class LiveState(TimeProvider time)
 {
     public static readonly TimeSpan OnlineWindow = TimeSpan.FromMinutes(5);
 
-    private readonly Lock _lock = new();
     private readonly Dictionary<string, DateTimeOffset> _lastSeen = new(StringComparer.Ordinal);
     private readonly HashSet<Guid> _seenToday = [];
     private readonly Dictionary<string, int> _byType = new(StringComparer.Ordinal);
@@ -25,50 +25,44 @@ public sealed class LiveState(TimeProvider time)
     {
         ArgumentNullException.ThrowIfNull(siteEvent);
 
-        lock (_lock)
+        var now = time.GetUtcNow();
+        RollDay(now);
+
+        var changed = Touch(siteEvent.SessionHash, siteEvent.ReceivedAt, now);
+
+        if (DateOnly.FromDateTime(siteEvent.ReceivedAt.UtcDateTime) != _day || !_seenToday.Add(siteEvent.EventId))
         {
-            var now = time.GetUtcNow();
-            RollDay(now);
-
-            var changed = Touch(siteEvent.SessionHash, siteEvent.ReceivedAt, now);
-
-            if (DateOnly.FromDateTime(siteEvent.ReceivedAt.UtcDateTime) != _day || !_seenToday.Add(siteEvent.EventId))
-            {
-                return changed;
-            }
-
-            _eventsToday++;
-            Increment(_byType, siteEvent.Type);
-            switch (siteEvent.Type)
-            {
-                case EventTypes.StopOpened:
-                    Increment(_byStop, PayloadString(siteEvent.Payload, "stop"));
-                    break;
-                case EventTypes.CtaClick:
-                    Increment(_byCta, PayloadString(siteEvent.Payload, "cta"));
-                    break;
-            }
-
-            return true;
+            return changed;
         }
+
+        _eventsToday++;
+        Increment(_byType, siteEvent.Type);
+        switch (siteEvent.Type)
+        {
+            case EventTypes.StopOpened:
+                Increment(_byStop, PayloadString(siteEvent.Payload, "stop"));
+                break;
+            case EventTypes.CtaClick:
+                Increment(_byCta, PayloadString(siteEvent.Payload, "cta"));
+                break;
+        }
+
+        return true;
     }
 
     public LiveSnapshot Snapshot()
     {
-        lock (_lock)
-        {
-            var now = time.GetUtcNow();
-            RollDay(now);
-            PruneOffline(now);
+        var now = time.GetUtcNow();
+        RollDay(now);
+        PruneOffline(now);
 
-            return new LiveSnapshot(
-                _lastSeen.Count,
-                _eventsToday,
-                new Dictionary<string, int>(_byType, StringComparer.Ordinal),
-                new Dictionary<string, int>(_byStop, StringComparer.Ordinal),
-                new Dictionary<string, int>(_byCta, StringComparer.Ordinal),
-                now);
-        }
+        return new LiveSnapshot(
+            _lastSeen.Count,
+            _eventsToday,
+            new Dictionary<string, int>(_byType, StringComparer.Ordinal),
+            new Dictionary<string, int>(_byStop, StringComparer.Ordinal),
+            new Dictionary<string, int>(_byCta, StringComparer.Ordinal),
+            now);
     }
 
     // true — сессия стала онлайн (до этого её в окне не было)

@@ -1,9 +1,10 @@
 using System.Text.Json;
 using Contracts.Events;
-using LiveHub.Live;
+using LiveHub.Domain;
 using Xunit;
+using static LiveHub.Tests.TestEvents;
 
-namespace LiveHub.Tests;
+namespace LiveHub.Tests.Domain;
 
 public sealed class LiveStateTests
 {
@@ -112,43 +113,4 @@ public sealed class LiveStateTests
 
         Assert.Equal(1, before.ByStop["about"]);
     }
-
-    [Fact]
-    public async Task Concurrent_apply_counts_every_event()
-    {
-        await Task.WhenAll(Enumerable.Range(0, 8).Select(worker => Task.Run(() =>
-        {
-            for (var i = 0; i < 500; i++)
-            {
-                _state.Apply(Event($"s{worker}", Noon));
-            }
-        }, TestContext.Current.CancellationToken)));
-
-        var snapshot = _state.Snapshot();
-        Assert.Equal(4000, snapshot.EventsToday);
-        Assert.Equal(8, snapshot.Online);
-    }
-
-    private static SiteEvent Event(
-        string sessionHash,
-        DateTimeOffset receivedAt,
-        string type = EventTypes.Visit,
-        string payload = """{"source":"direct"}""") =>
-        new(
-            Guid.CreateVersion7(),
-            type,
-            receivedAt,
-            receivedAt,
-            sessionHash,
-            Langs.En,
-            Themes.Day,
-            Devices.Desktop,
-            JsonDocument.Parse(payload).RootElement.Clone());
-}
-
-internal sealed class ManualTimeProvider(DateTimeOffset now) : TimeProvider
-{
-    public DateTimeOffset Now { get; set; } = now;
-
-    public override DateTimeOffset GetUtcNow() => Now;
 }

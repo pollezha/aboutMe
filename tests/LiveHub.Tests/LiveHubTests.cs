@@ -8,7 +8,7 @@ using Confluent.Kafka.Admin;
 using Contracts;
 using Contracts.Events;
 using Contracts.Live;
-using LiveHub.Live;
+using LiveHub.Application.Abstractions;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -89,7 +89,7 @@ public sealed class LiveHubFactory(string bootstrapServers) : WebApplicationFact
 
     public HubConnection CreateConnection() =>
         new HubConnectionBuilder()
-            .WithUrl(new Uri(Server.BaseAddress, Hubs.LiveHub.Path), options =>
+            .WithUrl(new Uri(Server.BaseAddress, Api.Hubs.LiveHub.Path), options =>
             {
                 // TestServer не поддерживает WebSocket через HttpMessageHandler — long polling
                 options.Transports = HttpTransportType.LongPolling;
@@ -166,13 +166,13 @@ public sealed class LiveHubTests(LiveKafkaFixture kafka) : IClassFixture<LiveKaf
                 await kafka.ProduceStopOpenedAsync(stop, ct);
             }
 
-            var firstState = first.Services.GetRequiredService<LiveState>();
+            var firstState = first.Services.GetRequiredService<ILiveStateRepository>();
             before = await WaitForStateAsync(firstState, s => s.ByStop.GetValueOrDefault(stop) == Count, ct);
         }
 
         await using var second = kafka.CreateFactory();
         _ = second.Server;
-        var secondState = second.Services.GetRequiredService<LiveState>();
+        var secondState = second.Services.GetRequiredService<ILiveStateRepository>();
         var restored = await WaitForStateAsync(
             secondState, s => s.ByStop.GetValueOrDefault(stop) == Count && s.EventsToday == before.EventsToday, ct);
 
@@ -199,12 +199,12 @@ public sealed class LiveHubTests(LiveKafkaFixture kafka) : IClassFixture<LiveKaf
     }
 
     private static async Task<LiveSnapshot> WaitForStateAsync(
-        LiveState state, Func<LiveSnapshot, bool> condition, CancellationToken ct)
+        ILiveStateRepository state, Func<LiveSnapshot, bool> condition, CancellationToken ct)
     {
         var deadline = Stopwatch.StartNew();
         while (true)
         {
-            var snapshot = state.Snapshot();
+            var snapshot = state.GetSnapshot();
             if (condition(snapshot))
             {
                 return snapshot;

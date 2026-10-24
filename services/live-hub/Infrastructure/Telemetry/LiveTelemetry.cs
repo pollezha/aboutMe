@@ -1,27 +1,26 @@
 using System.Diagnostics.Metrics;
 
-namespace LiveHub.Live;
+namespace LiveHub.Infrastructure.Telemetry;
 
-// Метрики live-hub; meter регистрируется в OpenTelemetry в Program.cs.
+// Метрики live-hub; meter регистрируется в OpenTelemetry в Infrastructure/DependencyInjection.cs.
+// Счётчик ядовитых сообщений live_poison_total создаёт KafkaConsumerLoop на этом же meter.
 public sealed class LiveTelemetry
 {
     public const string MeterName = "aboutMe.LiveHub";
+    public const string PoisonCounterName = "live_poison_total";
 
-    private readonly Counter<long> _poison;
     private readonly UpDownCounter<long> _connections;
 
     public LiveTelemetry(IMeterFactory meterFactory)
     {
         ArgumentNullException.ThrowIfNull(meterFactory);
 
-        var meter = meterFactory.Create(MeterName);
-        _poison = meter.CreateCounter<long>(
-            "live_poison_total", description: "Messages of site.events.v1 that live-hub could not deserialize");
-        _connections = meter.CreateUpDownCounter<long>(
+        Meter = meterFactory.Create(MeterName);
+        _connections = Meter.CreateUpDownCounter<long>(
             "signalr_connections", description: "Open SignalR connections to /hubs/live");
     }
 
-    public void PoisonMessage() => _poison.Add(1);
+    public Meter Meter { get; }
 
     public void ConnectionOpened() => _connections.Add(1);
 
