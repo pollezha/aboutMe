@@ -1,29 +1,17 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-  BUILD_TIME,
-  CHAPTERS,
-  CONTENT_LANGS,
-  ROUTE,
-  chapterInfo,
-  contentFor,
-  isChapterId,
-  resolveChapter,
-  routeNeighbours,
-  type ChapterId,
-} from './content'
-import { WINDOWS } from './chapters'
+import { BUILD_TIME, CONTENT_LANGS, contentFor, isChapterId } from './content'
 import { StaticMap } from './fallback2d'
 import { useSiteHead } from './head'
 import { HeroHost } from './hero'
-import { useChapterLabel, useRouteLang } from './locale'
+import { useRouteLang } from './locale'
 import { SceneFallbackBanner, SceneHost, mapRotation, useViewMode } from './mode'
 import { RouteBar, useRouteStore } from './route'
 import { useBreakpoint } from './shared/lib'
 import { IconButton } from './shared/ui'
 import { useTheme } from './theme'
-import { ChapterWindow, ProofLinks } from './windows'
+import { PrerenderedChapters, WindowHost } from './windows'
 
 const route = useRouteStore()
 const { store: langStore } = useRouteLang()
@@ -43,10 +31,6 @@ useSiteHead(() => ({
   origin: import.meta.env.VITE_SITE_ORIGIN,
   now,
 }))
-
-// Предрендер (vite-ssg): окна закрыты, но текст всех глав должен быть в HTML (FR11). Клиент монтирует
-// приложение заново (без гидрации), поэтому этот блок есть только в статическом HTML и не дублирует окна.
-const prerender = import.meta.env.SSR || typeof window === 'undefined'
 
 const query = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
 
@@ -74,96 +58,12 @@ const barVariant = computed(() => {
 })
 const mapVariant = computed(() => (breakpoint.value === 'mobile' ? 'phone' : 'tablet'))
 
-const chapterLabel = useChapterLabel()
 // Кнопка языка в верхних контролах — когда есть контент на обоих языках (FR8); в баре её показывает RouteBar.
 const showLang = CONTENT_LANGS.length > 1
 
 function open(id: string) {
   if (isChapterId(id)) route.openChapter(id)
 }
-
-const windowChapter = computed(() => (route.openWindow ? chapterInfo(route.openWindow) : null))
-// Шапка и подвал окна — из контента главы (даты подставлены); тело — из реестра окон.
-const windowText = computed(() =>
-  route.openWindow ? resolveChapter(content.value, route.openWindow, now) : null,
-)
-const chapterTexts = computed(() =>
-  prerender ? CHAPTERS.map(({ id }) => ({ id, ...resolveChapter(content.value, id, now) })) : [],
-)
-const windowEyebrow = computed(() => {
-  if (!windowChapter.value || !windowText.value) return ''
-  const { index } = windowChapter.value
-  // «Stop N of 6 · …» (R2) — только у остановок маршрута.
-  if (!index) return windowText.value.eyebrow
-  const stop = t('window.stop', { n: Number(index), total: ROUTE.length })
-  return `${stop} · ${windowText.value.eyebrow}`
-})
-const neighbours = computed(() => (route.openWindow ? routeNeighbours(route.openWindow) : {}))
-const prevLink = computed(() => {
-  const prev = neighbours.value.prev
-  return prev ? { number: prev.index, title: chapterLabel(prev.id).title } : undefined
-})
-const nextLink = computed(() => {
-  const next = neighbours.value.next
-  return next ? { number: next.index, title: chapterLabel(next.id).title } : undefined
-})
-
-// Окно ↔ URL-хэш (#prospace) и история (design §4 «Окна»): ссылку на главу можно отправить,
-// «Назад» закрывает окно. Открытие из UI — новая запись истории с state.chapter, prev/next — замена
-// этой записи. Запись, открытую по ссылке (#contact), считаем чужой: закрытие лишь убирает хэш.
-function ownsHistoryEntry() {
-  return typeof (history.state as { chapter?: unknown } | null)?.chapter === 'string'
-}
-
-function urlWith(id: ChapterId | null) {
-  const { pathname, search } = window.location
-  return `${pathname}${search}${id ? `#${id}` : ''}`
-}
-
-function onWindowOpen(value: boolean) {
-  if (value) return
-  route.closeWindow()
-  // Своя запись — уходим с неё; окно уже закрыто, popstate придёт на запись без главы.
-  if (ownsHistoryEntry()) history.back()
-}
-
-watch(
-  () => route.openWindow,
-  (id, previous) => {
-    const target = id ? `#${id}` : ''
-    if (window.location.hash === target) return
-    if (id && !previous) {
-      history.pushState({ chapter: id }, '', urlWith(id))
-    } else if (id) {
-      const state = ownsHistoryEntry() ? { chapter: id } : history.state
-      history.replaceState(state, '', urlWith(id))
-    } else if (!ownsHistoryEntry()) {
-      // Своя запись снимается history.back() в onWindowOpen; чужая — только теряет хэш.
-      history.replaceState(history.state, '', urlWith(null))
-    }
-  },
-)
-
-/** Хэш главы открывает её окно; пустой или чужой хэш закрывает окно (Назад, ручная правка URL). */
-function syncFromLocation() {
-  const id = window.location.hash.slice(1)
-  if (isChapterId(id)) {
-    if (route.openWindow !== id) route.openChapter(id)
-  } else if (route.openWindow) {
-    route.closeWindow()
-  }
-}
-
-onMounted(() => {
-  syncFromLocation()
-  window.addEventListener('popstate', syncFromLocation)
-  window.addEventListener('hashchange', syncFromLocation)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('popstate', syncFromLocation)
-  window.removeEventListener('hashchange', syncFromLocation)
-})
 </script>
 
 <template>
@@ -242,37 +142,8 @@ onBeforeUnmount(() => {
       />
     </template>
 
-    <ChapterWindow
-      v-if="windowChapter && windowText"
-      :open="true"
-      :chapter="windowChapter.id"
-      :number="windowChapter.index"
-      :eyebrow="windowEyebrow"
-      :sign="WINDOWS[windowChapter.id].sign"
-      :title="windowText.title"
-      :subtitle="windowText.subtitle"
-      :prev="prevLink"
-      :next="nextLink"
-      :close-label="t('window.close')"
-      :links-label="t('window.links')"
-      :next-label="t('window.next')"
-      @update:open="onWindowOpen"
-      @prev="neighbours.prev && route.openChapter(neighbours.prev.id)"
-      @next="neighbours.next && route.openChapter(neighbours.next.id)"
-    >
-      <component :is="WINDOWS[windowChapter.id].body" :content="content" :now="now" />
-      <template #links><ProofLinks :links="windowText.proofLinks" /></template>
-    </ChapterWindow>
-
-    <section v-if="prerender" id="chapters" hidden>
-      <article v-for="chapter in chapterTexts" :id="`chapter-${chapter.id}`" :key="chapter.id">
-        <p>{{ chapter.eyebrow }}</p>
-        <h2>{{ chapter.title }}</h2>
-        <p v-if="chapter.subtitle">{{ chapter.subtitle }}</p>
-        <component :is="WINDOWS[chapter.id].body" :content="content" :now="now" />
-        <ProofLinks :links="chapter.proofLinks" />
-      </article>
-    </section>
+    <WindowHost />
+    <PrerenderedChapters />
   </div>
 </template>
 
