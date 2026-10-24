@@ -287,7 +287,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
     `X-Requested-With`, `X-SignalR-User-Agent` добавить в gateway), `MonitoringWindow.vue`, Playwright AC9.
   - Зависит от: T10b
 
-- [ ] T11a — Сквозной тест: событие через gateway → projector (TC-12-данные) и дубль
+- [x] T11a — Сквозной тест: событие через gateway → projector (TC-12-данные) и дубль
   - Файлы: `tests/Integration.Tests/EventsEndToEndTests.cs` (Aspire.Hosting.Testing).
   - Зависит от: T8c
 

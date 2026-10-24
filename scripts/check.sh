@@ -36,7 +36,7 @@ finish() {
 
 group_dotnet() {
   run_step "dotnet build" "dotnet build -v q -nologo"
-  run_step "dotnet test" "dotnet test --no-build --no-progress --no-ansi"
+  run_step "dotnet test" "dotnet test --no-build --no-progress --no-ansi --max-parallel-test-modules 2"
   run_step "dotnet format" "dotnet format --verify-no-changes"
 }
 
