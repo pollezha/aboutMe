@@ -140,7 +140,7 @@ frontend/src/
 (переименования `git mv` не считаются). После переноса файлов — `npx vitest --clearCache`. Проверка —
 `bash scripts/check.sh frontend` + `npm run test:e2e`; счётчики — по базовой линии.
 
-- [ ] M1 — Граф модулей, генератор границ, `max-lines`
+- [x] M1 — Граф модулей, генератор границ, `max-lines`
   - Файлы: `frontend/scripts/module-graph.mjs` (новый), `frontend/eslint.config.js` (записи слоёв →
     `...moduleBoundaries(MODULES)`, `max-lines`), `frontend/scripts/__tests__/layer-boundaries.spec.ts`.
   - Тест сначала: синтетический граф — глубокий импорт `../route/useRouteStore` из модуля с `deps: ['route']`
