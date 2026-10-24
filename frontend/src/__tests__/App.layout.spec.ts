@@ -13,9 +13,9 @@ useAppTestEnv()
 
 describe('App', () => {
   it('renders the hero card and the chapters bar on desktop', () => {
-    const { wrapper, ui } = mountApp()
+    const { wrapper, mode } = mountApp()
 
-    expect(ui.mode).toBe('3d')
+    expect(mode.mode).toBe('3d')
     expect(wrapper.find('.hero--desktop').exists()).toBe(true)
     const bar = wrapper.get('nav[aria-label="Chapters"]')
     expect(bar.classes()).toContain('bottom-bar--desktop')
@@ -33,9 +33,9 @@ describe('App', () => {
 
   it('stacks the hero over the scene on a tablet, with the theme toggle in the top bar', () => {
     setViewport(768)
-    const { wrapper, ui } = mountApp()
+    const { wrapper, mode } = mountApp()
 
-    expect(ui.mode).toBe('3d')
+    expect(mode.mode).toBe('3d')
     expect(wrapper.get('.app').classes()).toContain('app--stacked')
     expect(wrapper.get('.top-bar').text()).toContain('YP · .NET backend')
     const theme = wrapper.get('.top-bar button[aria-label^="Theme"]')

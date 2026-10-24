@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch, type Component } from 'vue'
+import { computed, onBeforeUnmount, onMounted, shallowRef, watch, type Component } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   BUILD_TIME,
@@ -20,16 +20,12 @@ import { useSiteHead } from './head'
 import { HeroCard } from './hero'
 import { useChapterLabel, useRouteLang } from './locale'
 import {
-  MIN_3D_WIDTH,
   SCENE_TIMEOUT_MS,
   SceneFallbackBanner,
   SceneLoading,
-  detectWebGL2,
   loadScene,
   mapRotation,
-  shouldUse3D,
-  useUiStore,
-  type Mode,
+  useViewMode,
   type SceneLoad,
 } from './mode'
 import { RouteBar, useRouteStore } from './route'
@@ -38,12 +34,12 @@ import { IconButton } from './shared/ui'
 import { useTheme } from './theme'
 import { ChapterWindow, ProofLinks } from './windows'
 
-const ui = useUiStore()
 const route = useRouteStore()
 const { store: langStore } = useRouteLang()
 const { t } = useI18n()
 const { store: themeStore, label: themeLabel } = useTheme(t)
 const breakpoint = useBreakpoint()
+const { store: ui, sceneFailed, canSwitchMode, switchMode } = useViewMode(breakpoint)
 
 // Снимок контента на языке страницы (пока RU-контента нет — EN); загрузка из content-api — этап 4.
 const content = computed(() => contentFor(langStore.lang))
@@ -63,58 +59,11 @@ const prerender = import.meta.env.SSR || typeof window === 'undefined'
 
 const query = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
 
-// ?mode=2d|3d переопределяет сохранённый выбор на этот визит (ссылки, скриншоты), но не запоминается;
-// 3D и по ссылке — только там, где оно возможно (ширина, WebGL). Кнопка переключения важнее ссылки.
-const queryMode = query?.get('mode')
-let urlMode: Mode | null = queryMode === '2d' || queryMode === '3d' ? queryMode : null
-
 // ?shot=island — только сцена, без HTML-слоя и подписей: кадр рендера острова для 2D-карты (npm run island).
 const shot = query?.get('shot') === 'island'
 
-// Тот же предикат, что у CSS (width < 768px) и useBreakpoint: matchMedia, а не innerWidth
-// (innerWidth включает полосу прокрутки и расходится с медиа-запросами на её ширину).
-function isWide() {
-  if (typeof window.matchMedia !== 'function') return window.innerWidth >= MIN_3D_WIDTH
-  return window.matchMedia(`(min-width: ${MIN_3D_WIDTH}px)`).matches
-}
-
-// Сцена не загрузилась в этом визите — до перезагрузки страницы в 3D не возвращаемся (и при смене ширины).
-const sceneFailed = ref(false)
-// Проба WebGL2 создаёт контекст (дорого на слабом CPU) — только там, где 3D возможно по ширине, и один раз.
-let webgl: boolean | undefined
-const hasWebGL = () => (webgl ??= detectWebGL2())
-
-function use3D(userChoice: Mode | null) {
-  if (typeof window === 'undefined' || sceneFailed.value) return false
-  const nav = navigator as Navigator & { deviceMemory?: number }
-  const wide = isWide()
-  return shouldUse3D({
-    width: wide ? MIN_3D_WIDTH : 0,
-    webgl: wide && hasWebGL(),
-    deviceMemory: nav.deviceMemory,
-    userChoice,
-  })
-}
-
-function detectMode() {
-  if (typeof window === 'undefined') return
-  ui.setMode(use3D(urlMode ?? ui.userChoice) ? '3d' : '2d')
-}
-
-detectMode()
-watch(breakpoint, detectMode)
-
-// «Switch to 2D/3D» в верхних контролах: из 3D в 2D — всегда, из 2D в 3D — только если сцена здесь
-// возможна (на ширине < 768, без WebGL2 или после сбоя сцены кнопки нет). Выбор запоминается.
-const canSwitchMode = computed(
-  () => breakpoint.value !== 'mobile' && (ui.mode === '3d' || use3D(null)),
-)
+// «Switch to 2D/3D» в верхних контролах (режим и кнопку решает useViewMode).
 const modeLabel = computed(() => (ui.mode === '3d' ? t('topBar.to2d') : t('topBar.to3d')))
-
-function switchMode() {
-  urlMode = null
-  ui.chooseMode(ui.mode === '3d' ? '2d' : '3d')
-}
 
 // Сцена: ленивый чанк сразу после монтирования, таймаут → 2D с баннером (design §4 «Загрузка», UX9).
 const sceneComponent = shallowRef<Component>()

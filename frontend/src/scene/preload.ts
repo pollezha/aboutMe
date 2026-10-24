@@ -1,10 +1,10 @@
 /**
  * Inline-скрипт в <head> (vite.config → transformIndexHtml): ещё до main-чанка ставит
  * `<link rel="modulepreload">` на чанк 3D-сцены — он качается параллельно с приложением, а не после монтирования.
- * Только там, где App выберет 3D (shouldUse3D): ширина ≥ 768, есть WebGL2, памяти не меньше порога, нет выбора 2D.
+ * Только там, где mode выберет 3D (mode/shouldUse3D.ts): ширина ≥ 768, есть WebGL2, памяти не меньше порога, нет выбора 2D.
  * WebGL2 — по наличию API, без создания контекста: скрипт блокирует разбор <head>. Функция сериализуется через
  * toString(), поэтому самодостаточна, а модуль — без импортов (его читает vite.config); ключ
- * `aboutme.sceneChoice` и `?mode=` — те же, что в stores/ui.ts и App.vue.
+ * `aboutme.sceneChoice` и `?mode=` — те же, что в mode/useModeStore.ts и mode/useViewMode.ts.
  */
 interface PreloadLink {
   rel: string
