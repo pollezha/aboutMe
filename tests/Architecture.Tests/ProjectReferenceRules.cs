@@ -7,6 +7,9 @@ namespace Architecture.Tests;
 public static class ProjectReferenceRules
 {
     public const string AppHost = "src/AppHost";
+    public const string BuildingBlocks = "src/BuildingBlocks";
+    public const string Contracts = "src/Contracts";
+    public const string ServiceDefaults = "src/ServiceDefaults";
 
     public static IReadOnlyList<string> FindViolations(IReadOnlyDictionary<string, IReadOnlyList<string>> graph)
     {
@@ -48,6 +51,16 @@ public static class ProjectReferenceRules
         if (IsService(reference) && project != AppHost)
         {
             return "only src/AppHost may reference services";
+        }
+
+        if (project == BuildingBlocks && reference == Contracts)
+        {
+            return "BuildingBlocks has no business meaning and must not reference Contracts (ADR-0007)";
+        }
+
+        if (project == ServiceDefaults && reference == BuildingBlocks)
+        {
+            return "ServiceDefaults is Aspire hosting only and must not reference BuildingBlocks (ADR-0007)";
         }
 
         return null;

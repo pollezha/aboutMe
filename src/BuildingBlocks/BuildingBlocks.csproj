@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>BuildingBlocks</RootNamespace>
+  </PropertyGroup>
+
+  <!-- Строительные блоки без бизнес-смысла (ADR-0007): без ссылок на Contracts, ServiceDefaults и сервисы -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+  </ItemGroup>
+
+</Project>
