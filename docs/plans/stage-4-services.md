@@ -94,7 +94,7 @@
     в логах запросов нет sessionId, IP и UA (проверка тестом на `FakeLogger`).
   - Зависит от: T0, T1
 
-- [ ] T3 — projector: схема `stats` и миграция (E4-T5, часть 1)
+- [x] T3 — projector: схема `stats` и миграция (E4-T5, часть 1)
   - Файлы: `services/projector/Projector.csproj`, `services/projector/Data/StatsDbContext.cs` (схема `stats`:
     `daily_visits(day, source, device, visits)`, `stop_opens(day, stop, n)`, `cta_clicks(day, cta, source, n)`,
     `web_vitals(day, name, bucket, n)` — гистограмма бакетов для p75, `processed_events(event_id pk, processed_at)`;
@@ -123,7 +123,7 @@
   - Готово, когда: тесты зелёные; `--rebuild` на тестовой БД пересчитывает агрегаты из журнала в те же числа.
   - Зависит от: T0, T1, T3
 
-- [ ] T5 — content-api: схема `content`, миграция, сид из JSON, `GET /api/content/{lang}` с ETag (E4-T3)
+- [x] T5 — content-api: схема `content`, миграция, сид из JSON, `GET /api/content/{lang}` с ETag (E4-T3)
   - Файлы: `services/content-api/` (`ContentApi.csproj`, `Data/ContentDbContext.cs` — `content.bundles(lang pk,
     content_version, version_hash, json jsonb, updated_at)`, `Data/Migrations/*`, `Seeding/ContentSeeder.cs` —
     при старте читает `content/{en,ru}.json` (путь из конфига `Content:Path`, в AppHost — корень репо; в образе —

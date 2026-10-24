@@ -13,6 +13,7 @@ npm run og         # public/og.png 1200×630 + favicon-192/512.png (headless Chr
 npm run dev        # только фронт на снимке контента
 npm run test:lhci  # Lighthouse CI по dist/ (бюджеты в lighthouserc)
 npm run perf:scene # время до готовности 3D-сцены
+npm run test:e2e   # Playwright: сборка + preview :4174, 3 проекта (1280, 390, no-webgl); отчёт в playwright-report/
 ```
 
 Тихо и целиком: `bash scripts/check.sh frontend` из корня.

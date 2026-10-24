@@ -1,10 +1,19 @@
 <Solution>
   <Folder Name="/services/" />
+  <Folder Name="/services/content-api/">
+    <Project Path="services/content-api/ContentApi.csproj" />
+  </Folder>
   <Folder Name="/services/events-api/">
     <Project Path="services/events-api/EventsApi.csproj" />
   </Folder>
   <Folder Name="/services/gateway/">
     <Project Path="services/gateway/Gateway.csproj" />
+  </Folder>
+  <Folder Name="/services/live-hub/">
+    <Project Path="services/live-hub/LiveHub.csproj" />
+  </Folder>
+  <Folder Name="/services/projector/">
+    <Project Path="services/projector/Projector.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/AppHost/AppHost.csproj" />
@@ -14,9 +23,12 @@
   <Folder Name="/tests/">
     <Project Path="tests/AppHost.Tests/AppHost.Tests.csproj" />
     <Project Path="tests/Architecture.Tests/Architecture.Tests.csproj" />
+    <Project Path="tests/ContentApi.Tests/ContentApi.Tests.csproj" />
     <Project Path="tests/Contracts.Tests/Contracts.Tests.csproj" />
     <Project Path="tests/EventsApi.Tests/EventsApi.Tests.csproj" />
     <Project Path="tests/Gateway.Tests/Gateway.Tests.csproj" />
+    <Project Path="tests/LiveHub.Tests/LiveHub.Tests.csproj" />
+    <Project Path="tests/Projector.Tests/Projector.Tests.csproj" />
     <Project Path="tests/ServiceDefaults.Tests/ServiceDefaults.Tests.csproj" />
   </Folder>
 </Solution>
