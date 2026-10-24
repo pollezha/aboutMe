@@ -295,7 +295,7 @@ frontend/src/
   - Готово, когда: в `App.vue` нет `history.`/`hashchange`; `ssr.spec` и e2e `windows`, `keyboard` зелёные.
   - Зависит от: M15.
 
-- [ ] M17 — Оболочка `app`: тонкий `App.vue`
+- [x] M17 — Оболочка `app`: тонкий `App.vue`
   - Файлы: `git mv src/App.vue src/app/App.vue`, `src/head.ts` → `src/app/head.ts` (+ `head.spec`),
     `app/TopBar.vue` (поворот, пауза, режим, тема, язык — композиция кнопок модулей), `app/useLayout.ts`
     (overlay/stacked, варианты Hero/бара/карты), `app/index.ts`; `main.ts` → `import App from './app'`;
