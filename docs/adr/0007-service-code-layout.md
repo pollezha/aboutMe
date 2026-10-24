@@ -51,7 +51,7 @@ KafkaHealthCheck); `content-api/Seeding`, `live-hub/Live`, `gateway/Policies` �
 ### Раскладка сервиса (обязательная)
 ```
 services/<svc>/
-  Program.cs                      композиция: AddServiceDefaults → Add<Svc>Application → Add<Svc>Infrastructure → Map*
+  Program.cs                      композиция: [Add<Svc>SpanRedaction] → AddServiceDefaults → Add<Svc>Application → Add<Svc>Infrastructure → Map*
   Api/                            точка входа HTTP/SignalR («контроллеры»)
     <Feature>Endpoint.cs          MapGroup; запрос → хендлер → ответ/ProblemDetails
     Hubs/<Name>Hub.cs             SignalR-хаб (live-hub)
@@ -117,8 +117,10 @@ Namespace = путь без префикса: `<Svc>.<Layer>[.<Feature>]` (на�
 - Миграции переносить `git mv` вместе с `.editorconfig`; design-time фабрики остаются в сборке сервиса; новые
   миграции — `dotnet ef migrations add <Name> -o Infrastructure/Persistence/Migrations`. Смена namespace миграциям
   не вредит (история по ID, `MigrationsHistoryTable` задана явно). Обновить маску `Migrations` в REVIEW.md.
-- Порядок в `Program.cs` сохраняется: `AddServiceDefaults()` → `Add<Svc>Infrastructure()`; процессоры OTel
-  регистрируются до экспортёра.
+- Порядок в `Program.cs`: `Add<Svc>SpanRedaction()` (процессоры OTel, если есть) → `AddServiceDefaults()` →
+  `Add<Svc>Application()` → `Add<Svc>Infrastructure()`. Процессоры спанов обязаны встать до OTLP-экспортёра, который
+  регистрирует ServiceDefaults, поэтому их регистрация — отдельный метод в `Infrastructure/DependencyInjection.cs`,
+  вызываемый первым (events-api: редакция токена Telegram).
 - Поведение не меняется: существующие интеграционные тесты остаются зелёными; добавляются юнит-тесты хендлеров на фейках.
 
 ## Последствия

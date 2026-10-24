@@ -224,7 +224,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
   - Готово, когда: все тесты решения зелёные; в ServiceDefaults нет папки Kafka.
   - Зависит от: R1
 
-- [ ] R3 — events-api по слоям
+- [x] R3 — events-api по слоям
   - Файлы: `Api/{EventsEndpoint,MessagesEndpoint}.cs` (маршрут → хендлер → ответ); `Application/IngestEvents/{IngestEventsCommand,IngestEventsHandler}.cs`,
     `Application/SendContactMessage/{SendContactMessageCommand,SendContactMessageHandler}.cs`,
     `Application/Abstractions/{IEventPublisher,IContactMessageDelivery,IDailySalt}.cs`, `Application/DependencyInjection.cs`;
