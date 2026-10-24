@@ -295,7 +295,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
   - Файлы: `tests/Integration.Tests/LiveEndToEndTests.cs`.
   - Зависит от: T11a
 
-- [ ] T11c — Негатив и приватность: 400 / 429 (TC-15), honeypot, в БД нет IP (TC-20); шлюз этапа (`/verify`, `/review`, roadmap)
+- [x] T11c — Негатив и приватность: 400 / 429 (TC-15), honeypot, в БД нет IP (TC-20); шлюз этапа (`/verify`, `/review`, roadmap)
   - Файлы: `tests/Integration.Tests/SecurityTests.cs`, `docs/plans/roadmap.md`, `docs/learnings.md`.
   - Зависит от: T11b, R8
 

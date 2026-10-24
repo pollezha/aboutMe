@@ -214,7 +214,7 @@
 - [x] 1. Фундамент — solution, AppHost, ServiceDefaults, Vue-каркас, валидатор контента, CI (v0.1.0, 2026-10-21)
 - [x] 2. Дизайн-проход — Figma-документ (foundations → components → windows → screens → specs), 2 экспертных ревью, токены/компоненты/первый экран в коде, CV EN/RU (v0.2.0, 2026-10-22)
 - [ ] 3. Сайт без бэкенда — сцена, окна, темы, 2D, SEO, Playwright, Lighthouse CI, деплой на CDN
-- [ ] 4. Сервисы — gateway, content-api, events-api, Kafka, projector, live-hub, интеграционные тесты
+- [~] 4. Сервисы — бэкенд готов и проверен (gateway, content-api, events-api, Kafka, projector, live-hub, BuildingBlocks, ADR-0008, интеграционные тесты; VERIFY PASS 2026-10-24); остаётся T10 — интеграция фронта после этапа 3
 - [ ] 5. Мониторинг — Collector, Prometheus, Loki, Tempo, Grafana, алерты, живое окно Monitoring
 - [ ] 6. Продакшен — VPS, домен, Caddy, CD, uptime, бэкапы
 - [ ] 7. Полировка — RU, мобильные, README, тест на людях, конверсия, v1.0.0
