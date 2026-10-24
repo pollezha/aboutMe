@@ -159,7 +159,7 @@ frontend/src/
   - Готово, когда: переезд файлов в следующих задачах не может молча сузить покрытие (glob пустеет → тест красный).
   - Зависит от: — (параллельно с T12b и M1).
 
-- [ ] M3 — `App.spec.ts`: общая обвязка и первые три спека
+- [x] M3 — `App.spec.ts`: общая обвязка и первые три спека
   - Файлы: `src/app/__tests__/mountApp.ts` (шапка App.spec: моки matchMedia/WebGL, монтирование),
     `src/__tests__/appPlugins.ts` → `src/app/__tests__/`, новые `src/__tests__/App.locale.spec.ts` (7 тестов,
     стр. 110–216), `App.theme.spec.ts` (3: 520–548), `App.layout.spec.ts` (5: 225–257, 473–498); из
