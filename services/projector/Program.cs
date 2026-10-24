@@ -55,23 +55,24 @@ static async Task<int> RebuildAsync(IServiceProvider services, string consumerGr
         var result = await handler.HandleAsync(new RebuildStatsCommand(consumerGroup), CancellationToken.None);
         if (result == RebuildStatsResult.GroupActive)
         {
-            ProgramLog.RebuildGroupActive(logger, consumerGroup);
+            RebuildGroupActive(logger, consumerGroup);
             return 1;
         }
 
-        ProgramLog.RebuildDone(logger, consumerGroup);
+        RebuildDone(logger, consumerGroup);
         return 0;
     }
 #pragma warning disable CA1031 // любой сбой → ненулевой код выхода команды
     catch (Exception ex)
 #pragma warning restore CA1031
     {
-        ProgramLog.RebuildFailed(logger, ex);
+        RebuildFailed(logger, ex);
         return 1;
     }
 }
 
-internal static partial class ProgramLog
+// Логи команды rebuild — в самом Program: вне слоёв ADR-0007 живёт только корень композиции
+public partial class Program
 {
     [LoggerMessage(Level = LogLevel.Information, Message = "Stats truncated, offsets of group {ConsumerGroup} reset to the beginning")]
     public static partial void RebuildDone(ILogger logger, string consumerGroup);

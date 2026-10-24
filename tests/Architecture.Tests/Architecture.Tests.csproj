@@ -10,4 +10,13 @@
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 
+  <!-- Сборки сервисов для LayerRulesTests: только порядок сборки, читаются как файлы через System.Reflection.Metadata -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\services\content-api\ContentApi.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\services\events-api\EventsApi.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\services\gateway\Gateway.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\services\live-hub\LiveHub.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\services\projector\Projector.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
 </Project>

@@ -40,10 +40,10 @@ KafkaHealthCheck); `content-api/Seeding`, `live-hub/Live`, `gateway/Policies` �
 
 | Сервис | Фичи в `Application/` | Порты в `Application/Abstractions/` |
 |---|---|---|
-| content-api | `GetContent`, `SeedContent` | `IContentBundleRepository`, `IContentSource` |
+| content-api | `GetContent`, `SeedContent` | `IContentBundleRepository`, `IContentSource`, `IContentSeedState` (итог сида для /health); транзакция — `IUnitOfWork` из BuildingBlocks |
 | events-api | `IngestEvents`, `SendContactMessage` («записка в бутылке») | `IEventPublisher`, `IContactMessageDelivery`, `IDailySalt` |
-| projector | `ProjectEvents`, `RebuildStats` | `IProcessedEventsRepository`, `IStatsRepository`, `IUnitOfWork`, `IConsumerOffsets` |
-| live-hub | `ApplyLiveEvent`, `GetLiveSnapshot` | `ILiveStateRepository` (in-memory), `ILiveNotifier` |
+| projector | `ProjectEvents`, `RebuildStats`; имена телеметрии — `Application/ProjectorTelemetry` | `IProcessedEventsRepository`, `IStatsRepository`, `IConsumerOffsets`; транзакция — `IUnitOfWork` из BuildingBlocks |
+| live-hub | `ApplyLiveEvent`, `GetLiveSnapshot`; вход из Kafka — `Workers/LiveEventsMessageHandler` (`IKafkaMessageHandler<SiteEvent>`) | `ILiveStateRepository` (in-memory), `ILiveNotifier` |
 | gateway | — (нет домена: маршруты и политики; слои `Application/Domain` отсутствуют осознанно) | — |
 
 Имя фичи не должно оканчиваться на `Event` (иначе `<Feature>Handler` ловит CA1711 «EventHandler»); исключение `ApplyLiveEvent`
@@ -69,18 +69,21 @@ services/<svc>/
     External/<System>/            Telegram, Prometheus (этап 5)
     Realtime/                     SignalR-нотификатор (реализация ILiveNotifier)
     Health/                       health checks адаптеров
+    Files/ InMemory/ Security/ Telemetry/   прочие адаптеры по смыслу (JSON-источник, in-memory store, суточная соль, метрики)
     DependencyInjection.cs        Add<Svc>Infrastructure(): адаптеры, AddKafkaTracing(), процессоры OTel
 ```
 Namespace = путь без префикса: `<Svc>.<Layer>[.<Feature>]` (например `EventsApi.Application.IngestEvents`);
 включить `dotnet_diagnostic.IDE0130.severity = warning` — при TreatWarningsAsErrors компилятор проверит соответствие.
 
 ### Правила зависимостей (проверяет `tests/Architecture.Tests` через System.Reflection.Metadata, без новых пакетов)
-- `Domain` → только BCL и `Contracts`.
-- `Application` → `Domain`, `Contracts`, `BuildingBlocks.Application`; запрещены `Microsoft.AspNetCore*`,
-  `Microsoft.EntityFrameworkCore*`, `Npgsql*`, `Confluent.Kafka`.
+- `Domain` → только BCL (`System*`), `Contracts` и свой `Domain`.
+- `Application` → `Domain`, `Contracts`, `BuildingBlocks.Persistence` (`IUnitOfWork`), логирование; запрещены свои `Infrastructure`,
+  `Api`, `Workers`, сборки `Microsoft.AspNetCore*`, `Microsoft.EntityFrameworkCore*`, `Npgsql*`, `Confluent.Kafka`,
+  `BuildingBlocks.Http|Messaging`; `Microsoft.Extensions.DependencyInjection*|Hosting*` — только в `Application.DependencyInjection`.
 - `Infrastructure` → `Application`, `Domain`, любые пакеты.
 - `Api`, `Workers` (точки входа) → `Application`, `BuildingBlocks.Http|Messaging`, пакеты транспорта (ASP.NET, SignalR, Confluent.Kafka);
   `Infrastructure` — только из `Program.cs` и `DependencyInjection.cs`.
+- Каждый тип — в namespace `<Svc>.<Layer>[.*]` (у gateway слои `Api|Edge|Infrastructure`); вне слоёв — только `Program`.
 - `BuildingBlocks` не ссылается на `Contracts` и сервисы; `ServiceDefaults` не ссылается на `BuildingBlocks`.
 
 ### Репозитории, Unit of Work, идемпотентность
@@ -104,8 +107,8 @@ Namespace = путь без префикса: `<Svc>.<Layer>[.<Feature>]` (на�
 - `src/Contracts` — публичные контракты (события, DTO API, сообщения хаба). Без изменений.
 - `src/ServiceDefaults` — только хостинг Aspire: OTel, health, service discovery, resilience. Kafka уезжает.
 - `src/BuildingBlocks` (новый) — строительные блоки без бизнес-смысла:
-  - `Messaging/Kafka/` — `KafkaTracePropagation`, `KafkaDefaults`, `KafkaConsumerLoop<T>` (consume → handler →
-    commit, poison-счётчик), `AddKafkaTracing()` = `ConfigureOpenTelemetryTracerProvider(t => t.AddSource(...))` —
+  - `Messaging/Kafka/` — `KafkaTracePropagation`, `KafkaDefaults`, `KafkaConsumerLoop<TMessage>` (consume → батч →
+    `IKafkaMessageHandler<TMessage>` → commit, poison-счётчик), `AddKafkaTracing()` = `ConfigureOpenTelemetryTracerProvider(t => t.AddSource(...))` —
     вызывается из `Add<Svc>Infrastructure()` каждого Kafka-сервиса, поэтому ServiceDefaults о Kafka не знает;
   - `Http/` — `RequestBodyReader` (тело с лимитом → 413), `HttpProblems` (ProblemDetails 400/413/429/503);
   - `Observability/` — `UrlRedactionProcessor` (обобщение редакции токена Telegram) и его регистрация.

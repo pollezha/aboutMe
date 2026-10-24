@@ -34,7 +34,7 @@ dotnet dnx --yes aspire.cli@13.6.1 -- setup --install-path ~/.aspire
 ```
 frontend/   # Vue 3 + TS + Vite + TresJS, свои тесты (Vitest, Playwright)
 services/   # развёртываемые .NET-сервисы: gateway, content-api, events-api, projector, live-hub
-src/        # общие .NET-проекты: ServiceDefaults, AppHost (Aspire); Contracts (E4-T1)
+src/        # общие .NET-проекты: ServiceDefaults, AppHost (Aspire); Contracts (E4-T1); BuildingBlocks (ADR-0007)
 tests/      # тесты .NET: <Project>.Tests; интеграционные на Testcontainers — с этапа 4
 deploy/     # (этап 5–6) compose, Caddy, OTel Collector, Grafana
 content/    # контент EN/RU в JSON

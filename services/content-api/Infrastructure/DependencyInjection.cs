@@ -13,9 +13,11 @@ public static class DependencyInjection
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        // Строка подключения "content" приходит из AppHost; интеграция Aspire добавляет health check БД и OTel
+        // Строка подключения "content" приходит из AppHost; интеграция Aspire добавляет health check БД и OTel.
+        // Retry-стратегия EF несовместима с ручной транзакцией EfUnitOfWork (сид в BeginAsync/CommitAsync) — отключена.
         builder.AddNpgsqlDbContext<ContentDbContext>(
             ContentDbContext.ConnectionName,
+            settings => settings.DisableRetry = true,
             configureDbContextOptions: options => options.UseNpgsql(ContentDbContext.ConfigureNpgsql));
         builder.Services.AddScoped<IContentBundleRepository, ContentBundleRepository>();
         builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork<ContentDbContext>>();

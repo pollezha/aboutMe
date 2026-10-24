@@ -22,8 +22,11 @@ csharp_style_namespace_declarations = file_scoped:warning
 dotnet_sort_system_directives_first = true
 # namespace = путь папки (ADR-0007): <Svc>.<Layer>[.<Feature>]
 dotnet_style_namespace_match_folder = true
-# TODO R8: включить, когда src/ServiceDefaults/Extensions.cs уйдёт с шаблонного namespace Microsoft.Extensions.Hosting
-# dotnet_diagnostic.IDE0130.severity = warning
+dotnet_diagnostic.IDE0130.severity = warning
+
+# Шаблон Aspire: namespace Microsoft.Extensions.Hosting намеренный — AddServiceDefaults() виден без using
+[src/ServiceDefaults/Extensions.cs]
+dotnet_diagnostic.IDE0130.severity = none
 
 # Тесты: имена вида Метод_делает_что_то читаются лучше
 [tests/**.cs]
