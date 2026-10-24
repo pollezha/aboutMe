@@ -117,7 +117,7 @@ frontend/src/
    (до гидрации, инлайн-скрипт в `<head>`); переключатель меняет маршрут без перезагрузки и запоминает выбор
    в `localStorage`. Перерисовки EN → RU после загрузки нет.
 2. Гидрация основного бандла (Vue, Pinia, i18n, диалоги) — бюджет ≤ 150 КБ gzip, контроль size-limit.
-3. После `requestIdleCallback` и только если `shouldUse3D()` — `import('./scene')` (three + TresJS +
+3. Сразу после монтирования (плюс `<link rel="modulepreload">` чанка сцены из boot-скрипта при ширине ≥ 768 и WebGL2 — T12b, 2026-10-24; раньше — после `requestIdleCallback`) и только если `shouldUse3D()` — `import('./scene')` (three + TresJS +
    геометрия, бюджет ≤ 2 МБ). Сцена плавно заменяет заглушку; метка `performance.mark('scene_ready')` (T2).
 4. `shouldUse3D()`: есть WebGL2, `deviceMemory ≥ 4` (если известно), ширина ≥ 768, пользователь не выбрал 2D.
    Иначе остаётся 2D-режим (FR10).

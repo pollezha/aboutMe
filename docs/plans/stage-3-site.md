@@ -173,7 +173,7 @@ Roadmap: docs/plans/roadmap.md, этап 3 (E3-T1…T10) · ADR: 0003 (HTML по
   - Готово, когда: локальный `lhci autorun` зелёный на `dist/`; цифры приложены в отчёт `/verify`.
   - Зависит от: T5, T7.
 
-- [ ] T12b — Производительность до порогов AC2 (добавлено 2026-10-23 по базовой линии T12)
+- [x] T12b — Производительность до порогов AC2 (добавлено 2026-10-23 по базовой линии T12)
   - Файлы: `frontend/index.html`/`vite.config.ts` (modulepreload чанка сцены на desktop; старт загрузки сцены
     сразу после монтирования, а не после idle), `src/scene/index.ts`, `src/main.ts` (main JS 94 КБ gzip → цель
     ≤ 80: проверить tree-shaking vue-i18n/unhead/router, unused JS 37 КБ), критический CSS (beasties идёт с vite-ssg),
