@@ -34,7 +34,7 @@
   - Готово, когда: на текущем коде `all` → все `ok`; CLAUDE.md «Команды» ссылается на скрипт.
   - Зависит от: —
 
-- [~] D5 — Тонкий `App.vue` и разбивка `App.spec.ts` по поведению — **поглощён** планом `docs/plans/stage-3b-frontend-modules.md` (ADR-0007, feature-slices); требования agent-dx переданы туда: импорт только через `index.ts`, `max-lines`, граф модулей в `boundary()`, тонкий app-shell
+- [x] D5 — Тонкий `App.vue` и разбивка `App.spec.ts` по поведению — **закрыт** планом `docs/plans/stage-3b-frontend-modules.md` (ADR-0007, feature-slices); требования agent-dx переданы туда: импорт только через `index.ts`, `max-lines`, граф модулей в `boundary()`, тонкий app-shell
   - Файлы: `frontend/src/App.vue` (604 строки → корень композиции), новые composables/компоненты,
     `frontend/src/__tests__/App.spec.ts` (648 строк → спеки по поведению, как `App.windows.spec.ts`).
   - Тест сначала: рефакторинг при зелёных тестах — тесты переносятся без изменения проверок; число тестов не

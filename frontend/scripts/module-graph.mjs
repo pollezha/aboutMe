@@ -6,10 +6,10 @@
 const shared = ['shared/lib', 'shared/ui']
 
 /**
- * deps — стрелки ADR-0007; legacyDeps — сегодняшние стрелки к ещё не переехавшим папкам (уходят в M5–M18);
- * facade — у модуля есть index.ts, глубокий импорт снаружи запрещён (включается в M5–M6);
- * legacy — переходная запись со старыми запретами дословно (bans), уходит по мере переезда; модули с фасадом
- *   и ей доступны только через index.ts, кроме путей из deepAllow ({ модуль: regex хвоста пути }).
+ * deps — стрелки ADR-0007 (таблица в frontend/CLAUDE.md сверяется с ними тестом);
+ * facade — у модуля есть index.ts, глубокий импорт снаружи запрещён;
+ * files — запись не папка-модуль, а набор файлов (корень src/*.ts); deepAllow — исключения из фасада
+ *   ({ модуль: regex хвоста пути }); lazy — модуль грузится лениво; prerendered — без import().
  */
 export const MODULES = {
   'shared/lib': { deps: [], facade: true },
@@ -52,37 +52,21 @@ export const MODULES = {
     facade: true,
   },
 
-  // Переходные записи: запреты слоёв до ADR-0007, дословно.
-  ui: {
-    deps: [],
-    facade: false,
-    legacy: true,
-    bans: [
-      ['scene', 'UI в главном чанке, сцена — в ленивом.'],
-      ['fallback2d', 'режим выбирает App.vue.'],
-    ].map(([name, why]) => noLayer(name, why)),
-  },
-  // Корень (main.ts, env.d.ts) — вход в главном чанке: оболочку берёт из ./app, сцену (ленивую точку входа
-  // и лёгкие модули без three.js) видит только через ./mode, как app.
+  // Корень (main.ts, env.d.ts) — вход vite-ssg в главном чанке: модули видит как `./M`; оболочка — ./app,
+  // i18n и маршруты — ./locale. Его самого никто не импортирует, поэтому фасад — формальность.
   '.': {
-    deps: [],
-    facade: false,
-    legacy: true,
+    deps: ['app', 'locale', 'theme'],
+    facade: true,
     files: ['src/*.ts'],
     // main.ts подключает глобальные стили темы: CSS через index.ts не реэкспортируется.
     deepAllow: { theme: '[^/]+\\.css$' },
-    // Глубокие ./scene/* уже запрещает фасад scene (legacyFacadeBans) — здесь только сам ./scene.
-    bans: [['^\\./scene/?$', 'Из корня сцена доступна только через ./mode.']],
   },
 }
 
-function noLayer(name, why) {
-  return [`^(\\.\\.?/)+${name}(/|$)`, `Слой ${name} отсюда недоступен: ${why}`]
-}
-
 // Из папки модуля другой модуль достижим только через «../»: `./chapters` в content — свой файл.
-function modulePath(name) {
-  return `^(\\.\\./)+${name}(/|$)`
+// Корень (запись с files) лежит в src/ и видит модули как `./M`.
+function modulePath(name, fromRoot) {
+  return `^${fromRoot ? '(\\.\\.?/)+' : '(\\.\\./)+'}${name}(/|$)`
 }
 
 const THREE = '^(three|@tresjs/[^/]+)(/|$)'
@@ -126,7 +110,7 @@ function lazySyntax(modules) {
 
 /** Запреты модуля, выведенные из графа: стрелки вне графа и глубокие импорты в модули с фасадом. */
 function graphBans(name, spec, modules) {
-  const allowed = new Set([...spec.deps, ...(spec.legacyDeps ?? [])])
+  const allowed = new Set(spec.deps)
   const [group] = name.split('/')
   const bans = []
   for (const [other, otherSpec] of Object.entries(modules)) {
@@ -134,42 +118,29 @@ function graphBans(name, spec, modules) {
     // Соседа по группе (shared/ui ↔ shared/lib) можно назвать и коротко: `../lib`.
     const sibling = other.startsWith(`${group}/`) && name.startsWith(`${group}/`)
     const forms = [
-      modulePath(other),
+      modulePath(other, !isFolderModule(spec)),
       ...(sibling ? [`^\\.\\./${other.slice(group.length + 1)}`] : []),
     ]
+    const allow = spec.deepAllow?.[other]
     for (const form of forms) {
       const prefix = form.replace(/\(\/\|\$\)$/, '')
       if (!allowed.has(other)) {
         bans.push([`${prefix}(/|$)`, `Модуль ${other} отсюда недоступен (граф ADR-0007).`])
       } else if (otherSpec.facade) {
-        bans.push([`${prefix}/.+`, `Модуль ${other} — только через ${other}/index.ts.`])
+        bans.push([
+          `${prefix}/${allow ? `(?!${allow})` : ''}.+`,
+          `Модуль ${other} — только через ${other}/index.ts.`,
+        ])
       }
     }
   }
   return bans
 }
 
-/** Переходная запись тоже ходит в модули с фасадом только через index.ts; корень видит их как `./M`. */
-function legacyFacadeBans(spec, modules) {
-  const up = spec.files ? '(\\.\\.?/)+' : '(\\.\\./)+'
-  return Object.entries(modules)
-    .filter(([, other]) => other.facade && isFolderModule(other))
-    .map(([other]) => {
-      const allow = spec.deepAllow?.[other]
-      return [
-        `^${up}${other}/${allow ? `(?!${allow})` : ''}.+`,
-        `Модуль ${other} — только через ${other}/index.ts.`,
-      ]
-    })
-}
-
 export function moduleBoundaries(modules) {
   const syntax = lazySyntax(modules)
   return Object.entries(modules).flatMap(([name, spec]) => {
     const files = spec.files ?? [`src/${name}/**/*.{ts,vue}`]
-    if (spec.legacy) {
-      return [boundary(files, [NO_3D, ...spec.bans, ...legacyFacadeBans(spec, modules)], syntax)]
-    }
     const bans = graphBans(name, spec, modules)
     const ownSyntax = spec.prerendered
       ? [
@@ -200,7 +171,7 @@ export function findCycle(modules) {
     if (state.get(name) === 'open') return [...path.slice(path.indexOf(name)), name]
     state.set(name, 'open')
     const spec = modules[name]
-    for (const dep of [...(spec?.deps ?? []), ...(spec?.legacyDeps ?? [])]) {
+    for (const dep of spec?.deps ?? []) {
       const cycle = visit(dep, [...path, name])
       if (cycle) return cycle
     }

@@ -96,18 +96,29 @@ flowchart LR
 
 ## 4. Фронтенд
 
-### Слои (дизайн будет меняться — слои не смешиваем, ADR-0003, ADR-0004)
+### Модули (ADR-0007; опирается на ADR-0003, ADR-0004)
+Одна предметная область — одна папка `src/<module>/` с публичным `index.ts`; чужой модуль — только через него,
+стрелки только вниз, циклов нет. Граф — `frontend/scripts/module-graph.mjs` (из него ESLint строит границы),
+таблица «модуль → может импортировать» — `frontend/CLAUDE.md`.
 ```
 frontend/src/
-  content/     типы контента, загрузчик (снимок → API только если версия новее), расчёт стажа из дат
-  stores/      Pinia: route (остановки, активная), ui (окно, тема, язык, режим), live (метрики)
-  theme/       palette.ts — единый объект палитры → CSS-переменные + цвета материалов/света/воды
-  scene/       TresJS: Island, Roads, Water, Truck, buildings/<Key>.vue, Background (InstancedMesh)
-  ui/          HTML-слой: BottomBar, Hero, Dialog (фокус-ловушка), windows/<Chapter>Window.vue
-  fallback2d/  статичная карта (webp) + список остановок
-  telemetry/   events.ts (fetch keepalive), traceparent.ts, vitals.ts
-  i18n/        en.json / ru.json — только строки интерфейса (контент глав — в /content)
+  main.ts      вход vite-ssg: App из ./app, i18n и маршруты из ./locale, глобальные стили темы
+  app/         оболочка: тонкий App.vue (композиция модулей и раскладка), TopBar, useLayout, head
+  shared/lib/  storage (load/save в localStorage), useBreakpoint
+  shared/ui/   базовые компоненты: BaseButton, IconButton, Icon + реестр иконок, Dialog (фокус-ловушка), StatusPill, ChapterTag, MetricCard
+  content/     типы контента, бандлы EN/RU, главы и маршрут, расчёт стажа из дат, форматирование
+  theme/       palette.ts — единый объект палитры → CSS-переменные + цвета материалов/света/воды; стор темы, boot
+  locale/      vue-i18n (en.json / ru.json — только строки интерфейса), маршруты `/` и `/ru/`, стор языка
+  route/       стор маршрута (остановки, активная, посещённые), нижняя панель, RouteBar, RouteStop
+  hero/        HeroCard и его размещение
+  chapters/    8 окон глав и блоки, реестр; без import() — окна в main-чанке и предрендере
+  windows/     WindowHost, каркас ChapterWindow, история окна (pushState/hashchange), предрендер глав
+  fallback2d/  статичная 2D-карта (render.ts, StaticMap)
+  scene/       ленивый чанк TresJS: Island, Roads, Water, Truck, buildings/<Key>.vue; index.ts — точка import()
+  mode/        режим 2D/3D: shouldUse3D, стор режима, загрузчик сцены, SceneHost, баннер отката
+  telemetry/   (этап 4) events.ts (fetch keepalive), traceparent.ts, vitals.ts — модуль без зависимостей от UI
 ```
+Живые метрики окна Monitoring (SignalR) — ленивый модуль по образцу `scene`: `index.ts` грузит чанк через `import()`.
 
 ### Загрузка и производительность
 1. HTML предрендерен (vite-ssg) для двух маршрутов: `/` (EN) и `/ru/` (RU) — hero, нижняя панель и
@@ -132,7 +143,7 @@ frontend/src/
 
 ### Окна
 - Один компонент `Dialog` (native `<dialog>` + `showModal()`): ловушка фокуса, Esc, возврат фокуса, `aria-labelledby`.
-- Общий каркас окна + акцент главы (D-пункты дизайн-ревью). Окна читают данные только из стора контента.
+- Общий каркас окна + акцент главы (D-пункты дизайн-ревью). Окна (`chapters`) получают бандл пропсом, навигацию — через стор `route`.
 - Состояние окна отражается в URL-хэше (`#prospace`) — ссылку на главу можно отправить, назад работает.
 
 ### Темы

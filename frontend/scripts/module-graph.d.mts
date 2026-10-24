@@ -6,18 +6,14 @@ export interface ModuleSpec {
   deps: string[]
   /** Есть index.ts: снаружи модуль доступен только как `../<module>`. */
   facade: boolean
-  /** Переходные стрелки к модулям, которые ещё не переехали; к M18 их нет. */
-  legacyDeps?: string[]
   /** Ленивый чанк: three/TresJS разрешены, import() — только в его index.ts. */
   lazy?: true
   /** Попадает в main-чанк и предрендер: import() запрещён. */
   prerendered?: true
-  /** Переходная запись: сегодняшние запреты дословно, уходит по мере переезда. */
-  legacy?: true
   /** Файлы записи, если это не папка `src/<module>/` (корень src). */
   files?: string[]
-  /** Запреты переходной записи: [regex, message]. */
-  bans?: [string, string][]
+  /** Исключения из фасада: { модуль: regex хвоста пути } (main.ts берёт CSS темы напрямую). */
+  deepAllow?: Record<string, string>
 }
 
 export const MODULES: Record<string, ModuleSpec>

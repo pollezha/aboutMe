@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { readdirSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { ESLint } from 'eslint'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { findCycle, MODULES, moduleBoundaries, unregisteredFolders } from '../module-graph.mjs'
@@ -37,7 +37,7 @@ describe('frontend layer boundaries', () => {
 
   it('forbids a dynamic import of three.js outside the scene', async () => {
     const errors = await boundaryErrors(
-      'src/ui/Fixture.ts',
+      'src/hero/Fixture.ts',
       "export const load = () => import('three')\n",
     )
     expect(errors).toHaveLength(1)
@@ -77,8 +77,8 @@ describe('frontend layer boundaries', () => {
     ).toHaveLength(1)
     expect(
       await boundaryErrors(
-        'src/Fixture.ts',
-        "import { contentFor } from './content/bundles'\nimport { load } from './shared/lib/storage'\nimport { contentFor as c, palette } from './content'\nexport const x = [contentFor, load, c, palette]\n",
+        'src/app/Fixture.ts',
+        "import { contentFor } from '../content/bundles'\nimport { load } from '../shared/lib/storage'\nimport { contentFor as c, palette } from '../content'\nexport const x = [contentFor, load, c, palette]\n",
       ),
     ).toHaveLength(2)
   })
@@ -86,12 +86,15 @@ describe('frontend layer boundaries', () => {
   it('lets main.ts pull theme stylesheets directly', async () => {
     expect(await boundaryErrors('src/main.ts', "import './theme/tokens.css'\n")).toEqual([])
     expect(await boundaryErrors('src/main.ts', "import './theme/boot'\n")).toHaveLength(1)
+    expect(await boundaryErrors('src/main.ts', "import { ROUTE } from './content'\n")).toHaveLength(
+      1,
+    )
   })
 
   it('keeps content below ui, scene and mode', async () => {
     const errors = await boundaryErrors(
       'src/content/Fixture.ts',
-      "import { useModeStore } from '../mode'\nimport Icon from '../ui/Icon.vue'\nexport const x = [useModeStore, Icon]\n",
+      "import { useModeStore } from '../mode'\nimport Icon from '../shared/ui/Icon.vue'\nexport const x = [useModeStore, Icon]\n",
     )
     expect(errors).toHaveLength(2)
   })
@@ -106,12 +109,12 @@ describe('frontend layer boundaries', () => {
 
   it('lets the app root reach the scene only through the mode module (M6)', async () => {
     const allowed = await boundaryErrors(
-      'src/Fixture.ts',
-      "import { loadScene, shouldUse3D } from './mode'\nexport const x = [loadScene, shouldUse3D]\n",
+      'src/app/Fixture.ts',
+      "import { loadScene, shouldUse3D } from '../mode'\nexport const x = [loadScene, shouldUse3D]\n",
     )
     const forbidden = await boundaryErrors(
-      'src/Fixture.ts',
-      "import Scene from './scene/Scene.vue'\nimport { mapRotation } from './scene'\nexport const x = [Scene, mapRotation]\n",
+      'src/app/Fixture.ts',
+      "import Scene from '../scene/Scene.vue'\nimport { mapRotation } from '../scene'\nexport const x = [Scene, mapRotation]\n",
     )
     expect(allowed).toEqual([])
     expect(forbidden).toHaveLength(2)
@@ -224,7 +227,7 @@ describe('module graph rules', () => {
   it('keeps sub-folder names of a module apart from module names', () => {
     const names = new Set(Object.keys(MODULES).flatMap((key) => key.split('/')))
     const clashes = Object.entries(MODULES)
-      .filter(([, m]) => !m.legacy && !m.files)
+      .filter(([, m]) => !('files' in m))
       .flatMap(([key]) => {
         const root = new URL(`../../src/${key}/`, import.meta.url)
         try {
@@ -243,14 +246,65 @@ describe('module graph rules', () => {
     targets.push('chapters', 'windows', 'fallback2d', 'scene', 'mode', 'app')
     expect(Object.keys(MODULES)).toEqual(expect.arrayContaining(targets))
     for (const [name, m] of Object.entries(MODULES)) {
-      for (const dep of [...m.deps, ...(m.legacyDeps ?? [])]) {
+      for (const dep of m.deps) {
         expect(Object.keys(MODULES), `${name} → ${dep}`).toContain(dep)
       }
     }
   })
 
-  it.todo('matches the module table in frontend/CLAUDE.md (M18)')
+  it('keeps no transitional entries: every module has a facade (M18)', () => {
+    for (const [name, m] of Object.entries(MODULES)) {
+      expect(m, name).not.toHaveProperty('legacy')
+      expect(m, name).not.toHaveProperty('legacyDeps')
+      expect(m, name).not.toHaveProperty('bans')
+      expect(m.facade, name).toBe(true)
+    }
+  })
+
+  it('matches the module table in frontend/CLAUDE.md (M18)', () => {
+    const doc = readFileSync(new URL('../../CLAUDE.md', import.meta.url), 'utf8')
+    expect(doc).toMatch(/^\| модуль +\| может импортировать +\|$/m)
+    expect(moduleTable(doc)).toEqual(
+      Object.fromEntries(Object.entries(MODULES).map(([name, m]) => [name, [...m.deps].sort()])),
+    )
+  })
 })
+
+/**
+ * Таблица из frontend/CLAUDE.md → { модуль: отсортированные зависимости }. Ячейка модулей — имена через запятую
+ * с пометками в скобках; зависимости — «—», список (shared/* — обе папки shared) или «всё, кроме X»
+ * (все модули-папки, кроме себя и X).
+ */
+function moduleTable(doc: string): Record<string, string[]> {
+  const lines = doc.split(/\r?\n/)
+  const start = lines.findIndex((line) => /^\| модуль +\|/.test(line))
+  const end = lines.findIndex((line, i) => i > start && !line.startsWith('|'))
+  const rows = lines.slice(start + 2, end === -1 ? undefined : end)
+  const folders = Object.entries(MODULES)
+    .filter(([, m]) => !('files' in m))
+    .map(([name]) => name)
+  const list = (cell: string) =>
+    cell
+      .replace(/\([^)]*\)/g, '')
+      .replaceAll('`', '')
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean)
+  const table: Record<string, string[]> = {}
+  for (const row of rows) {
+    const [names = '', deps = ''] = row.split('|').slice(1, -1)
+    for (const name of list(names)) {
+      const except = deps.trim().match(/^всё, кроме (.+)$/)
+      const resolved = except
+        ? folders.filter((m) => m !== name && !list(except[1] ?? '').includes(m))
+        : deps.trim() === '—'
+          ? []
+          : list(deps).flatMap((d) => (d === 'shared/*' ? ['shared/lib', 'shared/ui'] : [d]))
+      table[name] = resolved.sort()
+    }
+  }
+  return table
+}
 
 describe('max-lines', () => {
   const lines = (n: number) =>
