@@ -20,6 +20,7 @@
     <PackageVersion Include="Aspire.Confluent.Kafka" Version="13.6.1" />
     <!-- Gateway -->
     <PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery.Yarp" Version="10.11.0" />
     <!-- Projector: EF Core + PostgreSQL (клиентская интеграция Aspire даёт health check и OTel) -->
     <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.6.1" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12" />
