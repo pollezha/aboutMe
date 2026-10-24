@@ -342,3 +342,17 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
 - Откат любой задачи — revert коммита; миграции только аддитивные, схемы `content` и `stats` независимы, можно
   дропнуть и пересоздать (данных в проде ещё нет).
 - Фронт этапа 3 параллельно меняет `frontend/` → бэкенд-задачи его не трогают; T10 — только после слияния этапа 3.
+
+## Шлюз этапа 4 (бэкенд) — 2026-10-24
+```
+VERIFY: PASS
+Сборка: dotnet clean; dotnet build -warnaserror → 0 Warning(s), 0 Error(s)
+Тесты: 388 passed, 0 failed, 0 skipped (11 модулей, 3m06s)
+Линтер: dotnet format --verify-no-changes → exit 0
+Шлюз «5 сервисов healthy» ✅ curl localhost:5080/health → 200 "Healthy"; /alive → 200
+AC8-данные (дубль) ✅ один eventId × 3 → 202/202/202; stats.cta_clicks n: 0 → 1; processed_events — одна строка
+AC9 (≤ 2 с) ✅ LiveEndToEndTests: counters за 903 / 984 / 1005 мс; при остановленном projector — 513 мс
+AC10 — фронт, вне объёма (T10)
+Негативные: без type → 400; stop "a\u0000" → 400; 17 603 байт → 413; 70 POST → 60×202 + 10×429 (Retry-After: 60); /health с Host evil.example → 404
+REVIEW: раунд 1 — 1 blocker, 1 major, 9 minor → F1/F2; раунд 2 — 0 blocker, 0 major, 3 minor → F3
+```
