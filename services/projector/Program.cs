@@ -1,14 +1,15 @@
+using BuildingBlocks.Messaging.Kafka;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Projector.Data;
 using Projector.Projection;
-using ServiceDefaults.Kafka;
 
 const string KafkaConnectionName = "kafka";
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
+builder.Services.AddKafkaTracing();
 
 // Строка подключения "stats" приходит из AppHost; интеграция Aspire добавляет health check БД и OTel
 builder.AddNpgsqlDbContext<StatsDbContext>(
@@ -20,7 +21,7 @@ var projectorOptions = builder.Configuration.GetSection(ProjectorOptions.Section
 builder.Services.AddSingleton(projectorOptions);
 
 // Consumer group projector: офсет коммитит воркер после транзакции в БД (ADR-0002). Спаны process — своя обёртка
-// из ServiceDefaults (поверх них span links батча), поэтому трейсинг интеграции выключен; health check — свой.
+// из BuildingBlocks (поверх них span links батча), поэтому трейсинг интеграции выключен; health check — свой.
 builder.AddKafkaConsumer<string, string>(KafkaConnectionName, settings =>
 {
     settings.DisableTracing = true;

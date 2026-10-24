@@ -24,6 +24,8 @@
     <!-- Projector: EF Core + PostgreSQL (клиентская интеграция Aspire даёт health check и OTel) -->
     <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.6.1" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12" />
+    <!-- BuildingBlocks/Persistence: EfUnitOfWork без привязки к провайдеру; версия = транзитивная из Npgsql EF 10.0.3 -->
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.12" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
     <!-- AppHost: PostgreSQL и Kafka как ресурсы (локальный запуск, AppHost-тест) -->
     <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.6.1" />

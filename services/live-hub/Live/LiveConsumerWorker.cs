@@ -1,8 +1,8 @@
 using System.Text.Json;
+using BuildingBlocks.Messaging.Kafka;
 using Confluent.Kafka;
 using Contracts;
 using Contracts.Events;
-using ServiceDefaults.Kafka;
 
 namespace LiveHub.Live;
 

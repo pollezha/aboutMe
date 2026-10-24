@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using ServiceDefaults.Kafka;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -51,7 +50,7 @@ public static class Extensions
             })
             .WithTracing(tracing =>
             {
-                tracing.AddSource(builder.Environment.ApplicationName, KafkaTracePropagation.ActivitySourceName)
+                tracing.AddSource(builder.Environment.ApplicationName)
                     .AddAspNetCoreInstrumentation(options =>
                         // Пробы здоровья не засоряют трейсы
                         options.Filter = context =>

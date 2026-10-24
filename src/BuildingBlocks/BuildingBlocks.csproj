@@ -9,6 +9,8 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
 
+    <PackageReference Include="Confluent.Kafka" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
   </ItemGroup>
 

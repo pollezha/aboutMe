@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using System.Text.Json;
+using BuildingBlocks.Messaging.Kafka;
 using Confluent.Kafka;
 using Contracts.Events;
 using Projector.Data;
-using ServiceDefaults.Kafka;
 
 namespace Projector.Projection;
 

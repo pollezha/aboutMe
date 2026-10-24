@@ -1,13 +1,13 @@
 using System.Diagnostics;
+using BuildingBlocks.Messaging.Kafka;
 using Confluent.Kafka;
 using Confluent.Kafka.Admin;
 using OpenTelemetry;
 using OpenTelemetry.Trace;
-using ServiceDefaults.Kafka;
 using Testcontainers.Kafka;
 using Xunit;
 
-namespace ServiceDefaults.Tests;
+namespace BuildingBlocks.Tests.Messaging.Kafka;
 
 // Один контейнер Kafka (KRaft) на класс тестов; каждый тест — свой топик и своя consumer group.
 public sealed class KafkaFixture : IAsyncLifetime
@@ -45,12 +45,12 @@ public sealed class KafkaTracePropagationTests(KafkaFixture kafka) : IClassFixtu
 {
     private static readonly TimeSpan ConsumeTimeout = TimeSpan.FromSeconds(30);
 
-    private readonly ActivitySource _testSource = new("ServiceDefaults.Tests");
+    private readonly ActivitySource _testSource = new("BuildingBlocks.Tests");
 
     // TracerProvider нужен дважды: он слушает (сэмплирует) ActivitySource и ставит
     // Propagators.DefaultTextMapPropagator = TraceContext + Baggage (без SDK там no-op).
     private readonly TracerProvider _tracerProvider = Sdk.CreateTracerProviderBuilder()
-        .AddSource("ServiceDefaults.Tests", KafkaTracePropagation.ActivitySourceName)
+        .AddSource("BuildingBlocks.Tests", KafkaTracePropagation.ActivitySourceName)
         .Build();
 
     [Fact]

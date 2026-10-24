@@ -1,13 +1,14 @@
+using BuildingBlocks.Messaging.Kafka;
 using Confluent.Kafka;
 using Contracts;
 using Contracts.Live;
 using LiveHub.Live;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using ServiceDefaults.Kafka;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
+builder.Services.AddKafkaTracing();
 
 builder.Services.AddOpenTelemetry().WithMetrics(metrics => metrics.AddMeter(LiveTelemetry.MeterName));
 

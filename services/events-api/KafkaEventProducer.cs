@@ -1,10 +1,10 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using BuildingBlocks.Messaging.Kafka;
 using Confluent.Kafka;
 using Contracts;
 using Contracts.Events;
-using ServiceDefaults.Kafka;
 
 namespace EventsApi;
 

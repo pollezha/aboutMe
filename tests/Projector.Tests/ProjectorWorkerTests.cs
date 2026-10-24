@@ -4,6 +4,7 @@ using System.Diagnostics.Metrics;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using BuildingBlocks.Messaging.Kafka;
 using Confluent.Kafka;
 using Contracts;
 using Contracts.Events;
@@ -13,7 +14,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
 using Projector.Data;
 using Projector.Projection;
-using ServiceDefaults.Kafka;
 using Xunit;
 
 namespace Projector.Tests;

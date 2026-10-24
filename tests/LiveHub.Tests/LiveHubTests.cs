@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Channels;
+using BuildingBlocks.Messaging.Kafka;
 using Confluent.Kafka;
 using Confluent.Kafka.Admin;
 using Contracts;
@@ -12,7 +13,6 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
-using ServiceDefaults.Kafka;
 using Testcontainers.Kafka;
 using Xunit;
 

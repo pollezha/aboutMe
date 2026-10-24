@@ -1,6 +1,6 @@
 using Confluent.Kafka;
 
-namespace ServiceDefaults.Kafka;
+namespace BuildingBlocks.Messaging.Kafka;
 
 // Общий конфиг Kafka-клиентов (ADR-0002, docs/design/architecture.md §5.3–5.6).
 // Apply* дописывают политику в уже собранный конфиг (например, из connection string Aspire),

@@ -2,13 +2,13 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using BuildingBlocks.Messaging.Kafka;
 using Confluent.Kafka;
 using Confluent.Kafka.Admin;
 using Contracts;
 using Contracts.Events;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using ServiceDefaults.Kafka;
 using Xunit;
 
 namespace EventsApi.Tests;

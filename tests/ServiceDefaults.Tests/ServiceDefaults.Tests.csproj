@@ -9,7 +9,6 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
 
     <PackageReference Include="Microsoft.AspNetCore.TestHost" />
-    <PackageReference Include="Testcontainers.Kafka" />
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>

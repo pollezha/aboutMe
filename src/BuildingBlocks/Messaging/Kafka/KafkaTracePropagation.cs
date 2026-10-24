@@ -5,12 +5,12 @@ using Confluent.Kafka;
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
 
-namespace ServiceDefaults.Kafka;
+namespace BuildingBlocks.Messaging.Kafka;
 
 // Confluent.Kafka не создаёт спаны сам. Здесь — один код для продюсера (events-api) и консьюмеров
 // (projector, live-hub): спаны produce/process и проброс traceparent/tracestate/baggage через заголовки
 // сообщения (docs/design/architecture.md §6). Пропагатор — Propagators.DefaultTextMapPropagator: его
-// выставляет OpenTelemetry SDK (AddServiceDefaults), без SDK он no-op и заголовки не пишутся.
+// выставляет OpenTelemetry SDK (AddServiceDefaults в сервисе), без SDK он no-op и заголовки не пишутся.
 public static class KafkaTracePropagation
 {
     public const string ActivitySourceName = "aboutMe.Kafka";
