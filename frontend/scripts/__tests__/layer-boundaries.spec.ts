@@ -99,17 +99,44 @@ describe('frontend layer boundaries', () => {
     expect(errors).toHaveLength(1)
   })
 
-  it('lets the app root load the scene only through its lazy entry', async () => {
+  it('lets the app root reach the scene only through the mode module (M6)', async () => {
     const allowed = await boundaryErrors(
       'src/Fixture.ts',
-      "import { loadSceneWhenIdle } from './scene'\nimport { shouldUse3D } from './scene/shouldUse3D'\nexport const x = [loadSceneWhenIdle, shouldUse3D]\n",
+      "import { loadScene, shouldUse3D } from './mode'\nexport const x = [loadScene, shouldUse3D]\n",
     )
     const forbidden = await boundaryErrors(
       'src/Fixture.ts',
-      "import Scene from './scene/Scene.vue'\nexport const x = Scene\n",
+      "import Scene from './scene/Scene.vue'\nimport { mapRotation } from './scene'\nexport const x = [Scene, mapRotation]\n",
     )
     expect(allowed).toEqual([])
-    expect(forbidden).toHaveLength(1)
+    expect(forbidden).toHaveLength(2)
+  })
+
+  it('lets the upper modules be imported only through their index (M6)', async () => {
+    expect(
+      await boundaryErrors(
+        'src/mode/X.ts',
+        "import Scene from '../scene/Scene.vue'\nexport const x = Scene\n",
+      ),
+    ).toHaveLength(1)
+    expect(
+      await boundaryErrors(
+        'src/app/X.ts',
+        "import { mapRotation } from '../scene'\nexport const x = mapRotation\n",
+      ),
+    ).toHaveLength(1)
+    expect(
+      await boundaryErrors(
+        'src/app/X.ts',
+        "import { mapRotation } from '../mode'\nimport { HeroCard } from '../hero'\nexport const x = [mapRotation, HeroCard]\n",
+      ),
+    ).toEqual([])
+    expect(
+      await boundaryErrors(
+        'src/app/X.ts',
+        "import HeroCard from '../hero/HeroCard.vue'\nimport { WINDOWS } from '../chapters/registry'\nexport const x = [HeroCard, WINDOWS]\n",
+      ),
+    ).toHaveLength(2)
   })
 })
 

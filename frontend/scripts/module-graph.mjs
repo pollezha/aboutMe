@@ -17,27 +17,38 @@ export const MODULES = {
   'shared/ui': { deps: ['shared/lib'], legacyDeps: ['ui'], facade: true },
   content: { deps: [], facade: true },
   theme: { deps: ['shared/lib'], facade: true },
-  locale: { deps: ['content', 'shared/lib'], facade: false },
-  route: { deps: ['content', 'locale', ...shared], facade: false },
-  hero: { deps: ['content', 'locale', ...shared], facade: false },
-  chapters: { deps: ['content', 'locale', 'route', ...shared], facade: false, prerendered: true },
-  windows: {
-    deps: ['chapters', 'content', 'locale', 'route', ...shared],
-    facade: false,
+  // locale реэкспортирует i18n/ и тип Lang из stores/ (до M11); router.ts — файл корня, не модуль.
+  locale: { deps: ['content', 'shared/lib'], legacyDeps: ['i18n', 'stores'], facade: true },
+  // route, hero реэкспортируют компоненты из ui/ до переезда (M9).
+  route: { deps: ['content', 'locale', ...shared], legacyDeps: ['ui'], facade: true },
+  hero: { deps: ['content', 'locale', ...shared], legacyDeps: ['ui'], facade: true },
+  // chapters, windows реэкспортируют окна, ChapterWindow и ProofLinks из ui/ до переезда (M8).
+  chapters: {
+    deps: ['content', 'locale', 'route', ...shared],
+    legacyDeps: ['ui'],
+    facade: true,
     prerendered: true,
   },
+  windows: {
+    deps: ['chapters', 'content', 'locale', 'route', ...shared],
+    legacyDeps: ['ui'],
+    facade: true,
+    prerendered: true,
+  },
+  // fallback2d, scene берут общий стор (до M10–M13) и i18n/ (до M11) напрямую.
   fallback2d: {
     deps: ['content', 'locale', 'theme', ...shared],
     legacyDeps: ['stores', 'i18n'],
-    facade: false,
+    facade: true,
   },
   scene: {
     deps: ['content', 'locale', 'route', 'theme', 'shared/lib'],
     legacyDeps: ['stores', 'i18n'],
-    facade: false,
+    facade: true,
     lazy: true,
   },
-  mode: { deps: ['scene', 'locale', ...shared], facade: false },
+  // mode реэкспортирует SceneLoading/SceneFallbackBanner из ui/ (до M9) и общий стор из stores/ (до M10–M13).
+  mode: { deps: ['scene', 'locale', ...shared], legacyDeps: ['ui', 'stores'], facade: true },
   app: {
     deps: [
       ...shared,
@@ -83,8 +94,8 @@ export const MODULES = {
       noLayer(name, 'нижний слой не зависит от верхних.'),
     ),
   },
-  // Корень (App.vue, main.ts, router.ts, head.ts) — в главном чанке: от сцены берёт только ленивую точку
-  // входа и лёгкие модули без three.js.
+  // Корень (App.vue, main.ts, router.ts, head.ts) — в главном чанке: сцену (ленивую точку входа и лёгкие
+  // модули без three.js) видит только через ./mode, как app.
   '.': {
     deps: [],
     facade: false,
@@ -92,12 +103,8 @@ export const MODULES = {
     files: ['src/*.{ts,vue}'],
     // main.ts подключает глобальные стили темы: CSS через index.ts не реэкспортируется.
     deepAllow: { theme: '[^/]+\\.css$' },
-    bans: [
-      [
-        '^\\./scene/(?!(index|shouldUse3D|useCamera)$)',
-        'Из корня сцена доступна только через ./scene (ленивая загрузка), ./scene/shouldUse3D и ./scene/useCamera.',
-      ],
-    ],
+    // Глубокие ./scene/* уже запрещает фасад scene (legacyFacadeBans) — здесь только сам ./scene.
+    bans: [['^\\./scene/?$', 'Из корня сцена доступна только через ./mode.']],
   },
 }
 

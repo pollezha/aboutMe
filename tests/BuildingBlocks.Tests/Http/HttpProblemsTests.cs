@@ -80,6 +80,17 @@ public sealed class HttpProblemsTests
     }
 
     [Fact]
+    public async Task Too_many_requests_with_unknown_wait_is_429_without_retry_after()
+    {
+        var (response, body) = await ExecuteAsync(HttpProblems.TooManyRequests());
+
+        Assert.Equal(StatusCodes.Status429TooManyRequests, response.StatusCode);
+        Assert.StartsWith(ProblemJson, response.ContentType, StringComparison.Ordinal);
+        Assert.Equal("Too many requests", body.GetProperty("title").GetString());
+        Assert.False(response.Headers.ContainsKey("Retry-After"));
+    }
+
+    [Fact]
     public async Task Service_unavailable_is_503_problem_with_title_only()
     {
         var (response, body) = await ExecuteAsync(HttpProblems.ServiceUnavailable("Event log unavailable"));

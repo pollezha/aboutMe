@@ -28,7 +28,7 @@ public sealed class GatewayFactory(IDictionary<string, string?>? settings = null
         builder.ConfigureTestServices(services =>
         {
             services.AddSingleton<IForwarderHttpClientFactory>(new StubForwarderHttpClientFactory(Backends));
-            services.AddHttpClient(Gateway.Health.BackendHealthCheck.HttpClientName)
+            services.AddHttpClient(Gateway.Infrastructure.Health.BackendHealthClient.HttpClientName)
                 .ConfigurePrimaryHttpMessageHandler(() => new StubHandler(Backends));
             services.AddSingleton<IStartupFilter, RemoteIpStartupFilter>();
         });

@@ -260,7 +260,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
   - Готово, когда: `tests/LiveHub.Tests` зелёный.
   - Зависит от: R1, R2
 
-- [ ] R7 — gateway: единые имена и общие хелперы
+- [x] R7 — gateway: единые имена и общие хелперы
   - Файлы: `Api/HealthEndpoints.cs`; `Infrastructure/Health/*`; `Edge/{RateLimitPolicies,ClientAddress,BotFilter,CorsPolicy,BodyLimits}.cs`
     (у gateway нет домена — слои Application/Domain отсутствуют осознанно, зафиксировано в ADR-0007); ProblemDetails через `BuildingBlocks.Http.HttpProblems`.
   - Готово, когда: `tests/Gateway.Tests` зелёный.

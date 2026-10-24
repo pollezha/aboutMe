@@ -192,6 +192,7 @@ public sealed class ProxyPoliciesTests
         await Task.WhenAll(open);
 
         Assert.Equal(HttpStatusCode.TooManyRequests, fourth.StatusCode);
+        Assert.Equal("application/problem+json", fourth.Content.Headers.ContentType?.MediaType);
         Assert.All(open, t => Assert.Equal(HttpStatusCode.OK, t.Result.StatusCode));
     }
 
@@ -224,15 +225,17 @@ public sealed class ProxyPoliciesTests
     }
 
     [Theory]
-    [InlineData("/api/events", 17 * 1024)]
-    [InlineData("/api/messages", 5 * 1024)]
-    public async Task Too_large_body_gets_413_without_calling_backend(string path, int bytes)
+    [InlineData("/api/events", 17 * 1024, "16384")]
+    [InlineData("/api/messages", 5 * 1024, "4096")]
+    public async Task Too_large_body_gets_413_problem_without_calling_backend(string path, int bytes, string limit)
     {
         await using var factory = new GatewayFactory();
 
         var response = await factory.CreateClient().PostAsync(path, EventBody(bytes), Ct);
 
         Assert.Equal(HttpStatusCode.RequestEntityTooLarge, response.StatusCode);
+        Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
+        Assert.Contains(limit, await response.Content.ReadAsStringAsync(Ct), StringComparison.Ordinal);
         Assert.Equal(0, factory.Backends.CallsTo("events-api"));
     }
 
