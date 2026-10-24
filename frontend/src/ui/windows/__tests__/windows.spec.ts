@@ -117,15 +117,27 @@ describe('window registry', () => {
   })
 })
 
-const sources = import.meta.glob<string>(['../**/*.vue', '../*.ts'], {
-  query: '?raw',
-  import: 'default',
-  eager: true,
-})
+// Исходники окон глав по именам, от корня проекта — не зависят от того, в какой папке лежат: тела окон
+// (*Window.vue, кроме рамки ChapterWindow), блоки, ProofLinks и реестр окон (.ts рядом с этим спеком).
+const sources = import.meta.glob<string>(
+  [
+    '/src/**/*Window.vue',
+    '/src/**/blocks/*.vue',
+    '/src/**/ProofLinks.vue',
+    '../*.ts',
+    '!/src/**/ChapterWindow.vue',
+    '!**/__tests__/**',
+  ],
+  { query: '?raw', import: 'default', eager: true },
+)
+
+// Число исходников на момент M2 (этап 3b): 8 окон + 12 блоков + реестр. Переезд файлов не должен молча
+// сузить проверку.
+const MIN_FILES = 21
 
 describe('window sources', () => {
   it('finds the window sources', () => {
-    expect(Object.keys(sources).length).toBeGreaterThanOrEqual(10)
+    expect(Object.keys(sources).length).toBeGreaterThanOrEqual(MIN_FILES)
   })
 
   it.each(Object.keys(sources))('%s hardcodes no dates (they come from experience[])', (file) => {
