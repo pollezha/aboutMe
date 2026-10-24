@@ -225,7 +225,7 @@ frontend/src/
   - Готово, когда: эти файлы не в `src/ui/`; `App.vue` не тронут.
   - Зависит от: M6.
 
-- [ ] M10 — Стор и логика темы в `theme`  *(параллельно с M7–M9: файлы не пересекаются)*
+- [x] M10 — Стор и логика темы в `theme`  *(параллельно с M7–M9: файлы не пересекаются)*
   - Файлы: `src/theme/useThemeStore.ts` (theme, setTheme, previewTheme, cycleTheme, applyTheme — из `ui.ts`),
     `src/theme/useTheme.ts` (`?theme=`, watch → `applyTheme`, `label` с `NEXT_THEME`), `theme/index.ts`;
     `stores/ui.ts` теряет тему; потребители: `App.vue`, `scene/Scene.vue`, `scene/SceneContent.vue`,
