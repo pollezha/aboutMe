@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
-import { mountApp, useAppTestEnv } from '../app/__tests__/mountApp'
+import { mountApp, useAppTestEnv } from '../../app/__tests__/mountApp'
 
-vi.mock('../scene/Scene.vue', () => import('../app/__tests__/sceneStub'))
+vi.mock('../../scene/Scene.vue', () => import('../../app/__tests__/sceneStub'))
 // Даты в окнах считаются от времени сборки (content/buildTime.ts) — фиксируем его.
-vi.mock('../content/buildTime', () => ({ BUILD_TIME: new Date(2026, 9, 23) }))
-vi.mock('../scene', async (importOriginal) => {
-  const original = await importOriginal<typeof import('../scene')>()
+vi.mock('../../content/buildTime', () => ({ BUILD_TIME: new Date(2026, 9, 23) }))
+vi.mock('../../scene', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../../scene')>()
   return { ...original, loadScene: vi.fn(original.loadScene) }
 })
 

@@ -26,18 +26,17 @@ import {
   SceneFallbackBanner,
   SceneLoading,
   detectWebGL2,
-  isTheme,
   loadScene,
   mapRotation,
   shouldUse3D,
   useUiStore,
   type Mode,
   type SceneLoad,
-  type Theme,
 } from './mode'
 import { BottomBar, type BottomBarStop } from './route'
 import { useBreakpoint } from './shared/lib'
 import { IconButton } from './shared/ui'
+import { useTheme } from './theme'
 import { ChapterWindow, ProofLinks } from './windows'
 
 const ui = useUiStore()
@@ -58,6 +57,7 @@ watch(
 
 useLocaleSync()
 const { t } = useI18n()
+const { store: themeStore, label: themeLabel } = useTheme(t)
 const breakpoint = useBreakpoint()
 
 // Снимок контента на языке страницы (пока RU-контента нет — EN); загрузка из content-api — этап 4.
@@ -78,10 +78,6 @@ const prerender = import.meta.env.SSR || typeof window === 'undefined'
 
 const query = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
 
-// ?theme=night переопределяет сохранённую тему (ссылки на конкретную тему, скриншоты), но не запоминается.
-const queryTheme = query?.get('theme') ?? null
-if (isTheme(queryTheme)) ui.previewTheme(queryTheme)
-
 // ?mode=2d|3d переопределяет сохранённый выбор на этот визит (ссылки, скриншоты), но не запоминается;
 // 3D и по ссылке — только там, где оно возможно (ширина, WebGL). Кнопка переключения важнее ссылки.
 const queryMode = query?.get('mode')
@@ -89,8 +85,6 @@ let urlMode: Mode | null = queryMode === '2d' || queryMode === '3d' ? queryMode 
 
 // ?shot=island — только сцена, без HTML-слоя и подписей: кадр рендера острова для 2D-карты (npm run island).
 const shot = query?.get('shot') === 'island'
-
-watch(() => ui.theme, ui.applyTheme, { immediate: true })
 
 // Тот же предикат, что у CSS (width < 768px) и useBreakpoint: matchMedia, а не innerWidth
 // (innerWidth включает полосу прокрутки и расходится с медиа-запросами на её ширину).
@@ -243,11 +237,6 @@ const stops = computed<BottomBarStop[]>(() =>
   })),
 )
 
-// Три темы по кругу — не toggle, поэтому без aria-pressed: в имени текущая и следующая тема.
-const NEXT_THEME: Record<Theme, Theme> = { day: 'evening', evening: 'night', night: 'day' }
-const themeLabel = computed(() =>
-  t('theme.label', { current: t(`theme.${ui.theme}`), next: t(`theme.${NEXT_THEME[ui.theme]}`) }),
-)
 // Кнопка языка — когда есть контент на обоих языках (FR8); имя — текущий язык и куда переключит.
 const showLang = CONTENT_LANGS.length > 1
 
@@ -345,7 +334,7 @@ onBeforeUnmount(() => {
   <div
     class="app"
     :class="[`app--${ui.mode}`, `app--${layout}`, `app--${breakpoint}`, { 'app--shot': shot }]"
-    :data-theme="ui.theme"
+    :data-theme="themeStore.theme"
   >
     <div v-if="ui.mode === '3d' && sceneComponent" class="scene-layer">
       <component
@@ -401,7 +390,7 @@ onBeforeUnmount(() => {
             v-if="layout === 'stacked'"
             icon="theme"
             :label="themeLabel"
-            @click="ui.cycleTheme()"
+            @click="themeStore.cycleTheme()"
           />
           <IconButton
             v-if="layout === 'stacked' && showLang"
@@ -446,7 +435,7 @@ onBeforeUnmount(() => {
         @open="open"
         @contact="ui.openChapter('contact')"
         @monitoring="ui.openChapter('monitoring')"
-        @toggle-theme="ui.cycleTheme()"
+        @toggle-theme="themeStore.cycleTheme()"
         @toggle-lang="ui.toggleLang()"
       />
     </template>
