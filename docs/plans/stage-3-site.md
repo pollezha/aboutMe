@@ -183,7 +183,7 @@ Roadmap: docs/plans/roadmap.md, этап 3 (E3-T1…T10) · ADR: 0003 (HTML по
     на антивирус, см. learnings).
   - Зависит от: T11, T12.
 
-- [ ] T13 — Деплой на Cloudflare Pages, публичный URL, абсолютный `og:image`
+- [ ] T13 — Деплой на Cloudflare (2026-10-24: вместо Pages — Worker со static assets, `frontend/wrangler.jsonc`; https://aboutme.polezhaev-yasha.workers.dev), публичный URL, абсолютный `og:image`
   - Файлы: `frontend/wrangler.jsonc` или настройки проекта Pages (сборка `npm run build`, выход `dist`,
     `NODE_VERSION=24`), `frontend/public/_headers` (кэш `immutable` для `assets/`, `X-Content-Type-Options`,
     `Referrer-Policy`), `_redirects` (нет — SPA-фоллбек не нужен при предрендере), `src/head.ts`

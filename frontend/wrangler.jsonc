@@ -1,0 +1,17 @@
+// Cloudflare Workers static assets (T13, ADR-0006): the prerendered site from dist/ is served by a Worker
+// with no script. Workers Builds runs `npx wrangler deploy` in frontend/, which runs build.command first.
+// Build variables (dashboard → Settings → Builds): VITE_SITE_ORIGIN = public origin for canonical/OG URLs.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "aboutme",
+  "compatibility_date": "2026-10-24",
+  "build": {
+    "command": "npm run build",
+  },
+  "assets": {
+    "directory": "./dist",
+    // /ru/ → dist/ru/index.html; /ru → redirect to /ru/
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none",
+  },
+}
