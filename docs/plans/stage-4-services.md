@@ -215,7 +215,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
   - Готово, когда: проект собирается, тесты зелёные, ни один сервис ещё не ссылается (безопасный шаг).
   - Зависит от: — (параллельно с T8b/T8c)
 
-- [ ] R2 — Kafka из `ServiceDefaults` в `BuildingBlocks/Messaging/Kafka`
+- [x] R2 — Kafka из `ServiceDefaults` в `BuildingBlocks/Messaging/Kafka`
   - Файлы: `Persistence/{IUnitOfWork,EfUnitOfWork}.cs` (транзакция соединения; тест на реальной PostgreSQL: rollback при Dispose без Commit); перенос `KafkaTracePropagation`, `KafkaDefaults`; новые `KafkaConsumerLoop<T>` (consume → handler → commit после успеха,
     poison-счётчик; обобщение projector/live-hub) и `AddKafkaTracing()` (`ConfigureOpenTelemetryTracerProvider(t => t.AddSource(...))`);
     `ServiceDefaults/Extensions.cs` больше не знает о Kafka (ссылки ServiceDefaults → BuildingBlocks НЕТ); `AddKafkaTracing()` вызывают
