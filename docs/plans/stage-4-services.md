@@ -243,7 +243,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
   - Готово, когда: тесты зелёные; миграции перенесены `git mv` вместе с `.editorconfig`, `migrate` применяется; маска Migrations в REVIEW.md обновлена.
   - Зависит от: R1
 
-- [ ] R5 — projector по слоям
+- [x] R5 — projector по слоям
   - Файлы: `Domain/{Aggregator,StatsDelta,VitalBuckets}.cs`; `Application/ProjectEvents/{ProjectEventsCommand,ProjectEventsHandler}.cs`,
     `Application/RebuildStats/{RebuildStatsCommand,RebuildStatsHandler}.cs`,
     `Application/Abstractions/{IProcessedEventsRepository,IStatsRepository,IConsumerOffsets}.cs` (+ `IUnitOfWork` из BuildingBlocks; ADR-0007 «Репозитории, Unit of Work»);
@@ -270,7 +270,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
   - Файлы: `tests/Architecture.Tests/LayerRulesTests.cs` (System.Reflection.Metadata по TypeRef/AssemblyRef сборок сервисов, без новых пакетов:
     Domain → только BCL/Contracts; Application ↛ Infrastructure и пакеты AspNetCore/EF/Npgsql/Confluent.Kafka, ↛ `BuildingBlocks.Http`, `BuildingBlocks.Messaging`;
     Api/Workers ↛ Infrastructure кроме Program/DependencyInjection), `services/CLAUDE.md` (раскладка и правила из ADR-0007), включить `IDE0130` (исключение для `src/ServiceDefaults/Extensions.cs` — шаблонный namespace Aspire), `docs/design/architecture.md` §5.1 (ссылка на ADR-0007),
-    `docs/adr/0007` → accepted.
+    `docs/adr/0007` уже accepted — сверить текст с кодом; content-api: `DisableRetry = true` в `AddNpgsqlDbContext` (как в projector) с комментарием, почему.
   - Готово, когда: тест падает на искусственном нарушении (проверить локально) и проходит на текущем коде.
   - Зависит от: R3–R7
 
