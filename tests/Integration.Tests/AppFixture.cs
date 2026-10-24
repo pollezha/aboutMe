@@ -17,6 +17,9 @@ public sealed class AppFixture : IAsyncLifetime
 
     private DistributedApplication? _app;
 
+    /// <summary>Запущенное приложение: остановка и запуск ресурсов (NFR4), адреса эндпоинтов.</summary>
+    public DistributedApplication App => _app ?? throw new InvalidOperationException("AppHost не запущен.");
+
     public HttpClient Gateway { get; private set; } = null!;
 
     public string StatsConnectionString { get; private set; } = null!;
