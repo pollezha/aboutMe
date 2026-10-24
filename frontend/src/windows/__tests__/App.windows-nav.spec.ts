@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { nextTick } from 'vue'
-import { mountApp, openDialog, useAppTestEnv, waitForHash } from '../app/__tests__/mountApp'
+import { mountApp, openDialog, useAppTestEnv, waitForHash } from '../../app/__tests__/mountApp'
 
 // three/WebGL в jsdom не рендерим: чанк сцены — заглушка, которая по флагу «рисует первый кадр».
-vi.mock('../scene/Scene.vue', () => import('../app/__tests__/sceneStub'))
+vi.mock('../../scene/Scene.vue', () => import('../../app/__tests__/sceneStub'))
 // Даты в окнах считаются от времени сборки (content/buildTime.ts) — фиксируем его.
-vi.mock('../content/buildTime', () => ({ BUILD_TIME: new Date(2026, 9, 23) }))
-vi.mock('../scene', async (importOriginal) => {
-  const original = await importOriginal<typeof import('../scene')>()
+vi.mock('../../content/buildTime', () => ({ BUILD_TIME: new Date(2026, 9, 23) }))
+vi.mock('../../scene', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../../scene')>()
   return { ...original, loadScene: vi.fn(original.loadScene) }
 })
 
