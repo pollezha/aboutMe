@@ -237,7 +237,7 @@ frontend/src/
   - Готово, когда: в `App.vue` нет кода темы, кроме вызова `useTheme()`; ключ `aboutme.theme` прежний.
   - Зависит от: M3, M6.
 
-- [ ] M11 — `locale`: i18n, язык, маршруты
+- [x] M11 — `locale`: i18n, язык, маршруты
   - Файлы: `git mv src/i18n → src/locale` (`index.ts` → `i18n.ts`), `src/router.ts` → `locale/routes.ts`,
     `locale/useLangStore.ts` (lang, setLang, syncLang, toggleLang), `locale/useRouteLang.ts` (язык ↔ маршрут
     из `App.vue` + `useLocaleSync`); потребители: `main.ts`, `App.vue`, `head.ts`, `scene/Labels.vue`,
