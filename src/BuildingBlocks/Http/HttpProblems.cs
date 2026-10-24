@@ -20,13 +20,15 @@ public static class HttpProblems
             title: "Request body too large",
             detail: string.Create(CultureInfo.InvariantCulture, $"The body must be at most {maxBytes} bytes."));
 
+    /// <summary>429 without <c>Retry-After</c>: the wait is unknown (e.g. a concurrency limit).</summary>
+    public static IResult TooManyRequests() =>
+        Results.Problem(statusCode: StatusCodes.Status429TooManyRequests, title: "Too many requests");
+
     /// <summary>429 with <c>Retry-After</c> in whole seconds, rounded up (at least 1).</summary>
     public static IResult TooManyRequests(TimeSpan retryAfter)
     {
         var seconds = Math.Max(1, (long)Math.Ceiling(retryAfter.TotalSeconds));
-        return new WithRetryAfter(
-            Results.Problem(statusCode: StatusCodes.Status429TooManyRequests, title: "Too many requests"),
-            seconds);
+        return new WithRetryAfter(TooManyRequests(), seconds);
     }
 
     public static IResult ServiceUnavailable(string title) =>
