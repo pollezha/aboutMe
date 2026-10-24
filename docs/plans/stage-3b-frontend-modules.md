@@ -209,7 +209,7 @@ frontend/src/
   - Готово, когда: в `src/ui/` нет этих файлов; потребители не менялись (дифф вне `src/ui`, `src/shared` пуст).
   - Зависит от: M6.
 
-- [ ] M8 — Переезд `chapters` и каркаса `windows`  *(параллельно с M7, M9, M10)*
+- [x] M8 — Переезд `chapters` и каркаса `windows`  *(параллельно с M7, M9, M10)*
   - Файлы: `git mv` `src/ui/windows/**` → `src/chapters/` (реестр → `registry.ts`), `ProofLinks.vue`,
     `ui/ChapterWindow.vue` + spec → `src/windows/`; `describe('ProofLinks')` из `blocks.spec` →
     `windows/__tests__/ProofLinks.spec.ts`; `App.techstack.spec` → `chapters/__tests__/`; `chapters/index.ts`,
@@ -218,7 +218,7 @@ frontend/src/
   - Готово, когда: `src/ui/windows/` и `src/ui/ChapterWindow.vue` удалены; `App.vue` не тронут.
   - Зависит от: M6.
 
-- [ ] M9 — Переезд UI `hero`, `route`, `mode`  *(параллельно с M7, M8, M10)*
+- [x] M9 — Переезд UI `hero`, `route`, `mode`  *(параллельно с M7, M8, M10)*
   - Файлы: `git mv` `HeroCard.vue` → `hero/`, `BottomBar.vue`, `RouteStop.vue` → `route/`,
     `SceneLoading.vue`, `SceneFallbackBanner.vue` → `mode/` (+ спеки); их `index.ts`.
   - Тест сначала: — ; спеки переехали и зелёные.
