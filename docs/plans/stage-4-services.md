@@ -76,7 +76,7 @@
     (поля и допустимые значения перечислены в одном месте — в Contracts, дизайн ссылается на него).
   - Зависит от: — (параллельно с T0)
 
-- [ ] T2 — events-api: приём, валидация, обезличивание, продюсер (E4-T4)
+- [x] T2 — events-api: приём, валидация, обезличивание, продюсер (E4-T4)
   - Файлы: `services/events-api/` (Program.cs; `Endpoints/EventsEndpoints.cs` — `POST /api/events`: одно событие
     или массив ≤ 20 только `web_vital`, тело ≤ 16 КБ, невалидно → 400 ProblemDetails со списком ошибок, иначе 202;
     `Anonymizer.cs` — `sessionHash = base64url(HMAC-SHA256(sessionId, dailySalt))`, соль в памяти, ротация по
@@ -138,7 +138,7 @@
   - Готово, когда: тесты зелёные; `curl -i localhost:<port>/api/content/ru` показывает ETag и 304 при повторе.
   - Зависит от: T1 (DTO) — параллельно с T2–T4
 
-- [ ] T6 — live-hub: consumer group `live-hub`, счётчики в памяти, SignalR `/hubs/live` (E4-T6; AC9, TC-13)
+- [x] T6 — live-hub: consumer group `live-hub`, счётчики в памяти, SignalR `/hubs/live` (E4-T6; AC9, TC-13)
   - Файлы: `services/live-hub/` (`LiveHub.csproj`, `Live/LiveState.cs` — онлайн = уникальные sessionHash за 5 мин,
     событий сегодня, счётчики по типам/остановкам; потокобезопасно; `Live/LiveConsumerWorker.cs` — группа
     `live-hub`, автокоммит, при старте `OffsetsForTimes(начало суток UTC)` и перечитывание сегодняшних событий;
