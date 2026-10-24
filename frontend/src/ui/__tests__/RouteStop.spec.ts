@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import Icon from '../Icon.vue'
+import { Icon } from '../../shared/ui'
 import RouteStop from '../RouteStop.vue'
 
 const props = { index: '03', title: 'TimePath', subtitle: 'Previous role' }
