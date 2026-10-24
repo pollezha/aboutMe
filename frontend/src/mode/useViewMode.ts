@@ -1,5 +1,5 @@
 // Какой режим показать сейчас (design §4 «Загрузка», FR10): ?mode=, сохранённый выбор, ширина и WebGL2.
-import { computed, ref, watch, type Ref } from 'vue'
+import { computed, toRef, watch, type Ref } from 'vue'
 import { MIN_3D_WIDTH } from '../scene'
 import type { Breakpoint } from '../shared/lib'
 import { detectWebGL2, shouldUse3D } from './shouldUse3D'
@@ -26,8 +26,9 @@ export function useViewMode(breakpoint: Readonly<Ref<Breakpoint>>) {
   // 3D и по ссылке — только там, где оно возможно (ширина, WebGL). Кнопка переключения важнее ссылки.
   let urlMode = readUrlMode()
 
-  // Сцена не загрузилась в этом визите — до перезагрузки страницы в 3D не возвращаемся (и при смене ширины).
-  const sceneFailed = ref(false)
+  // Сцена не загрузилась в этом визите (отмечает useSceneLoader через стор) — до перезагрузки страницы
+  // в 3D не возвращаемся, и при смене ширины тоже.
+  const sceneFailed = toRef(store, 'sceneFailed')
   // Проба WebGL2 создаёт контекст (дорого на слабом CPU) — только там, где 3D возможно по ширине, и один раз.
   let webgl: boolean | undefined
   const hasWebGL = () => (webgl ??= detectWebGL2())
