@@ -1,7 +1,7 @@
 # План: этап 4 «Сервисы»
 
 Спека: docs/spec/portfolio-mvp.md (FR12, FR13, FR17, NFR4–NFR7, AC8–AC10) · Дизайн: docs/design/architecture.md §5–6, §9–10
-· Этапы: docs/plans/roadmap.md (E4-T0…E4-T8) · ADR: 0002 (Kafka, две consumer group), 0004 (контент как JSON), 0006 (VPS + Compose)
+· Этапы: docs/plans/roadmap.md (E4-T0…E4-T8) · ADR: 0002 (Kafka, две consumer group), 0004 (контент как JSON), 0006 (VPS + Compose), 0007 (раскладка кода сервисов — задачи R1–R8)
 
 Цель этапа: сайт работает на собственном бэкенде; каждое действие посетителя — событие в `site.events.v1`,
 агрегаты в PostgreSQL, живые счётчики по SignalR. Пять сервисов healthy в AppHost; повторная доставка не
@@ -171,18 +171,23 @@
   - Готово, когда: тесты зелёные; TC-15 воспроизводится `curl` (200 запросов за 10 с → 429).
   - Зависит от: T2, T5, T6 (нужны реальные маршруты; стабы — для тестов можно раньше)
 
-- [ ] T8 — AppHost: PostgreSQL + Kafka + 5 сервисов, миграции в dev, тест «все healthy» (шлюз этапа)
-  - Файлы: `src/AppHost/AppHost.cs` (`AddPostgres` с БД `content` и `stats` и двумя ролями по §5.8 — роли через
-    init-скрипт; `AddKafka` с UI; топик `site.events.v1` (3 партиции) создаётся сервисом events-api при старте,
-    если нет; сервисы с `WithReference`, `WaitFor`, `WithHttpHealthCheck`; `Database__MigrateOnStart=true` для dev;
-    env для gateway: `Cors__Origins`, `Health__AllowedHosts`), `src/AppHost/AppHost.csproj`,
-    `tests/AppHost.Tests/AppHostTests.cs` (5 ресурсов healthy ≤ 120 с; `POST /api/events` через gateway → 202 →
-    через ≤ 5 с в `stats.cta_clicks` строка), `README.md` (запуск одной командой, порты, дашборд),
-    `CLAUDE.md` (строка структуры: все 5 сервисов).
-  - Тест сначала: AppHost-тест ждёт healthy всех 5 ресурсов; до T8 падает (ресурсов нет).
-  - Готово, когда: `dotnet run --project src/AppHost` — 5 сервисов + Postgres + Kafka Running/Healthy (скриншот
-    дашборда в отчёт); тест зелёный.
-  - Зависит от: T2–T7
+- [ ] T8a — events-api: инициализация топика `site.events.v1` при старте (3 партиции, retention 365 д, no-op если есть)
+  - Файлы: `services/events-api/TopicInitializer.cs` (в R3 переедет в `Infrastructure/Messaging/`), тест Integration в `tests/EventsApi.Tests`.
+  - Тест сначала: после старта хоста на чистой Kafka топик существует с 3 партициями; повторный старт — без ошибок.
+  - Готово, когда: тесты зелёные; `bash scripts/check.sh dotnet` ok.
+  - Зависит от: T2
+
+- [ ] T8b — AppHost: PostgreSQL (БД `content`, `stats`) + Kafka + 5 сервисов с `WithReference`/`WaitFor`/`WithHttpHealthCheck`
+  - Файлы: `src/AppHost/AppHost.cs`, `AppHost.csproj`, `Directory.Packages.props` (Aspire.Hosting.PostgreSQL, Aspire.Hosting.Kafka);
+    env: `Database__MigrateOnStart=true`, `Content__Path`, `Cors__Origins__0`, `KAFKA_HEAP_OPTS=-Xmx512m`.
+  - Тест сначала: `tests/AppHost.Tests` — 5 ресурсов Healthy ≤ 180 с (сейчас красный: gateway ждёт 4 бэкенда).
+  - Готово, когда: тест зелёный; `dotnet run --project src/AppHost` — всё Running/Healthy (хвост вывода в отчёт).
+  - Зависит от: T7, T8a
+
+- [ ] T8c — AppHost: сквозная проверка через gateway в тесте + README «Запуск»
+  - Файлы: `tests/AppHost.Tests` (POST /api/events через gateway → 202 → строка в `stats.cta_clicks` ≤ 15 с; GET /api/content/en → 200 с ETag), `README.md`, `CLAUDE.md` (строка `services/`).
+  - Готово, когда: тест зелёный; README описывает запуск одной командой, дашборд, порты, `curl`.
+  - Зависит от: T8b
 
 - [x] T9 — Записка в бутылке: `POST /api/messages` → Telegram (E4-T7b, FR17, TC-21)
   - Файлы: `services/events-api/Endpoints/MessagesEndpoints.cs` (`{name ≤ 80, replyTo ≤ 120, text ≤ 2000, website}`;
@@ -198,29 +203,104 @@
   - Готово, когда: тесты зелёные; ручная проверка с реальным ботом через user-secrets (без коммита токена).
   - Зависит от: T2 — параллельно с T3–T8
 
-- [ ] T10 — Фронт: контент из API со снимком как fallback, отправка событий, SignalR в окне Monitoring (E4-T7; AC9, AC10, TC-14)
-  - Выполняется после закрытия этапа 3 и по отдельному согласованию с пользователем (трогает `frontend/`).
-  - Файлы: `frontend/src/content/bundles.ts` (подмена снимка ответом API только если `contentVersion` строго
-    больше), `frontend/src/telemetry/{events.ts,traceparent.ts,vitals.ts}` (sessionId в sessionStorage, UUIDv7,
-    `fetch keepalive` по одному, батч web_vital ≤ 20 / 10 с / visibilitychange, `?src=`), `frontend/src/telemetry/live.ts`
-    (SignalR-клиент — зависимость `@microsoft/signalr`, согласовать), окно 08 Monitoring на живых счётчиках,
-    `frontend/.env.example` (`VITE_API_ORIGIN`), тесты Vitest + Playwright TC-14 (API недоступен → снимок, нет
-    `pageerror`).
-  - Тест сначала: Vitest — при ответе API с меньшим `contentVersion` снимок не подменяется; `cta_click` уходит
-    одним POST с `traceparent`; Playwright — с заблокированным `api.` сайт без ошибок приложения.
-  - Готово, когда: Playwright-сценарий AC9 (две вкладки, счётчик ≤ 2 с) и TC-14 зелёные против AppHost.
-  - Зависит от: T8, этап 3 закрыт
+### Рефакторинг по ADR-0007 (раскладка Api / Application / Domain / Infrastructure, BuildingBlocks)
+Каждая R-задача — перенос без изменения поведения: существующие тесты остаются зелёными, новые — на хендлеры без Docker.
+Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён как warning (компилятор проверяет namespace = папка).
 
-- [ ] T11 — Сквозной интеграционный тест и шлюз этапа (E4-T8)
-  - Файлы: `tests/Integration.Tests/EndToEndTests.cs` (Aspire.Hosting.Testing: `POST /api/events` через gateway →
-    202 → в `stats` +1 ровно один раз при дубле (TC-12-данные); SignalR-клиент к `/hubs/live` через gateway
-    получил `counters` ≤ 2 с; остановить projector → live-hub продолжает (NFR4); невалидное → 400, 200 запросов за
-    10 с → 429 (TC-15); в БД нет IP (TC-20)), `docs/plans/roadmap.md` (чек-лист этапа), `docs/learnings.md`.
-  - Тест сначала: сценарии выше; до T8 не запускаются.
-  - Готово, когда: `dotnet test` зелёный целиком (включая Integration с Docker); `/verify` → PASS; `/review` 0 blocker/major.
-  - Зависит от: T8, T9
+- [ ] R1 — `src/BuildingBlocks`: каркас общей библиотеки
+  - Файлы: `src/BuildingBlocks/BuildingBlocks.csproj` (без ссылки на Contracts); `Http/{RequestBodyReader,HttpProblems}.cs` (тело с лимитом → 413,
+    ProblemDetails 400/413/429/503); `Observability/{UrlRedactionProcessor,UrlRedactionExtensions}.cs` (обобщение из events-api/Telegram);
+    `.editorconfig` (`IDE0130` = warning); `aboutMe.slnx`; `tests/BuildingBlocks.Tests` (RequestBodyReader: лимит, пустое тело; redaction);
+    `tests/Architecture.Tests` — правило «BuildingBlocks не ссылается на Contracts/сервисы». Без IClock/IUnitOfWork/обобщённых хендлеров (ADR-0007).
+  - Готово, когда: проект собирается, тесты зелёные, ни один сервис ещё не ссылается (безопасный шаг).
+  - Зависит от: — (параллельно с T8b/T8c)
 
-Параллельные группы (каждая — свой worktree): {T0, T1, T3} → {T2, T5, T6, T9 после T2} → T4 → T7 → T8 → T11; T10 отдельно.
+- [ ] R2 — Kafka из `ServiceDefaults` в `BuildingBlocks/Messaging/Kafka`
+  - Файлы: перенос `KafkaTracePropagation`, `KafkaDefaults`; новые `KafkaConsumerLoop<T>` (consume → handler → commit после успеха,
+    poison-счётчик; обобщение projector/live-hub) и `AddKafkaTracing()` (`ConfigureOpenTelemetryTracerProvider(t => t.AddSource(...))`);
+    `ServiceDefaults/Extensions.cs` больше не знает о Kafka (ссылки ServiceDefaults → BuildingBlocks НЕТ); `AddKafkaTracing()` вызывают
+    events-api, projector, live-hub из Program.cs (до R3–R6) — спаны produce/process не должны пропасть: тест на регистрацию источника
+    переезжает в `tests/BuildingBlocks.Tests` вместе с `KafkaTracePropagationTests`.
+  - Готово, когда: все тесты решения зелёные; в ServiceDefaults нет папки Kafka.
+  - Зависит от: R1
+
+- [ ] R3 — events-api по слоям
+  - Файлы: `Api/{EventsEndpoint,MessagesEndpoint}.cs` (маршрут → хендлер → ответ); `Application/IngestEvents/{IngestEventsCommand,IngestEventsHandler}.cs`,
+    `Application/SendContactMessage/{SendContactMessageCommand,SendContactMessageHandler}.cs`,
+    `Application/Abstractions/{IEventPublisher,IContactMessageDelivery,IDailySalt}.cs`, `Application/DependencyInjection.cs`;
+    `Domain/{Anonymizer,DeviceClass,ContactMessage}.cs`; `Infrastructure/Messaging/{KafkaEventPublisher,TopicInitializer}.cs`,
+    `Infrastructure/External/Telegram/{TelegramContactMessageDelivery,TelegramOptions}.cs`, `Infrastructure/DependencyInjection.cs`; `Program.cs` — композиция.
+    Тесты: существующие остаются; добавить `IngestEventsHandlerTests`, `SendContactMessageHandlerTests` на фейках (без WebApplicationFactory).
+  - Готово, когда: `dotnet test --project tests/EventsApi.Tests` зелёный; в `Api/` нет ссылок на Kafka/Telegram.
+  - Зависит от: R1, R2, T8a
+
+- [ ] R4 — content-api по слоям
+  - Файлы: `Api/ContentEndpoint.cs`; `Application/GetContent/{GetContentQuery,GetContentHandler}.cs`,
+    `Application/SeedContent/{SeedContentCommand,SeedContentHandler}.cs`, `Application/Abstractions/{IContentBundleRepository,IContentSource}.cs`;
+    `Domain/{ContentBundle,ContentBundleValidator}.cs`; `Infrastructure/Persistence/{ContentDbContext,ContentBundleRepository,Migrations/}`,
+    `Infrastructure/Files/JsonContentSource.cs`, `Infrastructure/Health/ContentSeedHealthCheck.cs`; `Workers/ContentSeedWorker.cs`.
+    Тесты: `GetContentHandlerTests` (ETag/304 на фейковом репозитории), `SeedContentHandlerTests`.
+  - Готово, когда: тесты зелёные; миграции перенесены `git mv` вместе с `.editorconfig`, `migrate` применяется; маска Migrations в REVIEW.md обновлена.
+  - Зависит от: R1
+
+- [ ] R5 — projector по слоям
+  - Файлы: `Domain/{Aggregator,StatsDelta,VitalBuckets}.cs`; `Application/ProjectEvents/{ProjectEventsCommand,ProjectEventsHandler}.cs`,
+    `Application/RebuildStats/{RebuildStatsCommand,RebuildStatsHandler}.cs`,
+    `Application/Abstractions/{IStatsStore,IConsumerOffsets}.cs` (`IStatsStore.ApplyAsync(batch, computeDeltas, ct)` владеет транзакцией — ADR-0007);
+    `Infrastructure/Persistence/{StatsDbContext,StatsStore,Migrations/}`,
+    `Infrastructure/Messaging/KafkaConsumerOffsets.cs`, `Infrastructure/Health/KafkaHealthCheck.cs`; `Workers/ProjectorWorker.cs`
+    (`KafkaConsumerLoop` → `ProjectEventsHandler`; офсет после успеха). Тесты: `ProjectEventsHandlerTests` на фейковом `IStatsStore` (дубль eventId → без дельты; poison).
+  - Готово, когда: `tests/Projector.Tests` зелёный (включая Integration).
+  - Зависит от: R1, R2
+
+- [ ] R6 — live-hub по слоям
+  - Файлы: `Domain/LiveState.cs`; `Application/ApplyLiveEvent/*`, `Application/GetLiveSnapshot/*`, `Application/Abstractions/{ILiveStateStore,ILiveNotifier}.cs`;
+    `Infrastructure/Messaging/StartOfDayRewind.cs`, `Infrastructure/Realtime/SignalRLiveNotifier.cs` (реализация `ILiveNotifier`; Workers не ссылаются на хаб); `Api/Hubs/LiveHub.cs`;
+    `Workers/{LiveConsumerWorker,LiveBroadcastWorker}.cs`. Тесты: существующие + `ApplyLiveEventHandlerTests`.
+  - Готово, когда: `tests/LiveHub.Tests` зелёный.
+  - Зависит от: R1, R2
+
+- [ ] R7 — gateway: единые имена и общие хелперы
+  - Файлы: `Api/HealthEndpoints.cs`; `Infrastructure/Health/*`; `Edge/{RateLimitPolicies,ClientAddress,BotFilter,CorsPolicy,BodyLimits}.cs`
+    (у gateway нет домена — слои Application/Domain отсутствуют осознанно, зафиксировано в ADR-0007); ProblemDetails через `BuildingBlocks.Http.HttpProblems`.
+  - Готово, когда: `tests/Gateway.Tests` зелёный.
+  - Зависит от: R1
+
+- [ ] R8 — Architecture.Tests на слои + документация
+  - Файлы: `tests/Architecture.Tests/LayerRulesTests.cs` (System.Reflection.Metadata по TypeRef/AssemblyRef сборок сервисов, без новых пакетов:
+    Domain → только BCL/Contracts; Application ↛ Infrastructure и пакеты AspNetCore/EF/Npgsql/Confluent.Kafka, ↛ `BuildingBlocks.Http`, `BuildingBlocks.Messaging`;
+    Api/Workers ↛ Infrastructure кроме Program/DependencyInjection), `services/CLAUDE.md` (раскладка и правила из ADR-0007), `docs/design/architecture.md` §5.1 (ссылка на ADR-0007),
+    `docs/adr/0007` → accepted.
+  - Готово, когда: тест падает на искусственном нарушении (проверить локально) и проходит на текущем коде.
+  - Зависит от: R3–R7
+
+- [ ] T10a — Фронт: контент из content-api со снимком как fallback (AC10, TC-14)
+  - Файлы: `frontend/src/content/bundles.ts` (подмена только если `contentVersion` строго больше), `frontend/.env.example` (`VITE_API_ORIGIN`), Vitest; Playwright TC-14.
+  - Зависит от: T8c, этап 3 закрыт; согласовать с фронтенд-сессией
+
+- [ ] T10b — Фронт: телеметрия (sessionId, UUIDv7, `traceparent`, `fetch keepalive`, батч web_vital, `?src=`)
+  - Файлы: `frontend/src/telemetry/{events,traceparent,vitals}.ts`, вызовы из окон/CTA, Vitest.
+  - Зависит от: T10a
+
+- [ ] T10c — Фронт: SignalR-клиент и живое окно Monitoring (AC9, TC-13)
+  - Файлы: `frontend/src/telemetry/live.ts` (зависимость `@microsoft/signalr` — согласовать; CORS: `withCredentials:false`, заголовки
+    `X-Requested-With`, `X-SignalR-User-Agent` добавить в gateway), `MonitoringWindow.vue`, Playwright AC9.
+  - Зависит от: T10b
+
+- [ ] T11a — Сквозной тест: событие через gateway → projector (TC-12-данные) и дубль
+  - Файлы: `tests/Integration.Tests/EventsEndToEndTests.cs` (Aspire.Hosting.Testing).
+  - Зависит от: T8c
+
+- [ ] T11b — Сквозной тест: live-hub через gateway (counters ≤ 2 с), остановка projector не ломает live-hub (NFR4)
+  - Файлы: `tests/Integration.Tests/LiveEndToEndTests.cs`.
+  - Зависит от: T11a
+
+- [ ] T11c — Негатив и приватность: 400 / 429 (TC-15), honeypot, в БД нет IP (TC-20); шлюз этапа (`/verify`, `/review`, roadmap)
+  - Файлы: `tests/Integration.Tests/SecurityTests.cs`, `docs/plans/roadmap.md`, `docs/learnings.md`.
+  - Зависит от: T11b, R8
+
+Параллельные группы (каждая — свой worktree): T8a → T8b → T8c; параллельно R1 → R2 → {R3, R4, R5, R6, R7} → R8;
+затем T11a → T11b → T11c; T10a–c отдельно после закрытия этапа 3.
 
 ## AC → задачи
 | Критерий | Задачи |
