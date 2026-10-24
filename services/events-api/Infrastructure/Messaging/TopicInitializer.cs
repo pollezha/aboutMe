@@ -3,7 +3,7 @@ using Confluent.Kafka;
 using Confluent.Kafka.Admin;
 using Contracts;
 
-namespace EventsApi;
+namespace EventsApi.Infrastructure.Messaging;
 
 /// <summary>
 /// Creates <see cref="Topics.SiteEvents"/> at startup if it does not exist (design §5.4: 3 partitions, RF 1,

@@ -1,32 +1,15 @@
-using BuildingBlocks.Messaging.Kafka;
-using Contracts.Events;
-using EventsApi;
-using EventsApi.Endpoints;
-using EventsApi.Telegram;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using EventsApi.Api;
+using EventsApi.Application;
+using EventsApi.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // До AddServiceDefaults: редактор токена должен стоять в конвейере спанов раньше OTLP-экспортёра
-builder.Services.AddTelegramSpanRedaction();
+builder.Services.AddEventsApiSpanRedaction();
 builder.AddServiceDefaults();
-builder.Services.AddKafkaTracing();
-
-// Connection string "kafka" выставляет AppHost; интеграция даёт /health-проверку брокера и метрики.
-// Трейсинг Aspire выключен: спан produce и traceparent пишет общая обёртка KafkaTracePropagation.
-builder.AddKafkaProducer<string, string>("kafka", settings =>
-{
-    settings.DisableTracing = true;
-    KafkaDefaults.ApplyProducerDefaults(settings.Config);
-});
-
 builder.Services.AddProblemDetails();
-builder.Services.TryAddSingleton(TimeProvider.System);
-builder.Services.AddSingleton<EventValidator>();
-builder.Services.AddSingleton<Anonymizer>();
-builder.Services.AddSingleton<IEventProducer, KafkaEventProducer>();
-builder.Services.AddHostedService<TopicInitializer>();
-builder.Services.AddTelegramClient();
+builder.Services.AddEventsApiApplication();
+builder.AddEventsApiInfrastructure();
 
 var app = builder.Build();
 
@@ -34,7 +17,7 @@ app.UseExceptionHandler();
 app.UseStatusCodePages();
 
 app.MapDefaultEndpoints();
-app.MapEventsEndpoints();
-app.MapMessagesEndpoints();
+app.MapEventsEndpoint();
+app.MapMessagesEndpoint();
 
 app.Run();
