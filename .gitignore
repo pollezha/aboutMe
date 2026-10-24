@@ -9,6 +9,7 @@ secrets/
 
 # Локальные настройки Claude Code
 .claude/settings.local.json
+.claude/worktrees/
 
 # Зависимости и сборка
 node_modules/
@@ -20,6 +21,7 @@ coverage/
 .vite-ssg-temp/
 playwright-report/
 test-results/
+.lighthouseci/
 bin/
 obj/
 __pycache__/

@@ -13,6 +13,8 @@
     "build": "vue-tsc -b && vite-ssg build",
     "postbuild": "npm run size",
     "size": "size-limit",
+    "test:lhci": "lhci autorun",
+    "perf:scene": "node scripts/scene-ready.mjs",
     "preview": "vite preview",
     "typecheck": "vue-tsc -b",
     "lint": "eslint . --max-warnings=0",
@@ -39,6 +41,13 @@
       "limit": "2 MB",
       "gzip": false,
       "brotli": false
+    },
+    {
+      "name": "fonts woff2 (raw, sum)",
+      "path": "dist/assets/*.woff2",
+      "limit": "150 kB",
+      "gzip": false,
+      "brotli": false
     }
   ],
   "dependencies": {
@@ -57,6 +66,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.64.1",
     "@size-limit/file": "^14.3.0",
     "@types/three": "^0.186.0",

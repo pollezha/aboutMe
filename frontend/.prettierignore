@@ -2,6 +2,7 @@ dist/
 coverage/
 playwright-report/
 test-results/
+.lighthouseci/
 node_modules/
 package-lock.json
 # Снимок Figma: экспортируется как есть и вручную не правится (источник истины для gen-theme)
