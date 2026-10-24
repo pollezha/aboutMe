@@ -291,7 +291,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
   - Файлы: `tests/Integration.Tests/EventsEndToEndTests.cs` (Aspire.Hosting.Testing).
   - Зависит от: T8c
 
-- [ ] T11b — Сквозной тест: live-hub через gateway (counters ≤ 2 с), остановка projector не ломает live-hub (NFR4)
+- [x] T11b — Сквозной тест: live-hub через gateway (counters ≤ 2 с), остановка projector не ломает live-hub (NFR4)
   - Файлы: `tests/Integration.Tests/LiveEndToEndTests.cs`.
   - Зависит от: T11a
 

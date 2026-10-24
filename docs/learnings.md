@@ -171,3 +171,11 @@
   времени (live-hub «counters ≤ 2 с») начинали падать 1 раз из 3. Решение: `--max-parallel-test-modules 2` в
   `scripts/check.sh` (полный прогон ~2 мин, стабильно). xUnit-коллекции именовать с суффиксом `Group` (CA1711).
 - Куда закреплено: scripts/check.sh.
+
+## 2026-10-24 — этап 4, T11b: сквозные тесты live-hub через gateway
+- Что случилось: AC9 держится с запасом ~1 с (counters за 0,3–1,0 с, из них до 1 с — троттлинг рассылки); остановка
+  projector через `app.ResourceCommands.ExecuteCommandAsync(name, KnownResourceCommands.StopCommand)` (поле
+  `ErrorMessage` устарело — `Message`); ConcurrencyLimiter на WebSocket-маршруте YARP отпускает разрешение только после
+  закрытия проксируемого сокета — после теста нужна пауза; в тестах задавать транспорт WebSocket явно, иначе клиент
+  молча откатится на long polling и скроет проблему.
+- Куда закреплено: tests/Integration.Tests/LiveEndToEndTests.cs.
