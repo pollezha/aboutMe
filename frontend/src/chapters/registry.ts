@@ -1,6 +1,6 @@
 import type { Component } from 'vue'
-import type { ChapterId } from '../../content'
-import type { IconName } from '../../shared/ui'
+import type { ChapterId } from '../content'
+import type { IconName } from '../shared/ui'
 import ContactWindow from './ContactWindow.vue'
 import EducationWindow from './EducationWindow.vue'
 import MonitoringWindow from './MonitoringWindow.vue'

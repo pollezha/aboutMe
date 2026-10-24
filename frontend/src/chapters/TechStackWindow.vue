@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { type ContentBundle, resolveChapter, serverTenure } from '../../content'
-import { useBreakpoint } from '../../shared/lib'
+import { type ContentBundle, resolveChapter, serverTenure } from '../content'
+import { useBreakpoint } from '../shared/lib'
 import BottomSheet from './blocks/BottomSheet.vue'
 import Rack from './blocks/Rack.vue'
 import ServerDetails from './blocks/ServerDetails.vue'
