@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
-using ContentApi.Seeding;
+using ContentApi.Domain;
 using Xunit;
 
 namespace ContentApi.Tests;

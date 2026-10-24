@@ -1,5 +1,5 @@
 import { createRouter, type RouteRecordRaw, type RouterHistory } from 'vue-router'
-import type { Lang } from './stores/ui'
+import type { Lang } from './locale'
 
 // Страница одна (App — корень, RouterView нет): маршрут задаёт только язык. Окна глав — URL-хэш (App.vue).
 const Page = { name: 'LangPage', render: () => null }

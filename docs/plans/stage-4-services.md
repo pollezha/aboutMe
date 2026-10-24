@@ -234,7 +234,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
   - Готово, когда: `dotnet test --project tests/EventsApi.Tests` зелёный; в `Api/` нет ссылок на Kafka/Telegram.
   - Зависит от: R1, R2, T8a
 
-- [ ] R4 — content-api по слоям
+- [x] R4 — content-api по слоям
   - Файлы: `Api/ContentEndpoint.cs`; `Application/GetContent/{GetContentQuery,GetContentHandler}.cs`,
     `Application/SeedContent/{SeedContentCommand,SeedContentHandler}.cs`, `Application/Abstractions/{IContentBundleRepository,IContentSource}.cs` (`GetByLangAsync`, `UpsertAsync`; реализация `Infrastructure/Persistence/ContentBundleRepository.cs`);
     `Domain/{ContentBundle,ContentBundleValidator}.cs`; `Infrastructure/Persistence/{ContentDbContext,ContentBundleRepository,Migrations/}`,
@@ -260,7 +260,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
   - Готово, когда: `tests/LiveHub.Tests` зелёный.
   - Зависит от: R1, R2
 
-- [ ] R7 — gateway: единые имена и общие хелперы
+- [x] R7 — gateway: единые имена и общие хелперы
   - Файлы: `Api/HealthEndpoints.cs`; `Infrastructure/Health/*`; `Edge/{RateLimitPolicies,ClientAddress,BotFilter,CorsPolicy,BodyLimits}.cs`
     (у gateway нет домена — слои Application/Domain отсутствуют осознанно, зафиксировано в ADR-0007); ProblemDetails через `BuildingBlocks.Http.HttpProblems`.
   - Готово, когда: `tests/Gateway.Tests` зелёный.
