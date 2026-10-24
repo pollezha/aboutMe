@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, shallowRef, watch, type Component } from 'vue'
+import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   BUILD_TIME,
@@ -19,15 +19,7 @@ import { StaticMap } from './fallback2d'
 import { useSiteHead } from './head'
 import { HeroCard } from './hero'
 import { useChapterLabel, useRouteLang } from './locale'
-import {
-  SCENE_TIMEOUT_MS,
-  SceneFallbackBanner,
-  SceneLoading,
-  loadScene,
-  mapRotation,
-  useViewMode,
-  type SceneLoad,
-} from './mode'
+import { SceneFallbackBanner, SceneHost, mapRotation, useViewMode } from './mode'
 import { RouteBar, useRouteStore } from './route'
 import { useBreakpoint } from './shared/lib'
 import { IconButton } from './shared/ui'
@@ -39,7 +31,7 @@ const { store: langStore } = useRouteLang()
 const { t } = useI18n()
 const { store: themeStore, label: themeLabel } = useTheme(t)
 const breakpoint = useBreakpoint()
-const { store: ui, sceneFailed, canSwitchMode, switchMode } = useViewMode(breakpoint)
+const { store: ui, canSwitchMode, switchMode } = useViewMode(breakpoint)
 
 // Снимок контента на языке страницы (пока RU-контента нет — EN); загрузка из content-api — этап 4.
 const content = computed(() => contentFor(langStore.lang))
@@ -64,63 +56,6 @@ const shot = query?.get('shot') === 'island'
 
 // «Switch to 2D/3D» в верхних контролах (режим и кнопку решает useViewMode).
 const modeLabel = computed(() => (ui.mode === '3d' ? t('topBar.to2d') : t('topBar.to3d')))
-
-// Сцена: ленивый чанк сразу после монтирования, таймаут → 2D с баннером (design §4 «Загрузка», UX9).
-const sceneComponent = shallowRef<Component>()
-let sceneLoad: SceneLoad | null = null
-let sceneTimer: ReturnType<typeof setTimeout> | undefined
-
-function stopSceneLoading() {
-  sceneLoad?.cancel()
-  sceneLoad = null
-  clearTimeout(sceneTimer)
-}
-
-function startScene() {
-  if (ui.mode !== '3d' || ui.sceneState === 'loading' || ui.sceneState === 'ready') return
-  ui.setSceneState('loading')
-  sceneTimer = setTimeout(failScene, SCENE_TIMEOUT_MS)
-  if (sceneComponent.value) return
-  const load = loadScene()
-  sceneLoad = load
-  load.promise.then(
-    (component) => {
-      if (sceneLoad === load) sceneComponent.value = component
-    },
-    () => {
-      if (sceneLoad === load) failScene()
-    },
-  )
-}
-
-function failScene() {
-  if (ui.sceneState !== 'loading') return
-  stopSceneLoading()
-  sceneFailed.value = true
-  ui.sceneTimedOut()
-}
-
-function onSceneReady() {
-  if (ui.sceneState !== 'loading') return
-  clearTimeout(sceneTimer)
-  sceneLoad = null
-  performance.mark?.('scene_ready')
-  ui.setSceneState('ready')
-}
-
-function continueWithout3D() {
-  stopSceneLoading()
-  ui.continueWithout3D()
-}
-
-watch(
-  () => ui.mode,
-  (mode) => {
-    if (mode === '3d') return startScene()
-    stopSceneLoading()
-    if (ui.sceneState !== 'failed') ui.setSceneState('idle')
-  },
-)
 
 // overlay — Hero и бар поверх сцены (Figma Desktop 33:2, Laptop 33:246);
 // stacked — колонка TopBar → Hero → карта, бар закреплён внизу (Figma Tablet 34:709, Phone 56:1378).
@@ -236,14 +171,12 @@ function syncFromLocation() {
 }
 
 onMounted(() => {
-  startScene()
   syncFromLocation()
   window.addEventListener('popstate', syncFromLocation)
   window.addEventListener('hashchange', syncFromLocation)
 })
 
 onBeforeUnmount(() => {
-  stopSceneLoading()
   window.removeEventListener('popstate', syncFromLocation)
   window.removeEventListener('hashchange', syncFromLocation)
 })
@@ -255,26 +188,8 @@ onBeforeUnmount(() => {
     :class="[`app--${ui.mode}`, `app--${layout}`, `app--${breakpoint}`, { 'app--shot': shot }]"
     :data-theme="themeStore.theme"
   >
-    <div v-if="ui.mode === '3d' && sceneComponent" class="scene-layer">
-      <component
-        :is="sceneComponent"
-        :framing="shot ? 'island' : 'overlay'"
-        @ready="onSceneReady"
-      />
-    </div>
-    <!-- Заглушка под сценой: плавно уходит, когда сцена нарисовала первый кадр. -->
-    <Transition name="scene-fade">
-      <div
-        v-if="!shot && ui.mode === '3d' && ui.sceneState !== 'ready'"
-        class="scene-placeholder"
-        aria-hidden="true"
-      />
-    </Transition>
-    <SceneLoading
-      v-if="!shot && ui.mode === '3d' && ui.sceneState === 'loading'"
-      class="app__scene-loading"
-      @skip="continueWithout3D"
-    />
+    <!-- Сцена, заглушка и карточка загрузки (design §4 «Загрузка»): ленивый чанк сразу после монтирования. -->
+    <SceneHost :shot="shot" />
 
     <template v-if="!shot">
       <header class="top-bar">
@@ -389,40 +304,6 @@ onBeforeUnmount(() => {
   min-height: 100dvh;
   color: var(--text-primary);
   background: var(--bg-canvas);
-}
-
-/* Сцена и заглушка под HTML-слоем; заглушка (небо темы) уходит после первого кадра сцены. */
-.scene-layer,
-.scene-placeholder {
-  position: fixed;
-  inset: 0;
-}
-
-.scene-placeholder {
-  background: var(--scene-sky);
-}
-
-.scene-fade-leave-active {
-  transition: opacity 0.4s ease;
-}
-
-.scene-fade-leave-to {
-  opacity: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .scene-fade-leave-active {
-    transition: none;
-  }
-}
-
-/* Figma LoadingCard 34:1119: справа внизу над баром, не над Hero. */
-.app__scene-loading {
-  position: fixed;
-  right: var(--edge);
-  bottom: calc(var(--size-bottom-bar) + var(--space-8));
-  z-index: 2;
-  max-width: calc(100vw - 2 * var(--edge));
 }
 
 .top-bar {

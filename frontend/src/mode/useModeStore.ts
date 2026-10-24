@@ -18,6 +18,8 @@ export const useModeStore = defineStore('mode', () => {
     MODES.includes(savedChoice as Mode) ? (savedChoice as Mode) : null,
   )
   const sceneState = ref<SceneState>('idle')
+  /** Сцена не загрузилась в этом визите — до перезагрузки страницы в 3D не возвращаемся (useViewMode). */
+  const sceneFailed = ref(false)
 
   function setMode(next: Mode) {
     mode.value = next
@@ -46,6 +48,7 @@ export const useModeStore = defineStore('mode', () => {
   function sceneTimedOut() {
     mode.value = '2d'
     sceneState.value = 'failed'
+    sceneFailed.value = true
   }
 
   function dismissSceneBanner() {
@@ -56,6 +59,7 @@ export const useModeStore = defineStore('mode', () => {
     mode,
     userChoice,
     sceneState,
+    sceneFailed,
     setMode,
     setSceneState,
     chooseMode,
