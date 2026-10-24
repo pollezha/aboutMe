@@ -10,7 +10,8 @@ namespace BuildingBlocks.Messaging.Kafka;
 /// только после успешного обработчика. Батч — до <see cref="KafkaConsumerLoopOptions.MaxBatchSize"/> сообщений
 /// или <see cref="KafkaConsumerLoopOptions.BatchWindow"/> после первого из них. Ядовитое сообщение (десериализатор
 /// вернул null или бросил) считается, пропускается, его офсет коммитится вместе с батчем (DLQ в MVP нет).
-/// Ошибка обработчика не роняет цикл: батч повторяется с растущей паузой, офсет стоит на месте.
+/// Ошибка обработчика не роняет цикл: батч повторяется с растущей паузой, офсет стоит на месте; если ошибка
+/// детерминированная (<see cref="KafkaConsumerLoopOptions.IsPoison"/>), весь батч считается ядовитым и пропускается.
 /// На каждое сообщение — спан <c>process</c>, продолжающий трейс продюсера.
 /// </summary>
 public sealed class KafkaConsumerLoop<TMessage>
@@ -45,7 +46,7 @@ public sealed class KafkaConsumerLoop<TMessage>
         _options = options;
         _logger = logger;
         _poison = meter.CreateCounter<long>(
-            options.PoisonCounterName, unit: "{message}", description: $"Messages of {options.Topic} that could not be deserialized and were skipped");
+            options.PoisonCounterName, unit: "{message}", description: $"Messages of {options.Topic} that could not be deserialized or failed the handler deterministically and were skipped");
     }
 
     /// <summary>
@@ -185,6 +186,11 @@ public sealed class KafkaConsumerLoop<TMessage>
                 await _handler.HandleAsync(kafkaBatch, stoppingToken);
                 return;
             }
+            catch (Exception ex) when (IsPoison(ex, stoppingToken))
+            {
+                SkipPoisonBatch(batch, ex);
+                return;
+            }
 #pragma warning disable CA1031 // любая ошибка обработчика: офсет не коммитим, повторяем батч
             catch (Exception ex) when (ex is not OperationCanceledException || !stoppingToken.IsCancellationRequested)
 #pragma warning restore CA1031
@@ -194,6 +200,25 @@ public sealed class KafkaConsumerLoop<TMessage>
 
             await Task.Delay(delay, stoppingToken);
             delay = TimeSpan.FromTicks(Math.Min(delay.Ticks * 2, _options.MaxRetryDelay.Ticks));
+        }
+    }
+
+    private bool IsPoison(Exception exception, CancellationToken stoppingToken) =>
+        _options.IsPoison is { } isPoison
+        && !(exception is OperationCanceledException && stoppingToken.IsCancellationRequested)
+        && isPoison(exception);
+
+    /// <summary>
+    /// Детерминированная ошибка: повтор не поможет, весь батч уходит в ядовитые, офсет коммитит
+    /// <see cref="RunAsync"/>. Тело не логируем — только партиции и офсеты.
+    /// </summary>
+    private void SkipPoisonBatch(Batch batch, Exception exception)
+    {
+        _poison.Add(batch.Messages.Count);
+        foreach (var (partition, next) in batch.Offsets)
+        {
+            KafkaConsumerLoopLog.PoisonBatch(
+                _logger, exception.GetType().Name, batch.Messages.Count, partition.Topic, partition.Partition.Value, next.Value - 1);
         }
     }
 

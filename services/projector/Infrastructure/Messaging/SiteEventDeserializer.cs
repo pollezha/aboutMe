@@ -1,10 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Confluent.Kafka;
 using Contracts.Events;
 
 namespace Projector.Infrastructure.Messaging;
 
-/// <summary>Сообщение Kafka → <see cref="SiteEvent"/>; null — ядовитое (пустое, не JSON, без типа или eventId).</summary>
+/// <summary>Сообщение Kafka → <see cref="SiteEvent"/>; null — ядовитое (пустое, не JSON, без обязательных полей).</summary>
 public static class SiteEventDeserializer
 {
     public static SiteEvent? Deserialize(ConsumeResult<string, string> result)
@@ -20,11 +21,20 @@ public static class SiteEventDeserializer
         try
         {
             var siteEvent = JsonSerializer.Deserialize(value, SiteEventJsonContext.Default.SiteEvent);
-            return siteEvent is { Type: not null } && siteEvent.EventId != Guid.Empty ? siteEvent : null;
+            return IsComplete(siteEvent) ? siteEvent : null;
         }
         catch (JsonException)
         {
             return null;
         }
     }
+
+    /// <summary>
+    /// Поля, без которых событие не спроецировать (NOT NULL в <c>stats</c>, сутки по <c>occurredAt</c>). Сообщение,
+    /// записанное мимо events-api без них, иначе падало бы в БД на каждой попытке.
+    /// </summary>
+    private static bool IsComplete([NotNullWhen(true)] SiteEvent? siteEvent) =>
+        siteEvent is { Type: not null, SessionHash: not null, Device: not null }
+        && siteEvent.EventId != Guid.Empty
+        && siteEvent.OccurredAt != default;
 }

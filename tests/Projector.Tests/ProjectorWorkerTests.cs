@@ -7,6 +7,7 @@ using System.Text.Json;
 using BuildingBlocks.Messaging.Kafka;
 using BuildingBlocks.Persistence;
 using Confluent.Kafka;
+using Confluent.Kafka.Admin;
 using Contracts;
 using Contracts.Events;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -73,6 +74,27 @@ public sealed class ProjectorWorkerTests(PostgresFixture postgres, KafkaFixture 
         await WaitUntilAsync(env, "SELECT coalesce(sum(n), 0) FROM stats.stop_opens", 1);
 
         Assert.Equal(1, poison.Where(m => ReferenceEquals(m.Scope, meterFactory)).Sum(m => m.Value));
+        Assert.Equal(1, await ScalarAsync(env, "SELECT count(*) FROM stats.processed_events"));
+    }
+
+    // Записано в журнал мимо events-api: PostgreSQL отвергает NUL в text (22021) — повтор не поможет
+    [Fact]
+    public async Task Event_rejected_by_the_database_is_skipped_as_poison()
+    {
+        var env = await PrepareAsync();
+        var poison = new ConcurrentBag<(object? Scope, long Value)>();
+        using var listener = ListenToPoisonCounter(poison);
+        await using var host = StartHost(env);
+        var meterFactory = host.Services.GetRequiredService<IMeterFactory>();
+        long PoisonCount() => poison.Where(m => ReferenceEquals(m.Scope, meterFactory)).Sum(m => m.Value);
+
+        await ProduceAsync(env, Event(EventTypes.StopOpened, """{"stop":"a\u0000"}"""));
+        await WaitForAsync(() => PoisonCount() == 1, "poison counter = 1");
+        await ProduceAsync(env, Event(EventTypes.StopOpened, """{"stop":"profile"}"""));
+        await WaitUntilAsync(env, "SELECT coalesce(sum(n), 0) FROM stats.stop_opens", 1);
+        await WaitForAsync(async () => await CommittedOffsetAsync(env) == 2, "committed offset = 2");
+
+        Assert.Equal(1, PoisonCount());
         Assert.Equal(1, await ScalarAsync(env, "SELECT count(*) FROM stats.processed_events"));
     }
 
@@ -234,6 +256,34 @@ public sealed class ProjectorWorkerTests(PostgresFixture postgres, KafkaFixture 
         }
 
         Assert.Fail($"`{sql}` = {actual}, expected {expected} within {WaitTimeout.TotalSeconds:0} s");
+    }
+
+    private static Task WaitForAsync(Func<bool> condition, string description) =>
+        WaitForAsync(() => Task.FromResult(condition()), description);
+
+    private static async Task WaitForAsync(Func<Task<bool>> condition, string description)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(Ct);
+        timeout.CancelAfter(WaitTimeout);
+        while (!timeout.IsCancellationRequested)
+        {
+            if (await condition())
+            {
+                return;
+            }
+
+            await Task.Delay(200, Ct);
+        }
+
+        Assert.Fail($"Expected {description} within {WaitTimeout.TotalSeconds:0} s");
+    }
+
+    private async Task<long> CommittedOffsetAsync(TestEnv env)
+    {
+        using var admin = new AdminClientBuilder(new AdminClientConfig { BootstrapServers = kafka.BootstrapServers }).Build();
+        var groups = await admin.ListConsumerGroupOffsetsAsync(
+            [new ConsumerGroupTopicPartitions(env.Group, [new TopicPartition(env.Topic, 0)])]);
+        return groups[0].Partitions[0].Offset.Value;
     }
 
     private static async Task<long> TryScalarAsync(TestEnv env, string sql)

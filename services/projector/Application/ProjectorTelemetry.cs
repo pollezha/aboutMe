@@ -7,7 +7,10 @@ public static class ProjectorTelemetry
 {
     public const string MeterName = "aboutMe.Projector";
 
-    /// <summary>Сообщения, которые не десериализуются в событие; пропускаются, офсет коммитится (DLQ в MVP нет).</summary>
+    /// <summary>
+    /// Сообщения, которые не десериализуются в событие, и батчи, отвергнутые БД детерминированно; пропускаются,
+    /// офсет коммитится (DLQ в MVP нет).
+    /// </summary>
     public const string PoisonCounterName = "events_poison_total";
 
     /// <summary>Совпадает с <c>IHostEnvironment.ApplicationName</c> — его источник слушает OTel из ServiceDefaults.</summary>

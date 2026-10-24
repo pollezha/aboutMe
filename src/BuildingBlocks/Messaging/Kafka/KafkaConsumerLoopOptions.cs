@@ -22,4 +22,11 @@ public sealed record KafkaConsumerLoopOptions
     public TimeSpan FirstRetryDelay { get; init; } = TimeSpan.FromSeconds(1);
 
     public TimeSpan MaxRetryDelay { get; init; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>
+    /// Ошибка обработчика, которая повторится на тех же данных (например, нарушение ограничения БД). Такой батч
+    /// не ретраится: все его сообщения считаются ядовитыми и пропускаются, офсет коммитится — иначе цикл встал бы
+    /// навсегда. null или false — ошибка транзиентная, батч повторяется с паузой.
+    /// </summary>
+    public Func<Exception, bool>? IsPoison { get; init; }
 }

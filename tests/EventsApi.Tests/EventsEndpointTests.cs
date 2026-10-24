@@ -128,6 +128,37 @@ public sealed class EventsEndpointTests : IDisposable
         Assert.Empty(_factory.Producer.Produced);
     }
 
+    // Экранированный непарный суррогат — валидный JSON, но строку из него не получить (GetString бросает)
+    [Theory]
+    [InlineData("payload.stop", false)]
+    [InlineData("payload.lone", false)]
+    [InlineData("sessionId", false)]
+    [InlineData("type", false)]
+    [InlineData("lone", false)]
+    [InlineData("payload.stop", true)]
+    public async Task Unpaired_surrogate_is_rejected_with_400(string field, bool batch)
+    {
+        const string Marker = "LONE-SURROGATE";
+        var incoming = Event(EventTypes.StopOpened, new JsonObject { ["stop"] = "profile" });
+        var parent = field.StartsWith("payload.", StringComparison.Ordinal) ? incoming["payload"]!.AsObject() : incoming;
+        var name = field.Split('.')[^1];
+        if (name == "lone")
+        {
+            parent[Marker] = "x";
+        }
+        else
+        {
+            parent[name] = Marker;
+        }
+
+        var body = (batch ? new JsonArray(incoming) : (JsonNode)incoming).ToJsonString().Replace(Marker, "\\ud800", StringComparison.Ordinal);
+
+        var response = await PostRawAsync(body);
+
+        await AssertValidationProblemAsync(response);
+        Assert.Empty(_factory.Producer.Produced);
+    }
+
     [Fact]
     public async Task Field_of_wrong_json_type_is_reported_by_its_path()
     {

@@ -53,6 +53,25 @@ public static class VisitSources
     public static readonly IReadOnlyList<string> All = [Hh, LinkedIn, Telegram, Cv, Direct];
 }
 
+/// <summary>
+/// <c>stop_opened.stop</c> values: the chapter ids of the content (keys of <c>chapters</c> in
+/// <c>content/*.json</c>). A closed list keeps the stats and live counters bounded.
+/// </summary>
+public static class Stops
+{
+    public const string Profile = "profile";
+    public const string ProSpace = "prospace";
+    public const string TimePath = "timepath";
+    public const string TechStack = "techstack";
+    public const string Education = "education";
+    public const string Contact = "contact";
+    public const string Summary = "summary";
+    public const string Monitoring = "monitoring";
+
+    public static readonly IReadOnlyList<string> All =
+        [Profile, ProSpace, TimePath, TechStack, Education, Contact, Summary, Monitoring];
+}
+
 /// <summary><c>cta_click.cta</c> values.</summary>
 public static class CtaTargets
 {
@@ -82,7 +101,6 @@ public static class WebVitalNames
 /// <summary>Limits of incoming event fields.</summary>
 public static class EventLimits
 {
-    public const int StopMaxLength = 32;
     public const int SkillMaxLength = 64;
     public const int SessionIdMaxLength = 64;
 

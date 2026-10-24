@@ -219,6 +219,10 @@ CORS: только домены сайта; разрешены методы `GET
 ```
 Источник истины по полям и допустимым значениям (включая лимиты payload и правила валидации) — код
 `src/Contracts/Events` (`SiteEvent`, `IncomingEvent`, `EventTypes.cs`, `EventValidator`); пример выше — иллюстрация.
+Допустимые значения закрыты, чтобы агрегаты и live-счётчики не росли от произвольного ввода: `stop` ∈ id глав
+контента (ключи `chapters` в `content/*.json`: profile, prospace, timepath, techstack, education, contact, summary,
+monitoring); `skill` — имя технологии: 1–64 символа из букв, цифр, пробела и `. + # / _ -`, без пробелов по краям;
+управляющие символы и непарные суррогаты запрещены во всех строковых полях. Снимок списков — `tests/Contracts.Tests/AllowedValuesTests`.
 Сериализация — JSON (System.Text.Json, source generators). Эволюция: только добавление необязательных полей;
 несовместимое изменение → новый топик `site.events.v2`. Schema Registry не используем — один продюсер, схемы
 в общем проекте `Contracts` (ADR-0002).

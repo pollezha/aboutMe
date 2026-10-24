@@ -9,6 +9,10 @@ internal static partial class KafkaConsumerLoopLog
     [LoggerMessage(Level = LogLevel.Warning, Message = "Poison message skipped: {Topic} [{Partition}] @{Offset}")]
     public static partial void Poison(ILogger logger, string topic, int partition, long offset);
 
+    [LoggerMessage(Level = LogLevel.Warning,
+        Message = "Poison batch skipped ({ErrorType}): {Count} messages, {Topic} [{Partition}] up to @{Offset}")]
+    public static partial void PoisonBatch(ILogger logger, string errorType, int count, string topic, int partition, long offset);
+
     [LoggerMessage(Level = LogLevel.Warning, Message = "Kafka consume failed: {ErrorCode} {Reason}")]
     public static partial void ConsumeFailed(ILogger logger, ErrorCode errorCode, string reason);
 
