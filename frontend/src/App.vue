@@ -32,13 +32,14 @@ import {
   type Mode,
   type SceneLoad,
 } from './mode'
-import { BottomBar, type BottomBarStop } from './route'
+import { RouteBar, useRouteStore } from './route'
 import { useBreakpoint } from './shared/lib'
 import { IconButton } from './shared/ui'
 import { useTheme } from './theme'
 import { ChapterWindow, ProofLinks } from './windows'
 
 const ui = useUiStore()
+const route = useRouteStore()
 const { store: langStore } = useRouteLang()
 const { t } = useI18n()
 const { store: themeStore, label: themeLabel } = useTheme(t)
@@ -204,34 +205,19 @@ const telegramLink = computed(() =>
   content.value.profile.links.find((link) => link.kind === 'telegram'),
 )
 const links = computed(() => ({ cv: cvLink.value?.href, telegram: telegramLink.value?.href }))
-const barProfile = computed(() => ({ initials: 'YP', name: t('hero.name'), role: t('hero.role') }))
 
 const chapterLabel = useChapterLabel()
-const stops = computed<BottomBarStop[]>(() =>
-  ROUTE.map((chapter) => ({
-    ...chapter,
-    ...chapterLabel(chapter.id),
-    // Активная важнее посещённой: у текущей главы — заливка, у уже просмотренных — галочка.
-    state:
-      ui.activeStop === chapter.id
-        ? 'active'
-        : ui.visitedStops.has(chapter.id)
-          ? 'visited'
-          : 'default',
-  })),
-)
-
-// Кнопка языка — когда есть контент на обоих языках (FR8); имя — текущий язык и куда переключит.
+// Кнопка языка в верхних контролах — когда есть контент на обоих языках (FR8); в баре её показывает RouteBar.
 const showLang = CONTENT_LANGS.length > 1
 
 function open(id: string) {
-  if (isChapterId(id)) ui.openChapter(id)
+  if (isChapterId(id)) route.openChapter(id)
 }
 
-const windowChapter = computed(() => (ui.openWindow ? chapterInfo(ui.openWindow) : null))
+const windowChapter = computed(() => (route.openWindow ? chapterInfo(route.openWindow) : null))
 // Шапка и подвал окна — из контента главы (даты подставлены); тело — из реестра окон.
 const windowText = computed(() =>
-  ui.openWindow ? resolveChapter(content.value, ui.openWindow, now) : null,
+  route.openWindow ? resolveChapter(content.value, route.openWindow, now) : null,
 )
 const chapterTexts = computed(() =>
   prerender ? CHAPTERS.map(({ id }) => ({ id, ...resolveChapter(content.value, id, now) })) : [],
@@ -244,7 +230,7 @@ const windowEyebrow = computed(() => {
   const stop = t('window.stop', { n: Number(index), total: ROUTE.length })
   return `${stop} · ${windowText.value.eyebrow}`
 })
-const neighbours = computed(() => (ui.openWindow ? routeNeighbours(ui.openWindow) : {}))
+const neighbours = computed(() => (route.openWindow ? routeNeighbours(route.openWindow) : {}))
 const prevLink = computed(() => {
   const prev = neighbours.value.prev
   return prev ? { number: prev.index, title: chapterLabel(prev.id).title } : undefined
@@ -268,13 +254,13 @@ function urlWith(id: ChapterId | null) {
 
 function onWindowOpen(value: boolean) {
   if (value) return
-  ui.closeWindow()
+  route.closeWindow()
   // Своя запись — уходим с неё; окно уже закрыто, popstate придёт на запись без главы.
   if (ownsHistoryEntry()) history.back()
 }
 
 watch(
-  () => ui.openWindow,
+  () => route.openWindow,
   (id, previous) => {
     const target = id ? `#${id}` : ''
     if (window.location.hash === target) return
@@ -294,9 +280,9 @@ watch(
 function syncFromLocation() {
   const id = window.location.hash.slice(1)
   if (isChapterId(id)) {
-    if (ui.openWindow !== id) ui.openChapter(id)
-  } else if (ui.openWindow) {
-    ui.closeWindow()
+    if (route.openWindow !== id) route.openChapter(id)
+  } else if (route.openWindow) {
+    route.closeWindow()
   }
 }
 
@@ -357,10 +343,10 @@ onBeforeUnmount(() => {
           />
           <IconButton
             v-if="ui.mode === '3d'"
-            :icon="ui.motionPaused ? 'play' : 'pause'"
+            :icon="route.motionPaused ? 'play' : 'pause'"
             :label="t('topBar.pause')"
-            :pressed="ui.motionPaused"
-            @click="ui.toggleMotion()"
+            :pressed="route.motionPaused"
+            @click="route.toggleMotion()"
           />
           <IconButton
             v-if="canSwitchMode"
@@ -400,25 +386,15 @@ onBeforeUnmount(() => {
           :contact-label="t('hero.contact')"
           :cv-label="cvLink?.label ?? ''"
           :telegram-label="telegramLink?.label ?? ''"
-          @contact="ui.openChapter('contact')"
+          @contact="route.openChapter('contact')"
         />
         <StaticMap v-if="ui.mode === '2d'" class="app__map" :variant="mapVariant" @open="open" />
       </main>
 
-      <BottomBar
+      <RouteBar
         class="app__bar"
         :variant="barVariant"
-        :stops="stops"
-        :profile="barProfile"
-        :nav-label="t('bar.nav')"
-        :contact-label="t('bar.contact')"
-        :monitoring-label="t('bar.monitoring')"
         :theme-label="themeLabel"
-        :lang-label="t('lang.label')"
-        :show-lang="showLang"
-        @open="open"
-        @contact="ui.openChapter('contact')"
-        @monitoring="ui.openChapter('monitoring')"
         @toggle-theme="themeStore.cycleTheme()"
         @toggle-lang="langStore.toggleLang()"
       />
@@ -439,8 +415,8 @@ onBeforeUnmount(() => {
       :links-label="t('window.links')"
       :next-label="t('window.next')"
       @update:open="onWindowOpen"
-      @prev="neighbours.prev && ui.openChapter(neighbours.prev.id)"
-      @next="neighbours.next && ui.openChapter(neighbours.next.id)"
+      @prev="neighbours.prev && route.openChapter(neighbours.prev.id)"
+      @next="neighbours.next && route.openChapter(neighbours.next.id)"
     >
       <component :is="WINDOWS[windowChapter.id].body" :content="content" :now="now" />
       <template #links><ProofLinks :links="windowText.proofLinks" /></template>

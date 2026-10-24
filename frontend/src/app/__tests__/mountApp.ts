@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import App from '../../App.vue'
 import { loadScene } from '../../scene'
 import { useLangStore } from '../../locale'
+import { useRouteStore } from '../../route'
 import { useUiStore } from '../../stores/ui'
 import { appPlugins } from './appPlugins'
 import { sceneStub } from './sceneStub'
@@ -75,7 +76,7 @@ export function mountApp() {
   const pinia = createPinia()
   setActivePinia(pinia)
   wrapper = mount(App, { global: { plugins: appPlugins(pinia) }, attachTo: document.body })
-  return { wrapper, ui: useUiStore(), lang: useLangStore() }
+  return { wrapper, ui: useUiStore(), route: useRouteStore(), lang: useLangStore() }
 }
 
 /** unhead пишет `<html lang>` в DOM не синхронно — ждём условие. */

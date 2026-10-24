@@ -16,7 +16,7 @@ useAppTestEnv()
 
 describe('App', () => {
   it('opens the ProSpace window right after a click on stop 02', async () => {
-    const { wrapper, ui } = mountApp()
+    const { wrapper, route } = mountApp()
 
     await wrapper.findAll('.route-stop')[1]!.trigger('click')
 
@@ -24,21 +24,21 @@ describe('App', () => {
     expect(dialog.exists()).toBe(true)
     expect(dialog.get('h2').text()).toBe('ProSpace · OptiTrack')
     expect(dialog.get('.window__eyebrow').text()).toMatch(/^Stop 2 of 6 · Waybill · Latest role · /)
-    expect(ui.activeStop).toBe('prospace')
+    expect(route.activeStop).toBe('prospace')
     expect(wrapper.findAll('.route-stop')[1]!.attributes('aria-current')).toBe('step')
     expect(location.hash).toBe('#prospace')
   })
 
   it('walks the route with next/prev and has no prev on 01 and no next on 06', async () => {
-    const { wrapper, ui } = mountApp()
+    const { wrapper, route } = mountApp()
 
-    ui.openChapter('profile')
+    route.openChapter('profile')
     await nextTick()
     expect(openDialog(wrapper).text()).not.toContain('←')
     await openDialog(wrapper).get('.window__nav button').trigger('click')
-    expect(ui.openWindow).toBe('prospace')
+    expect(route.openWindow).toBe('prospace')
 
-    ui.openChapter('contact')
+    route.openChapter('contact')
     await nextTick()
     const nav = openDialog(wrapper).findAll('.window__nav button')
     expect(nav).toHaveLength(1)
@@ -56,19 +56,19 @@ describe('App', () => {
   })
 
   it('closing the window clears the hash', async () => {
-    const { wrapper, ui } = mountApp()
-    ui.openChapter('prospace')
+    const { wrapper, route } = mountApp()
+    route.openChapter('prospace')
     await nextTick()
 
     await openDialog(wrapper).get('button[aria-label="Close"]').trigger('click')
     await waitForHash('')
 
-    expect(ui.openWindow).toBeNull()
+    expect(route.openWindow).toBeNull()
     expect(location.hash).toBe('')
   })
 
   it('pushes a history entry when a window opens and closes it on Back', async () => {
-    const { wrapper, ui } = mountApp()
+    const { wrapper, route } = mountApp()
 
     await wrapper.findAll('.route-stop')[1]!.trigger('click')
     expect(history.state?.chapter).toBe('prospace')
@@ -79,7 +79,7 @@ describe('App', () => {
     window.dispatchEvent(new PopStateEvent('popstate', { state: history.state }))
     await nextTick()
 
-    expect(ui.openWindow).toBeNull()
+    expect(route.openWindow).toBeNull()
     expect(openDialog(wrapper).exists()).toBe(false)
   })
 
@@ -96,42 +96,42 @@ describe('App', () => {
   })
 
   it('closes the window when the hash is cleared', async () => {
-    const { wrapper, ui } = mountApp()
-    ui.openChapter('contact')
+    const { wrapper, route } = mountApp()
+    route.openChapter('contact')
     await nextTick()
 
     location.hash = ''
     window.dispatchEvent(new HashChangeEvent('hashchange'))
     await nextTick()
 
-    expect(ui.openWindow).toBeNull()
+    expect(route.openWindow).toBeNull()
     expect(openDialog(wrapper).exists()).toBe(false)
   })
 
   it('closes a deep-linked window without leaving the page', async () => {
     history.replaceState(null, '', '/#contact')
-    const { wrapper, ui } = mountApp()
+    const { wrapper, route } = mountApp()
     await flushPromises()
     const length = history.length
 
     await openDialog(wrapper).get('button[aria-label="Close"]').trigger('click')
 
-    expect(ui.openWindow).toBeNull()
+    expect(route.openWindow).toBeNull()
     expect(location.hash).toBe('')
     expect(history.length).toBe(length)
   })
 
   it('moves focus to the new title on next (05 → 06) and on prev (02 → 01)', async () => {
-    const { wrapper, ui } = mountApp()
+    const { wrapper, route } = mountApp()
 
-    ui.openChapter('education')
+    route.openChapter('education')
     await nextTick()
     await openDialog(wrapper).get('.window__nav .btn--secondary').trigger('click')
     await flushPromises()
     expect(document.activeElement?.tagName).toBe('H2')
     expect(document.activeElement?.textContent).toBe('Next stop: your team.')
 
-    ui.openChapter('prospace')
+    route.openChapter('prospace')
     await flushPromises()
     await openDialog(wrapper).get('.window__nav .btn--ghost').trigger('click')
     await flushPromises()

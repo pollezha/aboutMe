@@ -148,13 +148,13 @@ describe('App', () => {
   })
 
   it('toggles motion pause from the top bar', async () => {
-    const { wrapper, ui } = mountApp()
+    const { wrapper, route } = mountApp()
 
     const pause = wrapper.get('.top-bar button[aria-label="Pause animation"]')
     expect(pause.attributes('aria-pressed')).toBe('false')
     await pause.trigger('click')
 
-    expect(ui.motionPaused).toBe(true)
+    expect(route.motionPaused).toBe(true)
     expect(pause.attributes('aria-pressed')).toBe('true')
   })
 })

@@ -19,20 +19,17 @@ export const MODULES = {
   locale: { deps: ['content', 'shared/lib'], facade: true },
   route: { deps: ['content', 'locale', ...shared], facade: true },
   hero: { deps: ['content', 'locale', ...shared], facade: true },
-  // chapters, windows берут общий стор из stores/ (openWindow, openChapter) до M12.
   chapters: {
     deps: ['content', 'locale', 'route', ...shared],
-    legacyDeps: ['stores'],
     facade: true,
     prerendered: true,
   },
   windows: {
     deps: ['chapters', 'content', 'locale', 'route', ...shared],
-    legacyDeps: ['stores'],
     facade: true,
     prerendered: true,
   },
-  // fallback2d, scene берут общий стор из stores/ (до M12–M13).
+  // fallback2d может брать стор режима из stores/ (до M13).
   fallback2d: {
     deps: ['content', 'locale', 'theme', ...shared],
     legacyDeps: ['stores'],
@@ -40,11 +37,10 @@ export const MODULES = {
   },
   scene: {
     deps: ['content', 'locale', 'route', 'theme', 'shared/lib'],
-    legacyDeps: ['stores'],
     facade: true,
     lazy: true,
   },
-  // mode реэкспортирует общий стор из stores/ (до M10–M13).
+  // mode реэкспортирует стор режима из stores/ (mode, sceneState, userChoice) до M13.
   mode: { deps: ['scene', 'locale', ...shared], legacyDeps: ['stores'], facade: true },
   app: {
     deps: [

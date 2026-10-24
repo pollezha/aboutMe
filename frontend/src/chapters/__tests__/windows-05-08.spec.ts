@@ -5,7 +5,7 @@ import type { Component } from 'vue'
 import en from '../../../../content/en.json'
 import type { ContentBundle } from '../../content/types'
 import { createAppI18n } from '../../locale'
-import { useUiStore } from '../../stores/ui'
+import { useRouteStore } from '../../route'
 import { WINDOWS } from '../registry'
 import ContactWindow from '../ContactWindow.vue'
 import EducationWindow from '../EducationWindow.vue'
@@ -100,7 +100,7 @@ describe('ContactWindow', () => {
     expect(link).toBeDefined()
     await link?.trigger('click')
 
-    expect(useUiStore().openWindow).toBe('summary')
+    expect(useRouteStore().openWindow).toBe('summary')
   })
 })
 
@@ -127,7 +127,7 @@ describe('SummaryWindow', () => {
     expect(cv.attributes()).toHaveProperty('download')
 
     await contact.trigger('click')
-    expect(useUiStore().openWindow).toBe('contact')
+    expect(useRouteStore().openWindow).toBe('contact')
   })
 })
 

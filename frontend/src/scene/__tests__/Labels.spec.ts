@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { defineComponent, h, nextTick } from 'vue'
 import { useLangStore } from '../../locale'
-import { useUiStore } from '../../stores/ui'
+import { useRouteStore } from '../../route'
 import { stops } from '../layout'
 import Labels from '../Labels.vue'
 
@@ -26,7 +26,7 @@ function mountLabels() {
   const pinia = createPinia()
   setActivePinia(pinia)
   const wrapper = mount(Labels, { global: { plugins: [pinia] } })
-  return { wrapper, ui: useUiStore(), lang: useLangStore() }
+  return { wrapper, route: useRouteStore(), lang: useLangStore() }
 }
 
 describe('Labels', () => {
@@ -74,10 +74,10 @@ describe('Labels', () => {
   })
 
   it('opens the chapter on click', async () => {
-    const { wrapper, ui } = mountLabels()
+    const { wrapper, route } = mountLabels()
 
     await wrapper.findAll('button')[1]!.trigger('click')
 
-    expect(ui.openWindow).toBe('prospace')
+    expect(route.openWindow).toBe('prospace')
   })
 })

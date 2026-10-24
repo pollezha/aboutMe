@@ -8,6 +8,7 @@ import { CHAPTERS } from '../content/chapters'
 import { resolveChapter } from '../content/format'
 import type { ContentBundle } from '../content/types'
 import { appPlugins } from '../app/__tests__/appPlugins'
+import { useRouteStore } from '../route'
 import { useUiStore } from '../stores/ui'
 
 // Окна 01–08 в 2D-режиме (AC6 без 3D): WebGL нет → сцена не грузится, three не нужен.
@@ -60,7 +61,7 @@ async function mountAt(hash: string) {
   setActivePinia(pinia)
   wrapper = mount(App, { global: { plugins: appPlugins(pinia) }, attachTo: document.body })
   await flushPromises()
-  return { wrapper, ui: useUiStore() }
+  return { wrapper, ui: useUiStore(), route: useRouteStore() }
 }
 
 function openDialog(w: VueWrapper) {
@@ -82,18 +83,18 @@ describe('chapter windows in 2D mode', () => {
   )
 
   it('opens every map hotspot as a window with its body', async () => {
-    const { wrapper, ui } = await mountAt('')
+    const { wrapper, route } = await mountAt('')
 
     const hotspots = wrapper.findAll('.static-map button.hotspot')
     expect(hotspots.length).toBeGreaterThan(0)
     for (const hotspot of hotspots) {
       await hotspot.trigger('click')
       await nextTick()
-      const id = ui.openWindow
+      const id = route.openWindow
       expect(id).not.toBeNull()
       const dialog = openDialog(wrapper)
       expect(dialog.find('.window__body .chapter-body').exists()).toBe(true)
-      ui.closeWindow()
+      route.closeWindow()
       await nextTick()
     }
   })

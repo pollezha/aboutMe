@@ -6,7 +6,7 @@
 import { useLoop } from '@tresjs/core'
 import type { BoxGeometry, Group } from 'three'
 import { shallowRef, watch } from 'vue'
-import { useUiStore } from '../stores/ui'
+import { useRouteStore } from '../route'
 import { LAND_HEIGHT, LAYER } from './layout'
 import type { createSceneMaterials } from './materials'
 import { advance, createTruck, driveTo, isRouteStop, type TruckState } from './useRoute'
@@ -29,7 +29,7 @@ const parts = [
   { role: 'truck:cab', position: [1.75, 1.5, 0], scale: [1.7, 1.4, 2.3] },
 ] as const
 
-const ui = useUiStore()
+const route = useRouteStore()
 const group = shallowRef<Group>()
 let truck: TruckState = createTruck()
 
@@ -42,7 +42,7 @@ function place() {
 }
 
 watch(
-  () => ui.openWindow,
+  () => route.openWindow,
   (id) => {
     if (id && isRouteStop(id)) truck = driveTo(truck, id)
   },

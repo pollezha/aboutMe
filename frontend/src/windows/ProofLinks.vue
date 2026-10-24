@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { ProofLink } from '../content'
-import { useUiStore } from '../stores/ui'
+import { useRouteStore } from '../route'
 import { BaseButton, Icon } from '../shared/ui'
 
 // Футер окна «Proof & links»: внешние ссылки — в новой вкладке, файлы — download, ссылка на главу — окно.
 defineProps<{ links: ProofLink[] }>()
 
-const ui = useUiStore()
+const route = useRouteStore()
 </script>
 
 <template>
@@ -15,7 +15,7 @@ const ui = useUiStore()
       v-if="'chapter' in link"
       variant="ghost"
       class="proof-link"
-      @click="ui.openChapter(link.chapter)"
+      @click="route.openChapter(link.chapter)"
     >
       {{ link.label }}
       <template #icon><Icon name="arrow-right" /></template>
