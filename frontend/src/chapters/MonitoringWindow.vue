@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { type ContentBundle, resolveChapter, type WindowMetric } from '../../content'
-import { Icon } from '../../shared/ui'
+import { type ContentBundle, resolveChapter, type WindowMetric } from '../content'
+import { Icon } from '../shared/ui'
 import MetaRow from './blocks/MetaRow.vue'
 import MetricGrid from './blocks/MetricGrid.vue'
 import SectionHeading from './blocks/SectionHeading.vue'

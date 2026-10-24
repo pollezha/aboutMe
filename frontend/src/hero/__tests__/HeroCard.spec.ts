@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import en from '../../../../content/en.json'
-import { resolveHighlights } from '../../content/experience'
-import type { ContentBundle } from '../../content/types'
+import { resolveHighlights, type ContentBundle } from '../../content'
 import HeroCard from '../HeroCard.vue'
 
 const content = en as ContentBundle

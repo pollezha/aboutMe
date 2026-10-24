@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import map from '../../scripts/design/figma-2d-map.json'
 import type { ChapterId } from '../content'
 import { useChapterLabel } from '../i18n'
-import { useUiStore } from '../stores/ui'
+import { useThemeStore } from '../theme'
 import { ISLAND_RENDER_HEIGHT, ISLAND_RENDER_WIDTH, islandRenderUrl } from './render'
 
 // 2D-режим (FR10): рендер острова в теме сайта + кнопки-хотспоты поверх (Figma Tablet 34:771, Phone 56:1398).
@@ -27,13 +27,13 @@ const emit = defineEmits<{ open: [id: ChapterId] }>()
 
 const { t } = useI18n()
 const chapterLabel = useChapterLabel()
-const ui = useUiStore()
-const src = computed(() => islandRenderUrl(ui.theme))
+const themeStore = useThemeStore()
+const src = computed(() => islandRenderUrl(themeStore.theme))
 // Ширины рендеров, а не плотности: браузер берёт 1x, пока его хватает на ширину карты × DPR (телефон с DPR < 2
 // не качает @2x). Карта не шире колонки 736 px; на телефоне — во всю ширину окна (cover в квадрате).
 const srcset = computed(
   () =>
-    `${islandRenderUrl(ui.theme)} ${ISLAND_RENDER_WIDTH}w, ${islandRenderUrl(ui.theme, 2)} ${ISLAND_RENDER_WIDTH * 2}w`,
+    `${islandRenderUrl(themeStore.theme)} ${ISLAND_RENDER_WIDTH}w, ${islandRenderUrl(themeStore.theme, 2)} ${ISLAND_RENDER_WIDTH * 2}w`,
 )
 const SIZES = '(min-width: 768px) 736px, 100vw'
 

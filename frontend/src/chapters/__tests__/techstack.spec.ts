@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { nextTick } from 'vue'
-import en from '../../../../../content/en.json'
-import { serverTenure } from '../../../content/format'
-import { createAppI18n } from '../../../i18n'
-import type { ContentBundle } from '../../../content/types'
-import { WINDOWS } from '..'
+import en from '../../../../content/en.json'
+import { serverTenure } from '../../content/format'
+import { createAppI18n } from '../../i18n'
+import type { ContentBundle } from '../../content/types'
+import { WINDOWS } from '../registry'
 import TechStackWindow from '../TechStackWindow.vue'
 
 const content = en as ContentBundle

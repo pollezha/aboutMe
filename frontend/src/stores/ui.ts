@@ -2,20 +2,16 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { ROUTE, type ChapterId } from '../content'
 import { load, loadSession, save, saveSession } from '../shared/lib'
-import { palette } from '../theme'
 
 export type Lang = 'en' | 'ru'
-export type Theme = 'day' | 'evening' | 'night'
 export type Mode = '3d' | '2d'
 /** idle — сцена не грузится; loading — ждём scene_ready; ready — сцена на экране; failed — таймаут/ошибка, показан баннер. */
 export type SceneState = 'idle' | 'loading' | 'ready' | 'failed'
 
-const THEMES: readonly Theme[] = ['day', 'evening', 'night']
 const LANGS: readonly Lang[] = ['en', 'ru']
 const MODES: readonly Mode[] = ['3d', '2d']
 
 const KEY = {
-  theme: 'aboutme.theme',
   lang: 'aboutme.lang',
   motionPaused: 'aboutme.motionPaused',
   sceneChoice: 'aboutme.sceneChoice',
@@ -42,12 +38,7 @@ function pick<T extends string>(value: string | null, allowed: readonly T[], fal
   return allowed.includes(value as T) ? (value as T) : fallback
 }
 
-export function isTheme(value: string | null): value is Theme {
-  return THEMES.includes(value as Theme)
-}
-
 export const useUiStore = defineStore('ui', () => {
-  const theme = ref<Theme>(pick(load(KEY.theme), THEMES, 'day'))
   const lang = ref<Lang>(pick(load(KEY.lang), LANGS, 'en'))
   const motionPaused = ref(load(KEY.motionPaused) === 'true')
   const mode = ref<Mode>('3d')
@@ -61,31 +52,6 @@ export const useUiStore = defineStore('ui', () => {
   const openWindow = ref<ChapterId | null>(null)
   /** Остановки маршрута, чьи окна открывали в этой сессии: в баре — галочка (если остановка не активна). */
   const visitedStops = ref<Set<ChapterId>>(loadVisited())
-
-  function setTheme(next: Theme) {
-    theme.value = next
-    save(KEY.theme, next)
-  }
-
-  /** Тема из ссылки (?theme=night): показываем, но не запоминаем как выбор пользователя. */
-  function previewTheme(next: Theme) {
-    theme.value = next
-  }
-
-  function cycleTheme() {
-    setTheme(THEMES[(THEMES.indexOf(theme.value) + 1) % THEMES.length] ?? 'day')
-  }
-
-  /** Тема → <html data-theme>, color-scheme (полосы прокрутки, формы) и <meta name="theme-color">. */
-  function applyTheme() {
-    if (typeof document === 'undefined') return
-    const root = document.documentElement
-    root.dataset.theme = theme.value
-    root.style.colorScheme = theme.value === 'night' ? 'dark' : 'light'
-    document
-      .querySelector<HTMLMetaElement>('meta#theme-color')
-      ?.setAttribute('content', palette[theme.value]['bg/canvas'])
-  }
 
   /** Выбор пользователя (переключатель): запоминается; App переводит маршрут на /ru/ или /. */
   function setLang(next: Lang) {
@@ -158,7 +124,6 @@ export const useUiStore = defineStore('ui', () => {
   }
 
   return {
-    theme,
     lang,
     mode,
     motionPaused,
@@ -167,10 +132,6 @@ export const useUiStore = defineStore('ui', () => {
     activeStop,
     openWindow,
     visitedStops,
-    setTheme,
-    previewTheme,
-    cycleTheme,
-    applyTheme,
     setLang,
     syncLang,
     toggleLang,

@@ -5,7 +5,7 @@ import { useLoop, useTres } from '@tresjs/core'
 import { BoxGeometry, type OrthographicCamera } from 'three'
 import { computed, onBeforeUnmount, shallowRef } from 'vue'
 import { useUiStore } from '../stores/ui'
-import { palette } from '../theme'
+import { palette, useThemeStore } from '../theme'
 import BackgroundHouses from './buildings/BackgroundHouses.vue'
 import Building from './buildings/Building.vue'
 import { ISLAND_FRAMING, OVERLAY_FRAMING } from './framing'
@@ -33,7 +33,8 @@ const WATER_SIZE = ISLAND_SIZE * 8
 
 const { sizes } = useTres()
 const ui = useUiStore()
-const colors = computed(() => palette[ui.theme])
+const themeStore = useThemeStore()
+const colors = computed(() => palette[themeStore.theme])
 const materials = createSceneMaterials(() => colors.value)
 // Единичный куб на все коробки сцены: размер — через scale.
 const box = new BoxGeometry(1, 1, 1)
