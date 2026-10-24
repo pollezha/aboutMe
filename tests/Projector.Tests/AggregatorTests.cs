@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Contracts.Events;
-using Projector.Projection;
+using Projector.Domain;
 using Xunit;
 
 namespace Projector.Tests;

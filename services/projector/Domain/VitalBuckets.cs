@@ -1,6 +1,6 @@
 using Contracts.Events;
 
-namespace Projector.Projection;
+namespace Projector.Domain;
 
 /// <summary>
 /// Границы бакетов гистограммы Web Vitals (<c>stats.web_vitals.bucket</c>); p75 считается по ним.

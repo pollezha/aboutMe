@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Projector.Data;
+using Projector.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace Projector.Data.Migrations
+namespace Projector.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(StatsDbContext))]
     partial class StatsDbContextModelSnapshot : ModelSnapshot

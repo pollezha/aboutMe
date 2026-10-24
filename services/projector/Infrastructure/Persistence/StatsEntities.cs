@@ -1,4 +1,4 @@
-namespace Projector.Data;
+namespace Projector.Infrastructure.Persistence;
 
 /// <summary>Визиты за день в разрезе источника и типа устройства.</summary>
 public sealed class DailyVisit

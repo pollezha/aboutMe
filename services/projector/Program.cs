@@ -1,41 +1,20 @@
-using BuildingBlocks.Messaging.Kafka;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Projector.Data;
-using Projector.Projection;
-
-const string KafkaConnectionName = "kafka";
+using Projector.Application;
+using Projector.Application.RebuildStats;
+using Projector.Infrastructure;
+using Projector.Infrastructure.Persistence;
+using Projector.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddServiceDefaults();
-builder.Services.AddKafkaTracing();
-
-// Строка подключения "stats" приходит из AppHost; интеграция Aspire добавляет health check БД и OTel
-builder.AddNpgsqlDbContext<StatsDbContext>(
-    StatsDbContext.ConnectionName,
-    configureDbContextOptions: options => options.UseNpgsql(StatsDbContext.ConfigureNpgsql));
-
 var projectorOptions = builder.Configuration.GetSection(ProjectorOptions.SectionName).Get<ProjectorOptions>()
     ?? new ProjectorOptions();
+
+builder.AddServiceDefaults();
+builder.Services.AddProjectorApplication();
+builder.AddProjectorInfrastructure(projectorOptions.ConsumerGroup);
+
 builder.Services.AddSingleton(projectorOptions);
-
-// Consumer group projector: офсет коммитит воркер после транзакции в БД (ADR-0002). Спаны process — своя обёртка
-// из BuildingBlocks (поверх них span links батча), поэтому трейсинг интеграции выключен; health check — свой.
-builder.AddKafkaConsumer<string, string>(KafkaConnectionName, settings =>
-{
-    settings.DisableTracing = true;
-    settings.DisableHealthChecks = true;
-    KafkaDefaults.ApplyConsumerDefaults(settings.Config, projectorOptions.ConsumerGroup);
-});
-var kafkaBootstrapServers = builder.Configuration.GetConnectionString(KafkaConnectionName) ?? string.Empty;
-builder.Services.AddSingleton(_ => new KafkaHealthCheck(kafkaBootstrapServers));
-builder.Services.AddHealthChecks().Add(new HealthCheckRegistration(
-    KafkaConnectionName, sp => sp.GetRequiredService<KafkaHealthCheck>(), failureStatus: null, tags: null));
-
-builder.Services.AddSingleton<PoisonCounter>();
 builder.Services.AddHostedService<ProjectorWorker>();
-builder.Services.AddOpenTelemetry().WithMetrics(metrics => metrics.AddMeter(PoisonCounter.MeterName));
 
 var app = builder.Build();
 
@@ -48,8 +27,7 @@ if (args.Contains("migrate", StringComparer.Ordinal))
 // `dotnet run --project services/projector -- rebuild`: пересчёт агрегатов из журнала; projector должен быть остановлен
 if (args.Contains("rebuild", StringComparer.Ordinal))
 {
-    return await StatsRebuild.RunAsync(
-        app.Services, kafkaBootstrapServers, projectorOptions.ConsumerGroup, app.Logger, CancellationToken.None);
+    return await RebuildAsync(app.Services, projectorOptions.ConsumerGroup, app.Logger);
 }
 
 // Только для локального запуска из AppHost; в проде миграции — отдельный шаг деплоя
@@ -66,3 +44,41 @@ app.MapDefaultEndpoints();
 
 await app.RunAsync();
 return 0;
+
+// 0 — готово; 1 — ошибка (в том числе projector ещё работает: группа активна)
+static async Task<int> RebuildAsync(IServiceProvider services, string consumerGroup, ILogger logger)
+{
+    try
+    {
+        await using var scope = services.CreateAsyncScope();
+        var handler = scope.ServiceProvider.GetRequiredService<RebuildStatsHandler>();
+        var result = await handler.HandleAsync(new RebuildStatsCommand(consumerGroup), CancellationToken.None);
+        if (result == RebuildStatsResult.GroupActive)
+        {
+            ProgramLog.RebuildGroupActive(logger, consumerGroup);
+            return 1;
+        }
+
+        ProgramLog.RebuildDone(logger, consumerGroup);
+        return 0;
+    }
+#pragma warning disable CA1031 // любой сбой → ненулевой код выхода команды
+    catch (Exception ex)
+#pragma warning restore CA1031
+    {
+        ProgramLog.RebuildFailed(logger, ex);
+        return 1;
+    }
+}
+
+internal static partial class ProgramLog
+{
+    [LoggerMessage(Level = LogLevel.Information, Message = "Stats truncated, offsets of group {ConsumerGroup} reset to the beginning")]
+    public static partial void RebuildDone(ILogger logger, string consumerGroup);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Consumer group {ConsumerGroup} is active: stop the projector before rebuild")]
+    public static partial void RebuildGroupActive(ILogger logger, string consumerGroup);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Stats rebuild failed")]
+    public static partial void RebuildFailed(ILogger logger, Exception exception);
+}

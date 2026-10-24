@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Contracts.Events;
 
-namespace Projector.Projection;
+namespace Projector.Domain;
 
 /// <summary>Чистые функции: событие → приращения агрегатов (docs/design/architecture.md §5.5).</summary>
 public static class Aggregator

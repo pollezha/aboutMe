@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace Projector.Data;
+namespace Projector.Infrastructure.Persistence;
 
 /// <summary>Применение миграций схемы <c>stats</c>: команда <c>migrate</c> и <c>Database:MigrateOnStart</c>.</summary>
 public static partial class StatsMigrations

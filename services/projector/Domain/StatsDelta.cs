@@ -1,4 +1,4 @@
-namespace Projector.Projection;
+namespace Projector.Domain;
 
 /// <summary>Приращение одной строки агрегата в схеме <c>stats</c>: измерения — ключ строки, <see cref="N"/> — прибавка.</summary>
 public abstract record StatsDelta(int N);

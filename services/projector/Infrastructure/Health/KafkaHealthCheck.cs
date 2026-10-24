@@ -1,7 +1,7 @@
 using Confluent.Kafka;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace Projector.Projection;
+namespace Projector.Infrastructure.Health;
 
 /// <summary>
 /// Готовность Kafka: брокер отдаёт метаданные. Проверка Aspire.Confluent.Kafka отключена — она пишет

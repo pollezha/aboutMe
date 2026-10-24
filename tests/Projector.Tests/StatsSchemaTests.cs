@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
-using Projector.Data;
+using Projector.Infrastructure.Persistence;
 using Xunit;
 
 namespace Projector.Tests;

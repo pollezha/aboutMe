@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-namespace Projector.Data;
+namespace Projector.Infrastructure.Persistence;
 
 /// <summary>
 /// Для <c>dotnet ef</c>: модель строится без подключения к БД (строка подключения не используется при

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
 
-namespace Projector.Data;
+namespace Projector.Infrastructure.Persistence;
 
 /// <summary>Агрегаты статистики в схеме <c>stats</c> (docs/design/architecture.md §5.5, §5.8).</summary>
 public sealed class StatsDbContext(DbContextOptions<StatsDbContext> options) : DbContext(options)

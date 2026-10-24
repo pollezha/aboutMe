@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Logging.Abstractions;
-using Projector.Data;
+using Projector.Infrastructure.Persistence;
 using Xunit;
 
 namespace Projector.Tests;

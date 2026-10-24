@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using BuildingBlocks.Messaging.Kafka;
+using BuildingBlocks.Persistence;
 using Confluent.Kafka;
 using Contracts;
 using Contracts.Events;
@@ -12,8 +13,10 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
-using Projector.Data;
-using Projector.Projection;
+using Projector.Application;
+using Projector.Application.RebuildStats;
+using Projector.Infrastructure.Messaging;
+using Projector.Infrastructure.Persistence;
 using Xunit;
 
 namespace Projector.Tests;
@@ -128,7 +131,7 @@ public sealed class ProjectorWorkerTests(PostgresFixture postgres, KafkaFixture 
             before = await SnapshotAsync(env);
         }
 
-        Assert.Equal(0, await RebuildAsync(env));
+        Assert.Equal(RebuildStatsResult.Done, await RebuildAsync(env));
 
         Assert.Equal(0, await ScalarAsync(env, """
             SELECT (SELECT count(*) FROM stats.daily_visits) + (SELECT count(*) FROM stats.stop_opens)
@@ -153,7 +156,7 @@ public sealed class ProjectorWorkerTests(PostgresFixture postgres, KafkaFixture 
         await ProduceAsync(env, Event(EventTypes.StopOpened, """{"stop":"profile"}"""));
         await WaitUntilAsync(env, "SELECT coalesce(sum(n), 0) FROM stats.stop_opens", 1);
 
-        Assert.NotEqual(0, await RebuildAsync(env));
+        Assert.Equal(RebuildStatsResult.GroupActive, await RebuildAsync(env));
 
         Assert.Equal(1, await ScalarAsync(env, "SELECT count(*) FROM stats.processed_events"));
     }
@@ -177,10 +180,14 @@ public sealed class ProjectorWorkerTests(PostgresFixture postgres, KafkaFixture 
         Assert.Equal(0, await StatsMigrations.ApplyAsync(services, NullLogger.Instance, Ct));
     }
 
-    private async Task<int> RebuildAsync(TestEnv env)
+    private async Task<RebuildStatsResult> RebuildAsync(TestEnv env)
     {
         await using var services = PostgresFixture.CreateServices(env.Database);
-        return await StatsRebuild.RunAsync(services, kafka.BootstrapServers, env.Group, NullLogger.Instance, Ct);
+        await using var scope = services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<StatsDbContext>();
+        await using var unitOfWork = new EfUnitOfWork<StatsDbContext>(db);
+        var handler = new RebuildStatsHandler(new KafkaConsumerOffsets(kafka.BootstrapServers), new StatsRepository(db), unitOfWork);
+        return await handler.HandleAsync(new RebuildStatsCommand(env.Group), Ct);
     }
 
     private WebApplicationFactory<Program> StartHost(TestEnv env)
@@ -276,7 +283,7 @@ public sealed class ProjectorWorkerTests(PostgresFixture postgres, KafkaFixture 
     {
         var listener = new ActivityListener
         {
-            ShouldListenTo = source => source.Name == ProjectorWorker.ActivitySourceName,
+            ShouldListenTo = source => source.Name == ProjectorTelemetry.ActivitySourceName,
             Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
             ActivityStopped = activity =>
             {
@@ -296,7 +303,7 @@ public sealed class ProjectorWorkerTests(PostgresFixture postgres, KafkaFixture 
         {
             InstrumentPublished = (instrument, l) =>
             {
-                if (instrument.Meter.Name == PoisonCounter.MeterName && instrument.Name == PoisonCounter.InstrumentName)
+                if (instrument.Meter.Name == ProjectorTelemetry.MeterName && instrument.Name == ProjectorTelemetry.PoisonCounterName)
                 {
                     l.EnableMeasurementEvents(instrument);
                 }

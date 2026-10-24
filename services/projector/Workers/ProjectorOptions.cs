@@ -1,6 +1,6 @@
 using Contracts;
 
-namespace Projector.Projection;
+namespace Projector.Workers;
 
 /// <summary>Секция конфигурации <c>Projector</c>. В проде — значения по умолчанию; тесты подменяют топик и группу.</summary>
 public sealed class ProjectorOptions

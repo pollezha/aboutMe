@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
-using Projector.Data;
+using Projector.Infrastructure.Persistence;
 using Testcontainers.PostgreSql;
 using Xunit;
 
