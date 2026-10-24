@@ -183,7 +183,8 @@ Roadmap: docs/plans/roadmap.md, этап 3 (E3-T1…T10) · ADR: 0003 (HTML по
     на антивирус, см. learnings).
   - Зависит от: T11, T12.
 
-- [ ] T13 — Деплой на Cloudflare (2026-10-24: вместо Pages — Worker со static assets, `frontend/wrangler.jsonc`; https://aboutme.polezhaev-yasha.workers.dev), публичный URL, абсолютный `og:image`
+- [x] T13 — Деплой на Cloudflare (2026-10-24: вместо Pages — Worker со static assets, `frontend/wrangler.jsonc`; https://aboutme.polezhaev-yasha.workers.dev), публичный URL, абсолютный `og:image`
+  - Итог 2026-10-24: Worker `aboutme` (Workers Builds, root `frontend`, `npx wrangler deploy` → `build.command` + `assets: ./dist`), build var `VITE_SITE_ORIGIN`. Прод: `/`, `/ru/`, CV, картинки, OG — 200; исходники и `.vite` не публикуются; brotli, `immutable` на `/assets/*`. Lighthouse mobile по проду (локально, скрипт антивируса заблокирован): perf .86 / .89, a11y/BP/SEO 1.0, LCP ~2.9 с, CLS 0 — LCP выше порога из-за распаковки HTML антивирусом, эталон — LHCI в CI (патч у пользователя). OG-превью в Telegram — проверка пользователем.
   - Файлы: `frontend/wrangler.jsonc` или настройки проекта Pages (сборка `npm run build`, выход `dist`,
     `NODE_VERSION=24`), `frontend/public/_headers` (кэш `immutable` для `assets/`, `X-Content-Type-Options`,
     `Referrer-Policy`), `_redirects` (нет — SPA-фоллбек не нужен при предрендере), `src/head.ts`

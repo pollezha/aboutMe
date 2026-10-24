@@ -14,6 +14,7 @@ npm run dev        # только фронт на снимке контента
 npm run test:lhci  # Lighthouse CI по dist/ (бюджеты в lighthouserc)
 npm run perf:scene # время до готовности 3D-сцены
 npm run test:e2e   # Playwright: сборка + preview :4174, 3 проекта (1280, 390, no-webgl); отчёт в playwright-report/
+# деплой: Cloudflare Workers Builds на push в main (root frontend/, wrangler.jsonc: build → dist/); прод https://aboutme.polezhaev-yasha.workers.dev
 ```
 
 Тихо и целиком: `bash scripts/check.sh frontend` из корня.
