@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import map from '../../scripts/design/figma-2d-map.json'
 import type { ChapterId } from '../content'
-import { useChapterLabel } from '../i18n'
+import { useChapterLabel } from '../locale'
 import { useThemeStore } from '../theme'
 import { ISLAND_RENDER_HEIGHT, ISLAND_RENDER_WIDTH, islandRenderUrl } from './render'
 

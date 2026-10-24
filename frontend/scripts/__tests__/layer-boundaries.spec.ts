@@ -43,7 +43,7 @@ describe('frontend layer boundaries', () => {
     expect(errors).toHaveLength(1)
   })
 
-  it('lets the 2D fallback use content, i18n and stores', async () => {
+  it('lets the 2D fallback use content and stores', async () => {
     const errors = await boundaryErrors(
       'src/fallback2d/Fixture.ts',
       "import { CHAPTERS } from '../content'\nimport { useUiStore } from '../stores/ui'\nexport const x = [CHAPTERS, useUiStore]\n",

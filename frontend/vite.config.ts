@@ -114,7 +114,7 @@ export default defineConfig({
     __BUILD_TIME__: JSON.stringify(buildTime),
     // Флаги esm-bundler-сборок: из main-чанка уходит лишнее (T12b). Options API не используется (только
     // <script setup>); у vue-i18n — только Composition API без <i18n-t>/v-t, а вместо компилятора сообщений
-    // (~17 КБ) — свой для `{name}` (src/i18n/compile.ts).
+    // (~17 КБ) — свой для `{name}` (src/locale/compile.ts).
     __VUE_OPTIONS_API__: 'false',
     __VUE_I18N_FULL_INSTALL__: 'false',
     __VUE_I18N_LEGACY_API__: 'false',

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { defineComponent, h, nextTick } from 'vue'
+import { useLangStore } from '../../locale'
 import { useUiStore } from '../../stores/ui'
 import { stops } from '../layout'
 import Labels from '../Labels.vue'
@@ -25,7 +26,7 @@ function mountLabels() {
   const pinia = createPinia()
   setActivePinia(pinia)
   const wrapper = mount(Labels, { global: { plugins: [pinia] } })
-  return { wrapper, ui: useUiStore() }
+  return { wrapper, ui: useUiStore(), lang: useLangStore() }
 }
 
 describe('Labels', () => {
@@ -49,9 +50,9 @@ describe('Labels', () => {
   })
 
   it('follows the interface language without a remount', async () => {
-    const { wrapper, ui } = mountLabels()
+    const { wrapper, lang } = mountLabels()
 
-    ui.syncLang('ru')
+    lang.syncLang('ru')
     await nextTick()
 
     const buttons = wrapper.findAll('button')

@@ -1,14 +1,13 @@
-import { watch } from 'vue'
 import { createI18n, useI18n } from 'vue-i18n'
 import type { ChapterId } from '../content'
-import { useUiStore, type Lang } from '../stores/ui'
 import { compileMessage } from './compile'
 import en from './en.json'
 import ru from './ru.json'
+import type { Lang } from './useLangStore'
 
 export type MessageSchema = typeof en
 
-/** `locale` — стартовый язык (в приложении его сразу задаёт useLocaleSync; параметр — для тестов). */
+/** `locale` — стартовый язык (в приложении его сразу задаёт useRouteLang; параметр — для тестов). */
 export function createAppI18n(locale: Lang = 'en') {
   return createI18n<[MessageSchema], 'en' | 'ru'>({
     legacy: false,
@@ -17,24 +16,6 @@ export function createAppI18n(locale: Lang = 'en') {
     messages: { en, ru },
     messageCompiler: compileMessage,
   })
-}
-
-/**
- * Держит глобальную локаль i18n в соответствии с `ui.lang`.
- * Источник правды — стор: смена `setLang` меняет `i18n.global.locale`.
- * Вызывается один раз в корневом компоненте.
- */
-export function useLocaleSync() {
-  const ui = useUiStore()
-  const { locale } = useI18n({ useScope: 'global' })
-  watch(
-    () => ui.lang,
-    (lang) => {
-      // <html lang> ставит head.ts по языку контента: бандлы EN и RU есть, поэтому он следует за `ui.lang`.
-      locale.value = lang
-    },
-    { immediate: true },
-  )
 }
 
 export interface ChapterLabel {

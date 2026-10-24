@@ -10,8 +10,7 @@ import App from '../App.vue'
 import { CHAPTERS } from '../content/chapters'
 import { resolveChapter } from '../content/format'
 import type { ContentBundle } from '../content/types'
-import { createAppI18n } from '../i18n'
-import { createAppRouter } from '../router'
+import { createAppI18n, createAppRouter } from '../locale'
 
 const content = en as ContentBundle
 

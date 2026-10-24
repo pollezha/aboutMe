@@ -4,7 +4,7 @@ import { build } from 'vite-ssg/node'
 import { contentFor } from '../content/bundles'
 import { CHAPTERS } from '../content/chapters'
 import { resolveChapter } from '../content/format'
-import { langOf } from '../router'
+import { langOf } from '../locale'
 import { palette } from '../theme/palette'
 
 // @types/node is not a project dependency, so fs is typed locally and imported by a non-literal specifier.

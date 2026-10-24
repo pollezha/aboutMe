@@ -3,6 +3,7 @@ import { mount, type VueWrapper } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import App from '../../App.vue'
 import { loadScene } from '../../scene'
+import { useLangStore } from '../../locale'
 import { useUiStore } from '../../stores/ui'
 import { appPlugins } from './appPlugins'
 import { sceneStub } from './sceneStub'
@@ -74,7 +75,7 @@ export function mountApp() {
   const pinia = createPinia()
   setActivePinia(pinia)
   wrapper = mount(App, { global: { plugins: appPlugins(pinia) }, attachTo: document.body })
-  return { wrapper, ui: useUiStore() }
+  return { wrapper, ui: useUiStore(), lang: useLangStore() }
 }
 
 /** unhead пишет `<html lang>` в DOM не синхронно — ждём условие. */
