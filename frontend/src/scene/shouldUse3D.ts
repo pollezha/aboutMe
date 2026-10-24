@@ -1,7 +1,8 @@
 // Выбор режима (design §4 «Загрузка», FR10): 3D-сцена только там, где она потянет; иначе 2D-карта.
 
-export const MIN_3D_WIDTH = 768
-export const MIN_3D_MEMORY_GB = 4
+import { MIN_3D_MEMORY_GB, MIN_3D_WIDTH } from './thresholds'
+
+export { MIN_3D_MEMORY_GB, MIN_3D_WIDTH }
 
 export interface Use3DInput {
   /** Ширина окна, px. */

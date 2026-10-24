@@ -2,6 +2,7 @@ import { watch } from 'vue'
 import { createI18n, useI18n } from 'vue-i18n'
 import type { ChapterId } from '../content/chapters'
 import { useUiStore, type Lang } from '../stores/ui'
+import { compileMessage } from './compile'
 import en from './en.json'
 import ru from './ru.json'
 
@@ -14,6 +15,7 @@ export function createAppI18n(locale: Lang = 'en') {
     locale,
     fallbackLocale: 'en',
     messages: { en, ru },
+    messageCompiler: compileMessage,
   })
 }
 

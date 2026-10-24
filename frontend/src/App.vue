@@ -18,7 +18,7 @@ import StaticMap from './fallback2d/StaticMap.vue'
 import { useSiteHead } from './head'
 import { useChapterLabel, useLocaleSync } from './i18n'
 import { langOf, pathFor } from './router'
-import { SCENE_TIMEOUT_MS, loadSceneWhenIdle, type SceneLoad } from './scene'
+import { SCENE_TIMEOUT_MS, loadScene, type SceneLoad } from './scene'
 import { MIN_3D_WIDTH, detectWebGL2, shouldUse3D } from './scene/shouldUse3D'
 import { mapRotation } from './scene/useCamera'
 import { isTheme, useUiStore, type Mode, type Theme } from './stores/ui'
@@ -93,14 +93,17 @@ function isWide() {
 
 // Сцена не загрузилась в этом визите — до перезагрузки страницы в 3D не возвращаемся (и при смене ширины).
 const sceneFailed = ref(false)
-const webgl = typeof window !== 'undefined' && detectWebGL2()
+// Проба WebGL2 создаёт контекст (дорого на слабом CPU) — только там, где 3D возможно по ширине, и один раз.
+let webgl: boolean | undefined
+const hasWebGL = () => (webgl ??= detectWebGL2())
 
 function use3D(userChoice: Mode | null) {
   if (typeof window === 'undefined' || sceneFailed.value) return false
   const nav = navigator as Navigator & { deviceMemory?: number }
+  const wide = isWide()
   return shouldUse3D({
-    width: isWide() ? MIN_3D_WIDTH : 0,
-    webgl,
+    width: wide ? MIN_3D_WIDTH : 0,
+    webgl: wide && hasWebGL(),
     deviceMemory: nav.deviceMemory,
     userChoice,
   })
@@ -126,7 +129,7 @@ function switchMode() {
   ui.chooseMode(ui.mode === '3d' ? '2d' : '3d')
 }
 
-// Сцена: ленивый чанк после простоя, таймаут → 2D с баннером (design §4 «Загрузка», UX9).
+// Сцена: ленивый чанк сразу после монтирования, таймаут → 2D с баннером (design §4 «Загрузка», UX9).
 const sceneComponent = shallowRef<Component>()
 let sceneLoad: SceneLoad | null = null
 let sceneTimer: ReturnType<typeof setTimeout> | undefined
@@ -142,7 +145,7 @@ function startScene() {
   ui.setSceneState('loading')
   sceneTimer = setTimeout(failScene, SCENE_TIMEOUT_MS)
   if (sceneComponent.value) return
-  const load = loadSceneWhenIdle()
+  const load = loadScene()
   sceneLoad = load
   load.promise.then(
     (component) => {

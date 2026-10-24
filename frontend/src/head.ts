@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { resolveHighlights } from './content/experience'
 import type { ContentBundle, ContentLang } from './content/types'
 import { pathFor } from './router'
+import { TEXT_FONT_PRELOADS } from './theme/fontPreload'
 
 /** Подмножество тегов unhead, которое строит siteHead. */
 export interface HeadTag {
@@ -12,6 +13,9 @@ export interface HeadTag {
   rel?: string
   hreflang?: string
   href?: string
+  as?: string
+  type?: string
+  crossorigin?: string
 }
 
 export interface SiteHeadInput {
@@ -41,7 +45,10 @@ function describe(content: ContentBundle, now?: Date): string {
   return text
 }
 
-/** title, description, Open Graph, canonical и hreflang (+ x-default → /) страницы на языке контента (FR11). */
+/**
+ * title, description, Open Graph, canonical и hreflang (+ x-default → /) страницы на языке контента (FR11),
+ * preload шрифтов текста этого языка.
+ */
 export function siteHead({ content, langs, origin = '', now }: SiteHeadInput) {
   const base = origin.replace(/\/+$/, '')
   const url = (path: string) => `${base}${path}`
@@ -73,6 +80,14 @@ export function siteHead({ content, langs, origin = '', now }: SiteHeadInput) {
     { rel: 'canonical', href: self },
     ...langs.map((lang) => ({ rel: 'alternate', hreflang: lang, href: url(pathFor(lang)) })),
     { rel: 'alternate', hreflang: 'x-default', href: url('/') },
+    // Шрифты текста страницы — параллельно с CSS (T12b); crossorigin обязателен для шрифтов.
+    ...TEXT_FONT_PRELOADS[content.lang].map((href) => ({
+      rel: 'preload',
+      as: 'font',
+      type: 'font/woff2',
+      href,
+      crossorigin: '',
+    })),
   ]
   return { title, htmlAttrs: { lang: content.lang }, meta, link }
 }
