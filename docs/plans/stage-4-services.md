@@ -108,7 +108,7 @@
     завершается 0; `dotnet ef migrations list` показывает одну миграцию.
   - Зависит от: — (параллельно с T0–T2)
 
-- [ ] T4 — projector: consumer group `projector`, идемпотентная проекция (E4-T5, часть 2; AC8-данные, TC-12)
+- [x] T4 — projector: consumer group `projector`, идемпотентная проекция (E4-T5, часть 2; AC8-данные, TC-12)
   - Файлы: `services/projector/Projection/ProjectorWorker.cs` (BackgroundService: consumer `projector`,
     `enable.auto.commit=false`, `auto.offset.reset=earliest`; батч ≤ 200 или 500 мс; одна транзакция:
     `INSERT processed_events ON CONFLICT DO NOTHING` → для новых — UPSERT агрегатов; затем commit офсета;
@@ -184,7 +184,7 @@
     дашборда в отчёт); тест зелёный.
   - Зависит от: T2–T7
 
-- [ ] T9 — Записка в бутылке: `POST /api/messages` → Telegram (E4-T7b, FR17, TC-21)
+- [x] T9 — Записка в бутылке: `POST /api/messages` → Telegram (E4-T7b, FR17, TC-21)
   - Файлы: `services/events-api/Endpoints/MessagesEndpoints.cs` (`{name ≤ 80, replyTo ≤ 120, text ≤ 2000, website}`;
     `website` заполнен → 204 без отправки; валидация → 400 с ошибками по полям; успех → 202 и событие
     `cta_click{cta: bottle}` в Kafka без текста; Telegram недоступен → 503), `Telegram/TelegramClient.cs`

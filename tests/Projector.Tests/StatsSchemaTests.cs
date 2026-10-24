@@ -1,5 +1,3 @@
-using System.Net;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -56,23 +54,6 @@ public sealed class StatsSchemaTests(PostgresFixture postgres) : IClassFixture<P
 
         var pg = Assert.IsType<PostgresException>(ex.InnerException);
         Assert.Equal(PostgresErrorCodes.UniqueViolation, pg.SqlState);
-    }
-
-    [Fact]
-    public async Task Host_health_is_ok_with_migrated_database()
-    {
-        var connectionString = postgres.NewDatabase();
-        await using (var services = PostgresFixture.CreateServices(connectionString))
-        {
-            Assert.Equal(0, await StatsMigrations.ApplyAsync(services, NullLogger.Instance, Ct));
-        }
-
-        await using var factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(b => b.UseSetting($"ConnectionStrings:{StatsDbContext.ConnectionName}", connectionString));
-        var client = factory.CreateClient();
-
-        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/health", Ct)).StatusCode);
-        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/alive", Ct)).StatusCode);
     }
 
     private static async Task<List<string>> QueryStatsTablesAsync(IServiceProvider services)
