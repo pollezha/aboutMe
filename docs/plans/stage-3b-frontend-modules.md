@@ -269,7 +269,7 @@ frontend/src/
   - Готово, когда: `src/stores/` нет; `grep -r useUiStore src` пусто.
   - Зависит от: M12.
 
-- [ ] M14 — `mode`: загрузка сцены и `SceneHost`
+- [x] M14 — `mode`: загрузка сцены и `SceneHost`
   - Файлы: `mode/useSceneLoader.ts` (start/fail/ready/continue, таймаут `SCENE_TIMEOUT_MS`, `scene_ready`),
     `mode/SceneHost.vue` (scene-layer, заглушка, `SceneLoading`; стили из `App.vue`); `App.scene-loading.spec`
     → `mode/__tests__/`. Логику берём из `App.vue` после T12b (он менял момент старта сцены).
