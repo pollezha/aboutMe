@@ -300,7 +300,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
   - Зависит от: T11b, R8
 
 ### Исправления по ревью раунда 1 (2026-10-24)
-- [ ] F1 — Валидация `stop`/`skill` по закрытым спискам, poison для детерминированных ошибок БД, 400 на суррогаты, проверка `device` в projector
+- [x] F1 — Валидация `stop`/`skill` по закрытым спискам, poison для детерминированных ошибок БД, 400 на суррогаты, проверка `device` в projector
   - Файлы: `src/Contracts/Events/{EventTypes,EventValidator}.cs` (`Stops` = id глав; `skill` по формату), `src/BuildingBlocks/Messaging/Kafka/{KafkaConsumerLoop,KafkaConsumerLoopOptions}.cs` (`IsPoison(Exception)`), `services/projector/Workers/ProjectorWorker.cs`, `services/projector/Infrastructure/Messaging/SiteEventDeserializer.cs`, `services/events-api/Application/IngestEvents/IngestEventsHandler.cs`, тесты. Контракт: ужесточение валидации — запись в `docs/design/architecture.md` §5.4 и контрактный тест.
   - Закрывает: blocker B1, major M1, minor m3, «500 на суррогате».
 - [x] F2 — live-hub: порядок dirty/снапшот, рассылка при смене суток, тесты троттлинга; Architecture.Tests: file-local типы; EventsApi: тест 503 ≤ 5 с с реальным продюсером
