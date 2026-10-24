@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ref } from 'vue'
 import { palette } from '../../theme/palette'
-import type { Theme } from '../../stores/ui'
+import type { Theme } from '../../theme'
 import { buildingColors, createSceneMaterials, mixHex, truckColors } from '../materials'
 
 const hex = (value: string) => value.toLowerCase()

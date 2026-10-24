@@ -5,8 +5,9 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using BuildingBlocks.Observability;
 using Contracts.Events;
-using EventsApi.Telegram;
+using EventsApi.Infrastructure.External.Telegram;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -40,7 +41,7 @@ public sealed class MessagesEndpointTests : IDisposable
             builder.UseSetting("Telegram:ChatId", ChatId);
             builder.ConfigureTestServices(services =>
             {
-                services.AddHttpClient<TelegramClient>().ConfigurePrimaryHttpMessageHandler(() => _telegram);
+                services.AddHttpClient<TelegramContactMessageDelivery>().ConfigurePrimaryHttpMessageHandler(() => _telegram);
                 services.ConfigureOpenTelemetryTracerProvider(tracing => tracing.AddProcessor(new CapturingProcessor(_activities)));
             });
         });
@@ -231,7 +232,7 @@ public sealed class MessagesEndpointTests : IDisposable
     {
         using var activity = new Activity("POST");
         activity.SetTag(tag, $"https://api.telegram.org/bot{BotToken}/sendMessage");
-        using var processor = new TelegramUrlRedactionProcessor();
+        using var processor = new UrlRedactionProcessor(TelegramBotToken.Redact);
 
         processor.OnEnd(activity);
 

@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
 using System.Net;
 using Contracts.Events;
+using EventsApi.Application.Abstractions;
+using EventsApi.Infrastructure.Messaging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -35,8 +37,8 @@ public sealed class EventsApiFactory : WebApplicationFactory<Program>
         {
             // Брокера нет: создание топика при старте только ждало бы таймаут
             services.Remove(services.Single(sd => sd.ImplementationType == typeof(TopicInitializer)));
-            services.RemoveAll<IEventProducer>();
-            services.AddSingleton<IEventProducer>(Producer);
+            services.RemoveAll<IEventPublisher>();
+            services.AddSingleton<IEventPublisher>(Producer);
             services.RemoveAll<TimeProvider>();
             services.AddSingleton<TimeProvider>(Clock);
             services.AddFakeLogging();
@@ -58,13 +60,13 @@ public sealed class EventsApiFactory : WebApplicationFactory<Program>
     }
 }
 
-public sealed class FakeEventProducer : IEventProducer
+public sealed class FakeEventProducer : IEventPublisher
 {
     public ConcurrentQueue<SiteEvent> Produced { get; } = new();
 
     public Exception? Failure { get; set; }
 
-    public Task ProduceAsync(SiteEvent siteEvent, CancellationToken cancellationToken)
+    public Task PublishAsync(SiteEvent siteEvent, CancellationToken cancellationToken)
     {
         if (Failure is not null)
         {

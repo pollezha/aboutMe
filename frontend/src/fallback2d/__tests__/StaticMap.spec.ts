@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia, type Pinia } from 'pinia'
 import { nextTick } from 'vue'
 import { createAppI18n } from '../../i18n'
-import { useUiStore } from '../../stores/ui'
+import { useThemeStore } from '../../theme'
 import StaticMap from '../StaticMap.vue'
 import source from '../StaticMap.vue?raw'
 
@@ -73,7 +73,7 @@ describe('StaticMap', () => {
   // Ширины, а не плотности: телефон с DPR 1.75 (Lighthouse mobile) берёт 1x (26 КБ), а не @2x (60 КБ) — T12b.
   it('shows the island render of the current theme, 1x and 2x by width with sizes of the map frame', async () => {
     const wrapper = mountMap()
-    const ui = useUiStore()
+    const ui = useThemeStore()
 
     const img = wrapper.get('img')
     expect(img.attributes('src')).toBe('/img/island-day.webp')

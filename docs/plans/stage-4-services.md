@@ -224,7 +224,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
   - Готово, когда: все тесты решения зелёные; в ServiceDefaults нет папки Kafka.
   - Зависит от: R1
 
-- [ ] R3 — events-api по слоям
+- [x] R3 — events-api по слоям
   - Файлы: `Api/{EventsEndpoint,MessagesEndpoint}.cs` (маршрут → хендлер → ответ); `Application/IngestEvents/{IngestEventsCommand,IngestEventsHandler}.cs`,
     `Application/SendContactMessage/{SendContactMessageCommand,SendContactMessageHandler}.cs`,
     `Application/Abstractions/{IEventPublisher,IContactMessageDelivery,IDailySalt}.cs`, `Application/DependencyInjection.cs`;
@@ -234,7 +234,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
   - Готово, когда: `dotnet test --project tests/EventsApi.Tests` зелёный; в `Api/` нет ссылок на Kafka/Telegram.
   - Зависит от: R1, R2, T8a
 
-- [ ] R4 — content-api по слоям
+- [x] R4 — content-api по слоям
   - Файлы: `Api/ContentEndpoint.cs`; `Application/GetContent/{GetContentQuery,GetContentHandler}.cs`,
     `Application/SeedContent/{SeedContentCommand,SeedContentHandler}.cs`, `Application/Abstractions/{IContentBundleRepository,IContentSource}.cs` (`GetByLangAsync`, `UpsertAsync`; реализация `Infrastructure/Persistence/ContentBundleRepository.cs`);
     `Domain/{ContentBundle,ContentBundleValidator}.cs`; `Infrastructure/Persistence/{ContentDbContext,ContentBundleRepository,Migrations/}`,
@@ -253,7 +253,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
   - Готово, когда: `tests/Projector.Tests` зелёный (включая Integration).
   - Зависит от: R1, R2
 
-- [ ] R6 — live-hub по слоям
+- [x] R6 — live-hub по слоям
   - Файлы: `Domain/LiveState.cs`; `Application/ApplyLiveEvent/*`, `Application/GetLiveSnapshot/*`, `Application/Abstractions/{ILiveStateRepository,ILiveNotifier}.cs` (`Infrastructure/InMemory/InMemoryLiveStateRepository.cs`);
     `Infrastructure/Messaging/StartOfDayRewind.cs`, `Infrastructure/Realtime/SignalRLiveNotifier.cs` (реализация `ILiveNotifier`; Workers не ссылаются на хаб); `Api/Hubs/LiveHub.cs`;
     `Workers/{LiveConsumerWorker,LiveBroadcastWorker}.cs`. Тесты: существующие + `ApplyLiveEventHandlerTests`.

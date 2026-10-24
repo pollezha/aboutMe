@@ -1,21 +1,17 @@
-using ContentApi.Data;
-using ContentApi.Endpoints;
-using ContentApi.Seeding;
-using Microsoft.EntityFrameworkCore;
+using ContentApi.Api;
+using ContentApi.Application;
+using ContentApi.Infrastructure;
+using ContentApi.Infrastructure.Persistence;
+using ContentApi.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
-
-// Строка подключения "content" приходит из AppHost; интеграция Aspire добавляет health check БД и OTel
-builder.AddNpgsqlDbContext<ContentDbContext>(
-    ContentDbContext.ConnectionName,
-    configureDbContextOptions: options => options.UseNpgsql(ContentDbContext.ConfigureNpgsql));
+builder.Services.AddContentApiApplication();
+builder.AddContentApiInfrastructure();
 
 // Сид из content/{en,ru}.json при старте; результат виден в /health как проверка "content"
-builder.Services.AddSingleton<ContentSeedState>();
-builder.Services.AddHostedService<ContentSeeder>();
-builder.Services.AddHealthChecks().AddCheck<ContentSeedHealthCheck>(ContentSeedHealthCheck.Name);
+builder.Services.AddHostedService<ContentSeedWorker>();
 
 builder.Services.AddProblemDetails();
 builder.Services.AddContentOutputCache();
@@ -43,7 +39,7 @@ app.UseStatusCodePages();
 app.UseOutputCache();
 
 app.MapDefaultEndpoints();
-app.MapContentEndpoints();
+app.MapContentEndpoint();
 
 await app.RunAsync();
 return 0;

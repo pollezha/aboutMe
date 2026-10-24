@@ -82,7 +82,7 @@ describe('built index.html (FR11, D12)', () => {
     expect(html).toMatch(/<link rel="icon" href="\/favicon\.svg" type="image\/svg\+xml"/)
     expect(html).toMatch(/<link rel="apple-touch-icon" href="\/favicon-192\.png"/)
     expect(html).toMatch(/<link rel="manifest" href="\/site\.webmanifest"/)
-    // Тема сайта не следует prefers-color-scheme: applyTheme обновляет этот тег (src/stores/ui.ts).
+    // Тема сайта не следует prefers-color-scheme: applyTheme обновляет этот тег (src/theme/useThemeStore.ts).
     expect(html.match(/<meta name="theme-color"/g)).toHaveLength(1)
     expect(html).toMatch(
       `<meta name="theme-color" id="theme-color" content="${palette.day['bg/canvas']}"`,

@@ -12,26 +12,24 @@ const shared = ['shared/lib', 'shared/ui']
  *   и ей доступны только через index.ts, кроме путей из deepAllow ({ модуль: regex хвоста пути }).
  */
 export const MODULES = {
-  // shared/lib, shared/ui реэкспортируют из ui/ до переезда (M7).
-  'shared/lib': { deps: [], legacyDeps: ['ui'], facade: true },
-  'shared/ui': { deps: ['shared/lib'], legacyDeps: ['ui'], facade: true },
+  'shared/lib': { deps: [], facade: true },
+  'shared/ui': { deps: ['shared/lib'], facade: true },
   content: { deps: [], facade: true },
   theme: { deps: ['shared/lib'], facade: true },
   // locale реэкспортирует i18n/ и тип Lang из stores/ (до M11); router.ts — файл корня, не модуль.
   locale: { deps: ['content', 'shared/lib'], legacyDeps: ['i18n', 'stores'], facade: true },
-  // route, hero реэкспортируют компоненты из ui/ до переезда (M9).
-  route: { deps: ['content', 'locale', ...shared], legacyDeps: ['ui'], facade: true },
-  hero: { deps: ['content', 'locale', ...shared], legacyDeps: ['ui'], facade: true },
-  // chapters, windows реэкспортируют окна, ChapterWindow и ProofLinks из ui/ до переезда (M8).
+  route: { deps: ['content', 'locale', ...shared], facade: true },
+  hero: { deps: ['content', 'locale', ...shared], facade: true },
+  // chapters, windows берут общий стор из stores/ (openWindow, openChapter) до M12.
   chapters: {
     deps: ['content', 'locale', 'route', ...shared],
-    legacyDeps: ['ui'],
+    legacyDeps: ['stores'],
     facade: true,
     prerendered: true,
   },
   windows: {
     deps: ['chapters', 'content', 'locale', 'route', ...shared],
-    legacyDeps: ['ui'],
+    legacyDeps: ['stores'],
     facade: true,
     prerendered: true,
   },
@@ -47,8 +45,8 @@ export const MODULES = {
     facade: true,
     lazy: true,
   },
-  // mode реэкспортирует SceneLoading/SceneFallbackBanner из ui/ (до M9) и общий стор из stores/ (до M10–M13).
-  mode: { deps: ['scene', 'locale', ...shared], legacyDeps: ['ui', 'stores'], facade: true },
+  // mode реэкспортирует общий стор из stores/ (до M10–M13).
+  mode: { deps: ['scene', 'locale', ...shared], legacyDeps: ['stores'], facade: true },
   app: {
     deps: [
       ...shared,

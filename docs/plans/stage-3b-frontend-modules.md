@@ -201,7 +201,7 @@ frontend/src/
   - Готово, когда: в `App.vue` нет импорта глубже `./<module>`; у всех модулей `facade: true`.
   - Зависит от: M5.
 
-- [ ] M7 — Переезд `shared/ui` и `shared/lib`  *(параллельно с M8, M9, M10)*
+- [x] M7 — Переезд `shared/ui` и `shared/lib`  *(параллельно с M8, M9, M10)*
   - Файлы: `git mv` из таблицы (9 компонентов, `icon-registry.ts`, `icons/`, `useBreakpoint.ts`, 7 спеков);
     `shared/*/index.ts` — пути на свои файлы; внутренние импорты перенесённых файлов.
   - Тест сначала: — (перенос); спеки компонентов переехали и зелёные; `Icon.spec` находит все 22 SVG
@@ -209,7 +209,7 @@ frontend/src/
   - Готово, когда: в `src/ui/` нет этих файлов; потребители не менялись (дифф вне `src/ui`, `src/shared` пуст).
   - Зависит от: M6.
 
-- [ ] M8 — Переезд `chapters` и каркаса `windows`  *(параллельно с M7, M9, M10)*
+- [x] M8 — Переезд `chapters` и каркаса `windows`  *(параллельно с M7, M9, M10)*
   - Файлы: `git mv` `src/ui/windows/**` → `src/chapters/` (реестр → `registry.ts`), `ProofLinks.vue`,
     `ui/ChapterWindow.vue` + spec → `src/windows/`; `describe('ProofLinks')` из `blocks.spec` →
     `windows/__tests__/ProofLinks.spec.ts`; `App.techstack.spec` → `chapters/__tests__/`; `chapters/index.ts`,
@@ -218,14 +218,14 @@ frontend/src/
   - Готово, когда: `src/ui/windows/` и `src/ui/ChapterWindow.vue` удалены; `App.vue` не тронут.
   - Зависит от: M6.
 
-- [ ] M9 — Переезд UI `hero`, `route`, `mode`  *(параллельно с M7, M8, M10)*
+- [x] M9 — Переезд UI `hero`, `route`, `mode`  *(параллельно с M7, M8, M10)*
   - Файлы: `git mv` `HeroCard.vue` → `hero/`, `BottomBar.vue`, `RouteStop.vue` → `route/`,
     `SceneLoading.vue`, `SceneFallbackBanner.vue` → `mode/` (+ спеки); их `index.ts`.
   - Тест сначала: — ; спеки переехали и зелёные.
   - Готово, когда: эти файлы не в `src/ui/`; `App.vue` не тронут.
   - Зависит от: M6.
 
-- [ ] M10 — Стор и логика темы в `theme`  *(параллельно с M7–M9: файлы не пересекаются)*
+- [x] M10 — Стор и логика темы в `theme`  *(параллельно с M7–M9: файлы не пересекаются)*
   - Файлы: `src/theme/useThemeStore.ts` (theme, setTheme, previewTheme, cycleTheme, applyTheme — из `ui.ts`),
     `src/theme/useTheme.ts` (`?theme=`, watch → `applyTheme`, `label` с `NEXT_THEME`), `theme/index.ts`;
     `stores/ui.ts` теряет тему; потребители: `App.vue`, `scene/Scene.vue`, `scene/SceneContent.vue`,

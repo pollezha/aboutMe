@@ -3,7 +3,7 @@
 import { TresCanvas } from '@tresjs/core'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useUiStore } from '../stores/ui'
-import { palette } from '../theme'
+import { palette, useThemeStore } from '../theme'
 import SceneContent from './SceneContent.vue'
 import { isRotateHotkey, mapRotation } from './useCamera'
 
@@ -20,7 +20,8 @@ withDefaults(
 const emit = defineEmits<{ ready: [] }>()
 
 const ui = useUiStore()
-const sky = computed(() => palette[ui.theme]['scene/sky'])
+const themeStore = useThemeStore()
+const sky = computed(() => palette[themeStore.theme]['scene/sky'])
 const hovered = ref(false)
 
 let firstFrame = true

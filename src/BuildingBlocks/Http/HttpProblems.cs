@@ -14,6 +14,9 @@ public static class HttpProblems
     public static IResult BadRequest(string title) =>
         Results.Problem(statusCode: StatusCodes.Status400BadRequest, title: title);
 
+    public static IResult NotFound(string title, string? detail = null) =>
+        Results.Problem(statusCode: StatusCodes.Status404NotFound, title: title, detail: detail);
+
     public static IResult PayloadTooLarge(int maxBytes) =>
         Results.Problem(
             statusCode: StatusCodes.Status413PayloadTooLarge,
