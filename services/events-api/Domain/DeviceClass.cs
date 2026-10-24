@@ -1,6 +1,6 @@
 using Contracts.Events;
 
-namespace EventsApi;
+namespace EventsApi.Domain;
 
 /// <summary>Device class from the <c>User-Agent</c> header; only the class goes further, the UA itself is dropped.</summary>
 public static class DeviceClass

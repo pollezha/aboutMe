@@ -5,17 +5,18 @@ using BuildingBlocks.Messaging.Kafka;
 using Confluent.Kafka;
 using Contracts;
 using Contracts.Events;
+using EventsApi.Application.Abstractions;
 
-namespace EventsApi;
+namespace EventsApi.Infrastructure.Messaging;
 
 /// <summary>
 /// Writes events to <see cref="Topics.SiteEvents"/>: key = session hash (keeps a session's order within a
 /// partition), value = JSON, headers <c>traceparent</c> and <c>schema-version</c>. The producer comes from the
 /// Aspire integration with <see cref="KafkaDefaults"/> (acks=all, idempotence, 2 s delivery timeout).
 /// </summary>
-public sealed class KafkaEventProducer(IProducer<string, string> producer) : IEventProducer
+public sealed class KafkaEventPublisher(IProducer<string, string> producer) : IEventPublisher
 {
-    public async Task ProduceAsync(SiteEvent siteEvent, CancellationToken cancellationToken)
+    public async Task PublishAsync(SiteEvent siteEvent, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(siteEvent);
 
