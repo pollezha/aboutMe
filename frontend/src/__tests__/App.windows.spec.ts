@@ -9,7 +9,7 @@ import { resolveChapter } from '../content/format'
 import type { ContentBundle } from '../content/types'
 import { appPlugins } from '../app/__tests__/appPlugins'
 import { useRouteStore } from '../route'
-import { useUiStore } from '../stores/ui'
+import { useModeStore } from '../mode/useModeStore'
 
 // Окна 01–08 в 2D-режиме (AC6 без 3D): WebGL нет → сцена не грузится, three не нужен.
 const content = en as ContentBundle
@@ -61,7 +61,7 @@ async function mountAt(hash: string) {
   setActivePinia(pinia)
   wrapper = mount(App, { global: { plugins: appPlugins(pinia) }, attachTo: document.body })
   await flushPromises()
-  return { wrapper, ui: useUiStore(), route: useRouteStore() }
+  return { wrapper, mode: useModeStore(), route: useRouteStore() }
 }
 
 function openDialog(w: VueWrapper) {
@@ -72,9 +72,9 @@ describe('chapter windows in 2D mode', () => {
   it.each(CHAPTERS.map((chapter) => chapter.id))(
     '#%s opens its window from a deep link',
     async (id) => {
-      const { wrapper, ui } = await mountAt(`#${id}`)
+      const { wrapper, mode } = await mountAt(`#${id}`)
 
-      expect(ui.mode).toBe('2d')
+      expect(mode.mode).toBe('2d')
       const dialog = openDialog(wrapper)
       expect(dialog.attributes('data-chapter')).toBe(id)
       expect(dialog.get('h2').text()).toBe(resolveChapter(content, id).title)

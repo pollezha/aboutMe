@@ -1,7 +1,7 @@
 // Граф модулей фронта (ADR-0007) — единственный источник истины для границ: eslint.config.js строит из него
 // записи boundary(), тест scripts/__tests__/layer-boundaries.spec.ts проверяет ацикличность и регистрацию папок.
 // Модуль = папка src/<module>/ с публичным index.ts; чужой модуль импортируется только как `../<module>`.
-// Импорты в src относительные, поэтому модуль узнаём по префиксу «./» или «../»: `../stores/ui` — stores, а не ui.
+// Импорты в src относительные, поэтому модуль узнаём по префиксу «./» или «../»: `../shared/ui` — shared/ui, а не ui.
 
 const shared = ['shared/lib', 'shared/ui']
 
@@ -29,19 +29,13 @@ export const MODULES = {
     facade: true,
     prerendered: true,
   },
-  // fallback2d может брать стор режима из stores/ (до M13).
-  fallback2d: {
-    deps: ['content', 'locale', 'theme', ...shared],
-    legacyDeps: ['stores'],
-    facade: true,
-  },
+  fallback2d: { deps: ['content', 'locale', 'theme', ...shared], facade: true },
   scene: {
     deps: ['content', 'locale', 'route', 'theme', 'shared/lib'],
     facade: true,
     lazy: true,
   },
-  // mode реэкспортирует стор режима из stores/ (mode, sceneState, userChoice) до M13.
-  mode: { deps: ['scene', 'locale', ...shared], legacyDeps: ['stores'], facade: true },
+  mode: { deps: ['scene', 'locale', ...shared], facade: true },
   app: {
     deps: [
       ...shared,
@@ -67,17 +61,6 @@ export const MODULES = {
       ['scene', 'UI в главном чанке, сцена — в ленивом.'],
       ['fallback2d', 'режим выбирает App.vue.'],
     ].map(([name, why]) => noLayer(name, why)),
-  },
-  stores: {
-    deps: [],
-    facade: false,
-    legacy: true,
-    bans: [
-      ...['ui', 'scene', 'fallback2d'].map((name) =>
-        noLayer(name, 'стор не знает о представлении.'),
-      ),
-      ['\\.vue$', 'Стор не импортирует компоненты.'],
-    ],
   },
   // Корень (App.vue, main.ts, head.ts) — в главном чанке: сцену (ленивую точку входа и лёгкие
   // модули без three.js) видит только через ./mode, как app.

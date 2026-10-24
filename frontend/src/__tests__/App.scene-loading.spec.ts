@@ -22,10 +22,10 @@ describe('App', () => {
     })
 
     it('shows a loading card with Continue without 3D outside the hero while the scene loads', async () => {
-      const { wrapper, ui } = mountApp()
+      const { wrapper, mode } = mountApp()
       await nextTick()
 
-      expect(ui.sceneState).toBe('loading')
+      expect(mode.sceneState).toBe('loading')
       const card = wrapper.get('.scene-loading')
       expect(card.attributes('role')).toBe('status')
       expect(card.text()).toContain('Loading the 3D island')
@@ -53,28 +53,28 @@ describe('App', () => {
     it('marks scene_ready and replaces the placeholder once the first frame is drawn', async () => {
       sceneStub.drawsFirstFrame = true
       const mark = vi.spyOn(performance, 'mark')
-      const { wrapper, ui } = mountApp()
+      const { wrapper, mode } = mountApp()
 
       await vi.advanceTimersByTimeAsync(2000)
 
       expect(loadScene).toHaveBeenCalledTimes(1)
       expect(mark).toHaveBeenCalledWith('scene_ready')
-      expect(ui.sceneState).toBe('ready')
+      expect(mode.sceneState).toBe('ready')
       expect(wrapper.find('.scene-stub').exists()).toBe(true)
       expect(wrapper.find('.scene-loading').exists()).toBe(false)
 
       await vi.advanceTimersByTimeAsync(10_000)
-      expect(ui.mode).toBe('3d')
+      expect(mode.mode).toBe('3d')
     })
 
     it('falls back to the 2D map with a dismissible banner when the scene is not ready in 8 s', async () => {
-      const { wrapper, ui } = mountApp()
+      const { wrapper, mode } = mountApp()
 
       await vi.advanceTimersByTimeAsync(7999)
-      expect(ui.mode).toBe('3d')
+      expect(mode.mode).toBe('3d')
 
       await vi.advanceTimersByTimeAsync(1)
-      expect(ui.mode).toBe('2d')
+      expect(mode.mode).toBe('2d')
       expect(wrapper.find('.scene-loading').exists()).toBe(false)
       expect(wrapper.find('.scene-stub').exists()).toBe(false)
       expect(wrapper.findAll('.static-map button.hotspot')).toHaveLength(7)
@@ -93,7 +93,7 @@ describe('App', () => {
 
       await first.wrapper.get('.scene-loading button').trigger('click')
 
-      expect(first.ui.mode).toBe('2d')
+      expect(first.mode.mode).toBe('2d')
       expect(first.wrapper.find('.scene-loading').exists()).toBe(false)
       expect(localStorage.getItem('aboutme.sceneChoice')).toBe('2d')
       await vi.advanceTimersByTimeAsync(10_000)
@@ -103,7 +103,7 @@ describe('App', () => {
 
       const next = mountApp()
 
-      expect(next.ui.mode).toBe('2d')
+      expect(next.mode.mode).toBe('2d')
       expect(loadScene).not.toHaveBeenCalled()
     })
   })

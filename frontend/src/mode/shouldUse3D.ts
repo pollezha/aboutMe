@@ -1,8 +1,6 @@
 // Выбор режима (design §4 «Загрузка», FR10): 3D-сцена только там, где она потянет; иначе 2D-карта.
 
-import { MIN_3D_MEMORY_GB, MIN_3D_WIDTH } from './thresholds'
-
-export { MIN_3D_MEMORY_GB, MIN_3D_WIDTH }
+import { MIN_3D_MEMORY_GB, MIN_3D_WIDTH } from '../scene'
 
 export interface Use3DInput {
   /** Ширина окна, px. */

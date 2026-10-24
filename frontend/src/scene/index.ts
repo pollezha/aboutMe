@@ -1,19 +1,13 @@
 // Ленивая загрузка 3D-сцены (design §4 «Загрузка», п. 3): чанк three + TresJS запрашивается сразу после
-// монтирования приложения и только если shouldUse3D() — решает вызывающий код (App.vue). На десктопе чанк к этому
+// монтирования приложения и только если shouldUse3D() — решает модуль mode. На десктопе чанк к этому
 // моменту уже качается: его preload ставит inline-скрипт в <head> (scene/preload.ts), ожидание простоя
 // откладывало scene_ready за бюджет 4 с (T12b).
 // Этот модуль в main-чанке: он не должен статически импортировать ничего из three/TresJS. Кроме загрузчика
-// отдаёт лёгкие модули без three: выбор 3D, поворот карты, preload-скрипт. Снаружи доступен только модулю mode.
+// отдаёт лёгкие модули без three: пороги 3D, поворот карты, preload-скрипт. Снаружи доступен только модулю mode.
 import type { Component } from 'vue'
 
 export { scenePreloadScript, type PreloadLimits, type PreloadWindow } from './preload'
-export {
-  MIN_3D_MEMORY_GB,
-  MIN_3D_WIDTH,
-  detectWebGL2,
-  shouldUse3D,
-  type Use3DInput,
-} from './shouldUse3D'
+export { MIN_3D_MEMORY_GB, MIN_3D_WIDTH } from './thresholds'
 export { isRotateHotkey, mapRotation, type MapRotation, type Rotation } from './useCamera'
 
 /** Нет `scene_ready` за это время с начала загрузки → 2D и баннер (review-consolidated п. 23, UX9). */

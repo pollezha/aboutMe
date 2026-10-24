@@ -10,7 +10,7 @@ const MODES: readonly Mode[] = ['3d', '2d']
 
 const KEY = { sceneChoice: 'aboutme.sceneChoice' } as const
 
-export const useUiStore = defineStore('ui', () => {
+export const useModeStore = defineStore('mode', () => {
   const mode = ref<Mode>('3d')
   /** Явный выбор пользователя (FR10); null — не выбирал, режим решает shouldUse3D(). */
   const savedChoice = load(KEY.sceneChoice)

@@ -43,12 +43,17 @@ describe('frontend layer boundaries', () => {
     expect(errors).toHaveLength(1)
   })
 
-  it('lets the 2D fallback use content and stores', async () => {
-    const errors = await boundaryErrors(
+  it('lets the 2D fallback use content and theme, but not the mode store (M13)', async () => {
+    const allowed = await boundaryErrors(
       'src/fallback2d/Fixture.ts',
-      "import { CHAPTERS } from '../content'\nimport { useUiStore } from '../stores/ui'\nexport const x = [CHAPTERS, useUiStore]\n",
+      "import { CHAPTERS } from '../content'\nimport { useThemeStore } from '../theme'\nexport const x = [CHAPTERS, useThemeStore]\n",
     )
-    expect(errors).toEqual([])
+    const forbidden = await boundaryErrors(
+      'src/fallback2d/Fixture.ts',
+      "import { useModeStore } from '../mode'\nexport const x = useModeStore\n",
+    )
+    expect(allowed).toEqual([])
+    expect(forbidden).toHaveLength(1)
   })
 
   it('lets the lower modules be imported only through their index (M5)', async () => {
@@ -66,7 +71,7 @@ describe('frontend layer boundaries', () => {
     ).toEqual([])
     expect(
       await boundaryErrors(
-        'src/stores/X.ts',
+        'src/mode/X.ts',
         "import { ROUTE } from '../content/chapters'\nexport const x = ROUTE\n",
       ),
     ).toHaveLength(1)
@@ -83,18 +88,18 @@ describe('frontend layer boundaries', () => {
     expect(await boundaryErrors('src/main.ts', "import './theme/boot'\n")).toHaveLength(1)
   })
 
-  it('keeps content below ui, scene and stores', async () => {
+  it('keeps content below ui, scene and mode', async () => {
     const errors = await boundaryErrors(
       'src/content/Fixture.ts',
-      "import { useUiStore } from '../stores/ui'\nimport Icon from '../ui/Icon.vue'\nexport const x = [useUiStore, Icon]\n",
+      "import { useModeStore } from '../mode'\nimport Icon from '../ui/Icon.vue'\nexport const x = [useModeStore, Icon]\n",
     )
     expect(errors).toHaveLength(2)
   })
 
-  it('forbids stores from importing components', async () => {
+  it('keeps the scene unaware of the mode module (M13)', async () => {
     const errors = await boundaryErrors(
-      'src/stores/Fixture.ts',
-      "import App from '../App.vue'\nexport const x = App\n",
+      'src/scene/Fixture.ts',
+      "import { useModeStore } from '../mode'\nexport const x = useModeStore\n",
     )
     expect(errors).toHaveLength(1)
   })
