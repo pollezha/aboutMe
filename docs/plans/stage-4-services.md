@@ -153,7 +153,7 @@
   - Готово, когда: тесты зелёные; падение projector не влияет на live-hub (разные группы — проверка в T9).
   - Зависит от: T0, T1 — параллельно с T4, T5
 
-- [ ] T7 — gateway: маршруты, rate limit, CORS, фильтр ботов, forwarded headers, `/health` внутренний (E4-T2, E4-T2b)
+- [x] T7 — gateway: маршруты, rate limit, CORS, фильтр ботов, forwarded headers, `/health` внутренний (E4-T2, E4-T2b)
   - Файлы: `services/gateway/Program.cs`, `appsettings.json` (YARP: `GET /api/content/{**}` → content-api,
     `POST /api/events` → events-api, `POST /api/messages` → events-api, `/hubs/live` → live-hub с WebSocket;
     адреса через service discovery `https+http://content-api` и т. д.), `services/gateway/Policies/*`
@@ -171,20 +171,20 @@
   - Готово, когда: тесты зелёные; TC-15 воспроизводится `curl` (200 запросов за 10 с → 429).
   - Зависит от: T2, T5, T6 (нужны реальные маршруты; стабы — для тестов можно раньше)
 
-- [ ] T8a — events-api: инициализация топика `site.events.v1` при старте (3 партиции, retention 365 д, no-op если есть)
+- [x] T8a — events-api: инициализация топика `site.events.v1` при старте (3 партиции, retention 365 д, no-op если есть)
   - Файлы: `services/events-api/TopicInitializer.cs` (в R3 переедет в `Infrastructure/Messaging/`), тест Integration в `tests/EventsApi.Tests`.
   - Тест сначала: после старта хоста на чистой Kafka топик существует с 3 партициями; повторный старт — без ошибок.
   - Готово, когда: тесты зелёные; `bash scripts/check.sh dotnet` ok.
   - Зависит от: T2
 
-- [ ] T8b — AppHost: PostgreSQL (БД `content`, `stats`) + Kafka + 5 сервисов с `WithReference`/`WaitFor`/`WithHttpHealthCheck`
+- [x] T8b — AppHost: PostgreSQL (БД `content`, `stats`) + Kafka + 5 сервисов с `WithReference`/`WaitFor`/`WithHttpHealthCheck`
   - Файлы: `src/AppHost/AppHost.cs`, `AppHost.csproj`, `Directory.Packages.props` (Aspire.Hosting.PostgreSQL, Aspire.Hosting.Kafka);
     env: `Database__MigrateOnStart=true`, `Content__Path`, `Cors__Origins__0`, `KAFKA_HEAP_OPTS=-Xmx512m`.
   - Тест сначала: `tests/AppHost.Tests` — 5 ресурсов Healthy ≤ 180 с (сейчас красный: gateway ждёт 4 бэкенда).
   - Готово, когда: тест зелёный; `dotnet run --project src/AppHost` — всё Running/Healthy (хвост вывода в отчёт).
   - Зависит от: T7, T8a
 
-- [ ] T8c — AppHost: сквозная проверка через gateway в тесте + README «Запуск»
+- [x] T8c — AppHost: сквозная проверка через gateway в тесте + README «Запуск»
   - Файлы: `tests/AppHost.Tests` (POST /api/events через gateway → 202 → строка в `stats.cta_clicks` ≤ 15 с; GET /api/content/en → 200 с ETag), `README.md`, `CLAUDE.md` (строка `services/`).
   - Готово, когда: тест зелёный; README описывает запуск одной командой, дашборд, порты, `curl`.
   - Зависит от: T8b
