@@ -18,9 +18,8 @@ export const MODULES = {
   theme: { deps: ['shared/lib'], facade: true },
   // locale реэкспортирует i18n/ и тип Lang из stores/ (до M11); router.ts — файл корня, не модуль.
   locale: { deps: ['content', 'shared/lib'], legacyDeps: ['i18n', 'stores'], facade: true },
-  // route, hero реэкспортируют компоненты из ui/ до переезда (M9).
-  route: { deps: ['content', 'locale', ...shared], legacyDeps: ['ui'], facade: true },
-  hero: { deps: ['content', 'locale', ...shared], legacyDeps: ['ui'], facade: true },
+  route: { deps: ['content', 'locale', ...shared], facade: true },
+  hero: { deps: ['content', 'locale', ...shared], facade: true },
   // chapters, windows берут общий стор из stores/ (openWindow, openChapter) до M12.
   chapters: {
     deps: ['content', 'locale', 'route', ...shared],
@@ -46,8 +45,8 @@ export const MODULES = {
     facade: true,
     lazy: true,
   },
-  // mode реэкспортирует SceneLoading/SceneFallbackBanner из ui/ (до M9) и общий стор из stores/ (до M10–M13).
-  mode: { deps: ['scene', 'locale', ...shared], legacyDeps: ['ui', 'stores'], facade: true },
+  // mode реэкспортирует общий стор из stores/ (до M10–M13).
+  mode: { deps: ['scene', 'locale', ...shared], legacyDeps: ['stores'], facade: true },
   app: {
     deps: [
       ...shared,
