@@ -165,7 +165,7 @@ frontend/src/
 - Ошибки — `ProblemDetails` (RFC 9457); необработанные исключения → 500 без деталей наружу.
 - Graceful shutdown: consumer коммитит офсет и закрывается по `StopAsync`.
 - Каждый сервис — свой Dockerfile (chiseled-образ .NET), non-root.
-- Раскладка кода сервиса (слои `Api/Application/Domain/Infrastructure/Workers`, порты, `BuildingBlocks`) — ADR-0007.
+- Раскладка кода сервиса (слои `Api/Application/Domain/Infrastructure/Workers`, порты, `BuildingBlocks`) — ADR-0008.
 
 ### 5.2 gateway
 | Маршрут | Куда | Политики |

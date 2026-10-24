@@ -55,12 +55,12 @@ public static class ProjectReferenceRules
 
         if (project == BuildingBlocks && reference == Contracts)
         {
-            return "BuildingBlocks has no business meaning and must not reference Contracts (ADR-0007)";
+            return "BuildingBlocks has no business meaning and must not reference Contracts (ADR-0008)";
         }
 
         if (project == ServiceDefaults && reference == BuildingBlocks)
         {
-            return "ServiceDefaults is Aspire hosting only and must not reference BuildingBlocks (ADR-0007)";
+            return "ServiceDefaults is Aspire hosting only and must not reference BuildingBlocks (ADR-0008)";
         }
 
         return null;

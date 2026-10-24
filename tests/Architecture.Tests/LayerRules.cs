@@ -10,7 +10,7 @@ public sealed record TypeDependencies(string FullName, string Namespace, IReadOn
 public sealed record ServiceAssembly(string Name, IReadOnlyList<TypeDependencies> Types);
 
 /// <summary>
-/// Правила слоёв ADR-0007 внутри сборки сервиса. Слой — второй сегмент namespace: <c>&lt;Svc&gt;.&lt;Layer&gt;[.&lt;Feature&gt;]</c>.
+/// Правила слоёв ADR-0008 внутри сборки сервиса. Слой — второй сегмент namespace: <c>&lt;Svc&gt;.&lt;Layer&gt;[.&lt;Feature&gt;]</c>.
 /// </summary>
 public static class LayerRules
 {
@@ -61,7 +61,7 @@ public static class LayerRules
             var layer = LayerOf(assembly.Name, type.Namespace);
             if (layer is null || !layers.Contains(layer))
             {
-                violations.Add($"{type.FullName}: namespace must be {assembly.Name}.{{{string.Join('|', layers)}}}[.*] (ADR-0007)");
+                violations.Add($"{type.FullName}: namespace must be {assembly.Name}.{{{string.Join('|', layers)}}}[.*] (ADR-0008)");
                 continue;
             }
 

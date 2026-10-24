@@ -71,7 +71,7 @@ static async Task<int> RebuildAsync(IServiceProvider services, string consumerGr
     }
 }
 
-// Логи команды rebuild — в самом Program: вне слоёв ADR-0007 живёт только корень композиции
+// Логи команды rebuild — в самом Program: вне слоёв ADR-0008 живёт только корень композиции
 public partial class Program
 {
     [LoggerMessage(Level = LogLevel.Information, Message = "Stats truncated, offsets of group {ConsumerGroup} reset to the beginning")]

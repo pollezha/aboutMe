@@ -196,17 +196,17 @@
   интеграционные тесты сервиса не ловят (одна партиция в тесте). Проверять пределы батча по сообщениям, не по ключам.
 - Куда закреплено: tests/BuildingBlocks.Tests/Messaging/Kafka/KafkaConsumerLoopTests.cs.
 
-## 2026-10-24 — этап 4, R3–R7: переезд сервисов на раскладку ADR-0007
+## 2026-10-24 — этап 4, R3–R7: переезд сервисов на раскладку ADR-0008
 - Что случилось: Aspire `AddNpgsqlDbContext` включает `NpgsqlRetryingExecutionStrategy`, и операции EF внутри транзакции
   `EfUnitOfWork` падают «does not support user-initiated transactions» — в projector `settings.DisableRetry = true`
   (повторы делает `KafkaConsumerLoop`); тесты `EfUnitOfWork` в BuildingBlocks этого не ловили (обычный `AddDbContext`).
   Процессоры OTel для спанов (редакция токена) должны регистрироваться до `AddServiceDefaults`, иначе встанут после
-  экспортёра — в ADR-0007 добавлен шаг `Add<Svc>SpanRedaction()` первым. `<Feature>Handler` для фичи на `…Event`
+  экспортёра — в ADR-0008 добавлен шаг `Add<Svc>SpanRedaction()` первым. `<Feature>Handler` для фичи на `…Event`
   ловит CA1711. В Web SDK свои `CorsOptions`/`ForwardedHeadersOptions` конфликтуют с типами ASP.NET — алиасы или другие имена.
   Хук защиты в worktree не пропускает составные bash-команды и `sed` по glob — по одной команде с явными путями.
 - Урок: при переезде «без изменения поведения» существующие интеграционные тесты держат поведение, а новые юнит-тесты
   хендлеров на фейках (без Docker) — это и есть выигрыш слоёв: 40+ новых тестов идут секунды.
-- Куда закреплено: ADR-0007 (порядок регистрации, именование), R8 (DisableRetry для content-api, правила слоёв тестом).
+- Куда закреплено: ADR-0008 (порядок регистрации, именование), R8 (DisableRetry для content-api, правила слоёв тестом).
 
 ## 2026-10-24 — stage-3b: слияние при общем main
 - Что случилось: `git merge --ff-only` ветки worktree молча не прошёл, потому что другая сессия успела закоммитить

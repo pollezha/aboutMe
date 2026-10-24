@@ -9,7 +9,7 @@
   `tests/Architecture.Tests`. Сервис регистрируется в `src/AppHost`.
 - Тесты — `tests/<Svc>.Tests`; интеграционные на Testcontainers (`Trait("Category","Integration")`).
 
-## Раскладка сервиса (ADR-0007)
+## Раскладка сервиса (ADR-0008)
 ```
 Program.cs        композиция; вне слоёв — только Program
 Api/              <Feature>Endpoint: запрос → хендлер → ответ/ProblemDetails, без логики; Hubs/ (SignalR)

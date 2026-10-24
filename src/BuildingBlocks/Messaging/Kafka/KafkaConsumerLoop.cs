@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace BuildingBlocks.Messaging.Kafka;
 
 /// <summary>
-/// Общий цикл консьюмера (ADR-0002, ADR-0007): consume батча → десериализация → обработчик → коммит офсетов
+/// Общий цикл консьюмера (ADR-0002, ADR-0008): consume батча → десериализация → обработчик → коммит офсетов
 /// только после успешного обработчика. Батч — до <see cref="KafkaConsumerLoopOptions.MaxBatchSize"/> сообщений
 /// или <see cref="KafkaConsumerLoopOptions.BatchWindow"/> после первого из них. Ядовитое сообщение (десериализатор
 /// вернул null или бросил) считается, пропускается, его офсет коммитится вместе с батчем (DLQ в MVP нет).

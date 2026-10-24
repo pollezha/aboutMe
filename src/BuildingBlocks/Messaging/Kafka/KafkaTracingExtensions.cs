@@ -7,7 +7,7 @@ public static class KafkaTracingExtensions
 {
     /// <summary>
     /// Подписывает трейсинг сервиса на спаны produce/process из <see cref="KafkaTracePropagation"/>.
-    /// Вызывается каждым Kafka-сервисом: ServiceDefaults о Kafka не знает (ADR-0007).
+    /// Вызывается каждым Kafka-сервисом: ServiceDefaults о Kafka не знает (ADR-0008).
     /// </summary>
     public static IServiceCollection AddKafkaTracing(this IServiceCollection services)
     {

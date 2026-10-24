@@ -1,4 +1,4 @@
-# ADR-0007: Единая раскладка кода сервиса — слои Api/Application/Domain/Infrastructure, общая библиотека BuildingBlocks
+# ADR-0008: Единая раскладка кода сервиса — слои Api/Application/Domain/Infrastructure, общая библиотека BuildingBlocks
 
 Статус: accepted · Дата: 2026-10-24
 

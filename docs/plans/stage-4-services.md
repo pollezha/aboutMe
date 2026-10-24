@@ -203,7 +203,7 @@
   - Готово, когда: тесты зелёные; ручная проверка с реальным ботом через user-secrets (без коммита токена).
   - Зависит от: T2 — параллельно с T3–T8
 
-### Рефакторинг по ADR-0007 (раскладка Api / Application / Domain / Infrastructure, BuildingBlocks)
+### Рефакторинг по ADR-0008 (раскладка Api / Application / Domain / Infrastructure, BuildingBlocks)
 Каждая R-задача — перенос без изменения поведения: существующие тесты остаются зелёными, новые — на хендлеры без Docker.
 Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён как warning (компилятор проверяет namespace = папка).
 
@@ -211,7 +211,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
   - Файлы: `src/BuildingBlocks/BuildingBlocks.csproj` (без ссылки на Contracts); `Http/{RequestBodyReader,HttpProblems}.cs` (тело с лимитом → 413,
     ProblemDetails 400/413/429/503); `Observability/{UrlRedactionProcessor,UrlRedactionExtensions}.cs` (обобщение из events-api/Telegram);
     `.editorconfig` (`IDE0130` = warning); `aboutMe.slnx`; `tests/BuildingBlocks.Tests` (RequestBodyReader: лимит, пустое тело; redaction);
-    `tests/Architecture.Tests` — правило «BuildingBlocks не ссылается на Contracts/сервисы». Без IClock/IUnitOfWork/обобщённых хендлеров (ADR-0007).
+    `tests/Architecture.Tests` — правило «BuildingBlocks не ссылается на Contracts/сервисы». Без IClock/IUnitOfWork/обобщённых хендлеров (ADR-0008).
   - Готово, когда: проект собирается, тесты зелёные, ни один сервис ещё не ссылается (безопасный шаг).
   - Зависит от: — (параллельно с T8b/T8c)
 
@@ -246,7 +246,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
 - [x] R5 — projector по слоям
   - Файлы: `Domain/{Aggregator,StatsDelta,VitalBuckets}.cs`; `Application/ProjectEvents/{ProjectEventsCommand,ProjectEventsHandler}.cs`,
     `Application/RebuildStats/{RebuildStatsCommand,RebuildStatsHandler}.cs`,
-    `Application/Abstractions/{IProcessedEventsRepository,IStatsRepository,IConsumerOffsets}.cs` (+ `IUnitOfWork` из BuildingBlocks; ADR-0007 «Репозитории, Unit of Work»);
+    `Application/Abstractions/{IProcessedEventsRepository,IStatsRepository,IConsumerOffsets}.cs` (+ `IUnitOfWork` из BuildingBlocks; ADR-0008 «Репозитории, Unit of Work»);
     `Infrastructure/Persistence/{StatsDbContext,ProcessedEventsRepository,StatsRepository,Migrations/}` (репозитории через `DbContext` в транзакции `EfUnitOfWork<StatsDbContext>`),
     `Infrastructure/Messaging/KafkaConsumerOffsets.cs`, `Infrastructure/Health/KafkaHealthCheck.cs`; `Workers/ProjectorWorker.cs`
     (`KafkaConsumerLoop` → `ProjectEventsHandler`; офсет после успеха). Тесты: `ProjectEventsHandlerTests` на фейковых репозиториях (дубль eventId → без дельты; poison; сбой до Commit → ничего не записано — интеграционно).
@@ -262,15 +262,15 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
 
 - [x] R7 — gateway: единые имена и общие хелперы
   - Файлы: `Api/HealthEndpoints.cs`; `Infrastructure/Health/*`; `Edge/{RateLimitPolicies,ClientAddress,BotFilter,CorsPolicy,BodyLimits}.cs`
-    (у gateway нет домена — слои Application/Domain отсутствуют осознанно, зафиксировано в ADR-0007); ProblemDetails через `BuildingBlocks.Http.HttpProblems`.
+    (у gateway нет домена — слои Application/Domain отсутствуют осознанно, зафиксировано в ADR-0008); ProblemDetails через `BuildingBlocks.Http.HttpProblems`.
   - Готово, когда: `tests/Gateway.Tests` зелёный.
   - Зависит от: R1
 
-- [ ] R8 — Architecture.Tests на слои + документация
+- [x] R8 — Architecture.Tests на слои + документация
   - Файлы: `tests/Architecture.Tests/LayerRulesTests.cs` (System.Reflection.Metadata по TypeRef/AssemblyRef сборок сервисов, без новых пакетов:
     Domain → только BCL/Contracts; Application ↛ Infrastructure и пакеты AspNetCore/EF/Npgsql/Confluent.Kafka, ↛ `BuildingBlocks.Http`, `BuildingBlocks.Messaging`;
-    Api/Workers ↛ Infrastructure кроме Program/DependencyInjection), `services/CLAUDE.md` (раскладка и правила из ADR-0007), включить `IDE0130` (исключение для `src/ServiceDefaults/Extensions.cs` — шаблонный namespace Aspire), `docs/design/architecture.md` §5.1 (ссылка на ADR-0007),
-    `docs/adr/0007` уже accepted — сверить текст с кодом; content-api: `DisableRetry = true` в `AddNpgsqlDbContext` (как в projector) с комментарием, почему.
+    Api/Workers ↛ Infrastructure кроме Program/DependencyInjection), `services/CLAUDE.md` (раскладка и правила из ADR-0008), включить `IDE0130` (исключение для `src/ServiceDefaults/Extensions.cs` — шаблонный namespace Aspire), `docs/design/architecture.md` §5.1 (ссылка на ADR-0008),
+    `docs/adr/0008` уже accepted — сверить текст с кодом; content-api: `DisableRetry = true` в `AddNpgsqlDbContext` (как в projector) с комментарием, почему.
   - Готово, когда: тест падает на искусственном нарушении (проверить локально) и проходит на текущем коде.
   - Зависит от: R3–R7
 

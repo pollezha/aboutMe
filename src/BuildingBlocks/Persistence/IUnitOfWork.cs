@@ -1,7 +1,7 @@
 namespace BuildingBlocks.Persistence;
 
 /// <summary>
-/// Транзакция хранилища на один сценарий (ADR-0007): <see cref="BeginAsync"/> → работа репозиториев →
+/// Транзакция хранилища на один сценарий (ADR-0008): <see cref="BeginAsync"/> → работа репозиториев →
 /// <see cref="CommitAsync"/>. <see cref="IAsyncDisposable.DisposeAsync"/> без Commit откатывает всё.
 /// </summary>
 public interface IUnitOfWork : IAsyncDisposable

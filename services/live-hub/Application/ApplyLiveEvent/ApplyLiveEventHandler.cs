@@ -10,7 +10,7 @@ namespace LiveHub.Application.ApplyLiveEvent;
 [SuppressMessage(
     "Naming",
     "CA1711:Identifiers should not have incorrect suffix",
-    Justification = "<Feature>Handler по ADR-0007; фича называется ApplyLiveEvent, это не делегат события")]
+    Justification = "<Feature>Handler по ADR-0008; фича называется ApplyLiveEvent, это не делегат события")]
 public sealed class ApplyLiveEventHandler(ILiveStateRepository state)
 {
     /// <returns><c>true</c> — снапшот изменился, клиентам пора получить counters.</returns>
