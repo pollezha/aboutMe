@@ -12,9 +12,8 @@ const shared = ['shared/lib', 'shared/ui']
  *   и ей доступны только через index.ts, кроме путей из deepAllow ({ модуль: regex хвоста пути }).
  */
 export const MODULES = {
-  // shared/lib, shared/ui реэкспортируют из ui/ до переезда (M7).
-  'shared/lib': { deps: [], legacyDeps: ['ui'], facade: true },
-  'shared/ui': { deps: ['shared/lib'], legacyDeps: ['ui'], facade: true },
+  'shared/lib': { deps: [], facade: true },
+  'shared/ui': { deps: ['shared/lib'], facade: true },
   content: { deps: [], facade: true },
   theme: { deps: ['shared/lib'], facade: true },
   // locale реэкспортирует i18n/ и тип Lang из stores/ (до M11); router.ts — файл корня, не модуль.
