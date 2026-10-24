@@ -108,7 +108,7 @@
     завершается 0; `dotnet ef migrations list` показывает одну миграцию.
   - Зависит от: — (параллельно с T0–T2)
 
-- [ ] T4 — projector: consumer group `projector`, идемпотентная проекция (E4-T5, часть 2; AC8-данные, TC-12)
+- [x] T4 — projector: consumer group `projector`, идемпотентная проекция (E4-T5, часть 2; AC8-данные, TC-12)
   - Файлы: `services/projector/Projection/ProjectorWorker.cs` (BackgroundService: consumer `projector`,
     `enable.auto.commit=false`, `auto.offset.reset=earliest`; батч ≤ 200 или 500 мс; одна транзакция:
     `INSERT processed_events ON CONFLICT DO NOTHING` → для новых — UPSERT агрегатов; затем commit офсета;
