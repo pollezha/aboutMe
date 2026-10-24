@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
-import { mountApp, setViewport, useAppTestEnv } from '../app/__tests__/mountApp'
+import { mountApp, setViewport, useAppTestEnv } from './mountApp'
 
-vi.mock('../scene/Scene.vue', () => import('../app/__tests__/sceneStub'))
+vi.mock('../../scene/Scene.vue', () => import('./sceneStub'))
 // Даты в окнах считаются от времени сборки (content/buildTime.ts) — фиксируем его.
-vi.mock('../content/buildTime', () => ({ BUILD_TIME: new Date(2026, 9, 23) }))
-vi.mock('../scene', async (importOriginal) => {
-  const original = await importOriginal<typeof import('../scene')>()
+vi.mock('../../content/buildTime', () => ({ BUILD_TIME: new Date(2026, 9, 23) }))
+vi.mock('../../scene', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../../scene')>()
   return { ...original, loadScene: vi.fn(original.loadScene) }
 })
 
@@ -60,6 +60,22 @@ describe('App', () => {
     const siblings = [...map.parentElement!.children].filter((el) => el !== map)
     expect(siblings.map((el) => el.textContent).join(' ')).not.toContain('Monitoring')
     expect(wrapper.get('.hero').text()).not.toContain('1000+')
+  })
+
+  it('shows only the scene for the island render (?shot=island)', () => {
+    history.replaceState(null, '', '/?mode=3d&theme=night&shot=island')
+    const { wrapper, mode } = mountApp()
+
+    expect(mode.mode).toBe('3d')
+    for (const selector of [
+      '.top-bar',
+      '.hero',
+      '.bottom-bar',
+      '.scene-loading',
+      '.scene-placeholder',
+    ])
+      expect(wrapper.find(selector).exists(), selector).toBe(false)
+    expect(wrapper.get('.app').classes()).toContain('app--shot')
   })
 
   it('shows the compact hero with CV from content on desktop', () => {

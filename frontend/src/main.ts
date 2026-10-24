@@ -1,6 +1,6 @@
 import { createPinia } from 'pinia'
 import { ViteSSG } from 'vite-ssg'
-import App from './App.vue'
+import App from './app'
 import { createAppI18n, routes } from './locale'
 import './theme/tokens.css'
 import './theme/pins.css'

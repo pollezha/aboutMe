@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, toRef } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BUILD_TIME, CONTENT_LANGS, contentFor, isChapterId } from './content'
-import { StaticMap } from './fallback2d'
+import { BUILD_TIME, CONTENT_LANGS, contentFor, isChapterId } from '../content'
+import { StaticMap } from '../fallback2d'
+import { HeroHost } from '../hero'
+import { useRouteLang } from '../locale'
+import { SceneFallbackBanner, SceneHost, useViewMode } from '../mode'
+import { RouteBar, useRouteStore } from '../route'
+import { useBreakpoint } from '../shared/lib'
+import { useTheme } from '../theme'
+import { PrerenderedChapters, WindowHost } from '../windows'
 import { useSiteHead } from './head'
-import { HeroHost } from './hero'
-import { useRouteLang } from './locale'
-import { SceneFallbackBanner, SceneHost, mapRotation, useViewMode } from './mode'
-import { RouteBar, useRouteStore } from './route'
-import { useBreakpoint } from './shared/lib'
-import { IconButton } from './shared/ui'
-import { useTheme } from './theme'
-import { PrerenderedChapters, WindowHost } from './windows'
+import TopBar from './TopBar.vue'
+import { useLayout } from './useLayout'
 
 const route = useRouteStore()
 const { store: langStore } = useRouteLang()
@@ -19,6 +20,7 @@ const { t } = useI18n()
 const { store: themeStore, label: themeLabel } = useTheme(t)
 const breakpoint = useBreakpoint()
 const { store: ui, canSwitchMode, switchMode } = useViewMode(breakpoint)
+const { layout, heroVariant, barVariant, mapVariant } = useLayout(toRef(ui, 'mode'), breakpoint)
 
 // Снимок контента на языке страницы (пока RU-контента нет — EN); загрузка из content-api — этап 4.
 const content = computed(() => contentFor(langStore.lang))
@@ -32,34 +34,10 @@ useSiteHead(() => ({
   now,
 }))
 
-const query = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
-
 // ?shot=island — только сцена, без HTML-слоя и подписей: кадр рендера острова для 2D-карты (npm run island).
-const shot = query?.get('shot') === 'island'
-
-// «Switch to 2D/3D» в верхних контролах (режим и кнопку решает useViewMode).
-const modeLabel = computed(() => (ui.mode === '3d' ? t('topBar.to2d') : t('topBar.to3d')))
-
-// overlay — Hero и бар поверх сцены (Figma Desktop 33:2, Laptop 33:246);
-// stacked — колонка TopBar → Hero → карта, бар закреплён внизу (Figma Tablet 34:709, Phone 56:1378).
-const layout = computed(() =>
-  ui.mode === '3d' && (breakpoint.value === 'desktop' || breakpoint.value === 'laptop')
-    ? 'overlay'
-    : 'stacked',
-)
-const heroVariant = computed(() => {
-  if (breakpoint.value === 'mobile') return 'mobile'
-  // В колонке на планшете Hero во всю ширину с десктопной типографикой (Figma Tablet 34:709).
-  return layout.value === 'overlay' && breakpoint.value === 'laptop' ? 'laptop' : 'desktop'
-})
-const barVariant = computed(() => {
-  if (breakpoint.value === 'mobile') return undefined // 2D-бар 72 px (медиа-запрос в BottomBar)
-  return breakpoint.value === 'desktop' && layout.value === 'overlay' ? 'desktop' : 'compact'
-})
-const mapVariant = computed(() => (breakpoint.value === 'mobile' ? 'phone' : 'tablet'))
-
-// Кнопка языка в верхних контролах — когда есть контент на обоих языках (FR8); в баре её показывает RouteBar.
-const showLang = CONTENT_LANGS.length > 1
+const shot =
+  typeof window !== 'undefined' &&
+  new URLSearchParams(window.location.search).get('shot') === 'island'
 
 function open(id: string) {
   if (isChapterId(id)) route.openChapter(id)
@@ -76,48 +54,12 @@ function open(id: string) {
     <SceneHost :shot="shot" />
 
     <template v-if="!shot">
-      <header class="top-bar">
-        <span v-if="layout === 'stacked'" class="top-bar__brand t-label-caption">
-          YP · .NET backend
-        </span>
-        <div class="top-bar__actions">
-          <IconButton
-            v-if="ui.mode === '3d'"
-            class="top-bar__rotate"
-            icon="rotate"
-            :label="t('topBar.rotate')"
-            :title="t('topBar.rotateHint')"
-            @click="mapRotation.rotate()"
-          />
-          <IconButton
-            v-if="ui.mode === '3d'"
-            :icon="route.motionPaused ? 'play' : 'pause'"
-            :label="t('topBar.pause')"
-            :pressed="route.motionPaused"
-            @click="route.toggleMotion()"
-          />
-          <IconButton
-            v-if="canSwitchMode"
-            class="top-bar__mode"
-            icon="map"
-            :label="modeLabel"
-            :title="modeLabel"
-            @click="switchMode"
-          />
-          <IconButton
-            v-if="layout === 'stacked'"
-            icon="theme"
-            :label="themeLabel"
-            @click="themeStore.cycleTheme()"
-          />
-          <IconButton
-            v-if="layout === 'stacked' && showLang"
-            icon="lang"
-            :label="t('lang.label')"
-            @click="langStore.toggleLang()"
-          />
-        </div>
-      </header>
+      <TopBar
+        :layout="layout"
+        :can-switch-mode="canSwitchMode"
+        :theme-label="themeLabel"
+        @switch-mode="switchMode"
+      />
 
       <main class="app__main">
         <SceneFallbackBanner
@@ -153,22 +95,6 @@ function open(id: string) {
   min-height: 100dvh;
   color: var(--text-primary);
   background: var(--bg-canvas);
-}
-
-.top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-
-.top-bar__brand {
-  font-weight: 700;
-}
-
-.top-bar__actions {
-  display: flex;
-  gap: var(--space-2);
 }
 
 .app__main {

@@ -49,7 +49,7 @@ export const MODULES = {
       'fallback2d',
       'mode',
     ],
-    facade: false,
+    facade: true,
   },
 
   // Переходные записи: запреты слоёв до ADR-0007, дословно.
@@ -62,13 +62,13 @@ export const MODULES = {
       ['fallback2d', 'режим выбирает App.vue.'],
     ].map(([name, why]) => noLayer(name, why)),
   },
-  // Корень (App.vue, main.ts, head.ts) — в главном чанке: сцену (ленивую точку входа и лёгкие
-  // модули без three.js) видит только через ./mode, как app.
+  // Корень (main.ts, env.d.ts) — вход в главном чанке: оболочку берёт из ./app, сцену (ленивую точку входа
+  // и лёгкие модули без three.js) видит только через ./mode, как app.
   '.': {
     deps: [],
     facade: false,
     legacy: true,
-    files: ['src/*.{ts,vue}'],
+    files: ['src/*.ts'],
     // main.ts подключает глобальные стили темы: CSS через index.ts не реэкспортируется.
     deepAllow: { theme: '[^/]+\\.css$' },
     // Глубокие ./scene/* уже запрещает фасад scene (legacyFacadeBans) — здесь только сам ./scene.

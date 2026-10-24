@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, vi } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import App from '../../App.vue'
+import App from '..'
 import { loadScene } from '../../scene'
 import { useLangStore } from '../../locale'
 import { useRouteStore } from '../../route'

@@ -89,22 +89,6 @@ describe('App', () => {
     })
   })
 
-  it('shows only the scene for the island render (?shot=island)', () => {
-    history.replaceState(null, '', '/?mode=3d&theme=night&shot=island')
-    const { wrapper, mode } = mountApp()
-
-    expect(mode.mode).toBe('3d')
-    for (const selector of [
-      '.top-bar',
-      '.hero',
-      '.bottom-bar',
-      '.scene-loading',
-      '.scene-placeholder',
-    ])
-      expect(wrapper.find(selector).exists(), selector).toBe(false)
-    expect(wrapper.get('.app').classes()).toContain('app--shot')
-  })
-
   it('decides 2D by the same media query as CSS, not by innerWidth', () => {
     setViewport(1440)
     const matchMedia = window.matchMedia

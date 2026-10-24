@@ -1,7 +1,8 @@
 import { createRouter, type RouteRecordRaw, type RouterHistory } from 'vue-router'
 import type { Lang } from './useLangStore'
 
-// Страница одна (App — корень, RouterView нет): маршрут задаёт только язык. Окна глав — URL-хэш (App.vue).
+// Страница одна (App — корень, RouterView нет): маршрут задаёт только язык.
+// Окна глав — URL-хэш (windows/useWindowHistory.ts).
 const Page = { name: 'LangPage', render: () => null }
 
 export const routes: RouteRecordRaw[] = [

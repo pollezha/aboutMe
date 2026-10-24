@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import en from '../../../content/en.json'
-import type { ContentBundle } from '../content/types'
+import en from '../../../../content/en.json'
+import type { ContentBundle } from '../../content/types'
 import { siteHead } from '../head'
 
 const content = en as ContentBundle

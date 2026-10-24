@@ -42,9 +42,4 @@ export default defineConfig(
     ignores: ['src/**/__tests__/**', 'src/theme/palette.ts', 'src/theme/pinInk.ts'],
     rules: { 'max-lines': ['error', { max: 250, skipBlankLines: true, skipComments: true }] },
   },
-  {
-    // Временно: App.vue (530 строк кода) разбирается на модули в M10–M17, исключение снимается в M17.
-    files: ['src/App.vue'],
-    rules: { 'max-lines': 'off' },
-  },
 )
