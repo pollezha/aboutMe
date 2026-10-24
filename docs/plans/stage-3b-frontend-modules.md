@@ -16,7 +16,7 @@
 |---|---|---|
 | vitest | `npx vitest run` → строка `Tests` | 696 (после T12b) |
 | e2e | `npx playwright test --list` → последняя строка | 42 |
-| `expect(` в спеках | `grep -r "expect(" src scripts --include=*.spec.ts | wc -l` | 1038 |\| wc -l` | снять |
+| `expect(` в спеках | `grep -r "expect(" src scripts --include=*.spec.ts | wc -l` | 1038 |
 | size-limit | `npm run build && npm run size` | 86.29 КБ gzip / 835.86 КБ / 114.39 КБ |
 | скриншоты | `npm run shots` → `docs/design/shots/` | снять (сравнение после M14–M17) |
 
