@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import App from '../App.vue'
-import { appPlugins } from './appPlugins'
+import { appPlugins } from '../app/__tests__/appPlugins'
 
 // Посещённые остановки в баре (решение 19 ревью): 2D-режим, WebGL нет — three не нужен.
 const dialogProto = HTMLDialogElement.prototype

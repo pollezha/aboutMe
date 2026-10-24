@@ -7,7 +7,7 @@ import App from '../App.vue'
 import { CHAPTERS } from '../content/chapters'
 import { resolveChapter } from '../content/format'
 import type { ContentBundle } from '../content/types'
-import { appPlugins } from './appPlugins'
+import { appPlugins } from '../app/__tests__/appPlugins'
 import { useUiStore } from '../stores/ui'
 
 // Окна 01–08 в 2D-режиме (AC6 без 3D): WebGL нет → сцена не грузится, three не нужен.

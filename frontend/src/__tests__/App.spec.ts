@@ -1,27 +1,19 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
-import { createPinia, setActivePinia } from 'pinia'
-import { defineComponent, h, nextTick, onMounted } from 'vue'
-import App from '../App.vue'
-import { appPlugins } from './appPlugins'
-import { contentFor } from '../content/bundles'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import { loadScene } from '../scene'
 import { mapRotation } from '../scene/useCamera'
-import { useUiStore } from '../stores/ui'
+import { sceneStub } from '../app/__tests__/sceneStub'
+import {
+  mountApp,
+  openDialog,
+  setViewport,
+  useAppTestEnv,
+  waitForHash,
+} from '../app/__tests__/mountApp'
 
 // three/WebGL в jsdom не рендерим: чанк сцены — заглушка, которая по флагу «рисует первый кадр».
-const sceneStub = vi.hoisted(() => ({ drawsFirstFrame: false }))
-vi.mock('../scene/Scene.vue', () => ({
-  default: defineComponent({
-    emits: ['ready'],
-    setup(_, { emit }) {
-      onMounted(() => {
-        if (sceneStub.drawsFirstFrame) emit('ready')
-      })
-      return () => h('div', { class: 'scene-stub' })
-    },
-  }),
-}))
+vi.mock('../scene/Scene.vue', () => import('../app/__tests__/sceneStub'))
 // Даты в окнах считаются от времени сборки (content/buildTime.ts) — фиксируем его.
 vi.mock('../content/buildTime', () => ({ BUILD_TIME: new Date(2026, 9, 23) }))
 vi.mock('../scene', async (importOriginal) => {
@@ -29,232 +21,9 @@ vi.mock('../scene', async (importOriginal) => {
   return { ...original, loadScene: vi.fn(original.loadScene) }
 })
 
-const ruContent = contentFor('ru')
-
-// jsdom: нет matchMedia, WebGL и showModal() — минимальные подмены.
-function setViewport(width: number) {
-  window.innerWidth = width
-  window.matchMedia = ((query: string) => {
-    const min = /min-width:\s*(\d+)px/.exec(query)
-    const max = /max-width:\s*(\d+)px/.exec(query)
-    const matches =
-      (!min || width >= Number(min[1])) && (!max || width <= Number(max[1])) && (!!min || !!max)
-    return {
-      matches,
-      media: query,
-      onchange: null,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      addListener: () => {},
-      removeListener: () => {},
-      dispatchEvent: () => false,
-    } as MediaQueryList
-  }) as typeof window.matchMedia
-}
-
-const dialogProto = HTMLDialogElement.prototype
-const originalDialog = { showModal: dialogProto.showModal, close: dialogProto.close }
-
-let wrapper: VueWrapper | undefined
-
-beforeEach(() => {
-  localStorage.clear()
-  history.replaceState(null, '', '/')
-  setViewport(1440)
-  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({} as RenderingContext)
-  dialogProto.showModal = function (this: HTMLDialogElement) {
-    this.setAttribute('open', '')
-  }
-  dialogProto.close = function (this: HTMLDialogElement) {
-    this.removeAttribute('open')
-  }
-})
-
-afterEach(() => {
-  wrapper?.unmount()
-  wrapper = undefined
-  vi.restoreAllMocks()
-  vi.mocked(loadScene).mockClear()
-  vi.useRealTimers()
-  sceneStub.drawsFirstFrame = false
-  dialogProto.showModal = originalDialog.showModal
-  dialogProto.close = originalDialog.close
-})
-
-function mountApp() {
-  const pinia = createPinia()
-  setActivePinia(pinia)
-  wrapper = mount(App, { global: { plugins: appPlugins(pinia) }, attachTo: document.body })
-  return { wrapper, ui: useUiStore() }
-}
-
-/** unhead пишет `<html lang>` в DOM не синхронно — ждём условие. */
-async function waitFor(condition: () => boolean) {
-  for (let i = 0; i < 50 && !condition(); i++) {
-    await new Promise((resolve) => setTimeout(resolve, 0))
-  }
-}
-
-/** jsdom выполняет history.back() асинхронно. */
-async function waitForHash(hash: string) {
-  for (let i = 0; i < 50 && location.hash !== hash; i++) {
-    await new Promise((resolve) => setTimeout(resolve, 0))
-  }
-}
-
-function openDialog(w: VueWrapper) {
-  return w.find('dialog[open]')
-}
+useAppTestEnv()
 
 describe('App', () => {
-  it('shows name and role in English by default', () => {
-    const { wrapper } = mountApp()
-
-    const hero = wrapper.get('.hero')
-    expect(hero.get('h1').text()).toBe('Yakov Polezhaev')
-    expect(hero.text()).toContain('.NET Backend Developer')
-  })
-
-  it('switches the hero to Russian after ui.setLang("ru")', async () => {
-    const { wrapper, ui } = mountApp()
-
-    ui.setLang('ru')
-    await nextTick()
-
-    const hero = wrapper.get('.hero')
-    expect(hero.text()).toContain('Яков Полежаев')
-    expect(hero.text()).toContain('.NET backend-разработчик')
-    expect(hero.text()).not.toContain('Yakov Polezhaev')
-  })
-
-  // TC-06: /ru/ — весь первый экран и окна на русском, из RU-бандла.
-  it('renders the hero, the bar and windows from the Russian bundle on /ru/', async () => {
-    history.replaceState(null, '', '/ru/#prospace')
-    const { wrapper } = mountApp()
-    await flushPromises()
-
-    const hero = wrapper.get('.hero')
-    expect(hero.text()).toContain(ruContent.profile.status)
-    expect(hero.text()).toContain(ruContent.profile.workFormat)
-    expect(hero.text()).toContain('Связаться')
-    expect(hero.get('a.btn--secondary').attributes('href')).toBe('/cv/Yakov_Polezhaev_CV_RU.pdf')
-    expect(hero.get('a.btn--secondary').text()).toBe('Резюме (PDF)')
-
-    const bar = wrapper.get('nav.bottom-bar')
-    expect(bar.attributes('aria-label')).toBe('Главы')
-    expect(bar.findAll('.route-stop__title').map((title) => title.text())).toEqual([
-      'Профиль',
-      'ProSpace',
-      'TimePath',
-      'Стек',
-      'Учёба',
-      'Контакты',
-    ])
-
-    const dialog = openDialog(wrapper)
-    expect(dialog.get('h2').text()).toBe(ruContent.chapters.prospace.title)
-    expect(dialog.get('.window__eyebrow').text()).toBe(
-      'Остановка 2 из 6 · Накладная · Текущее место · янв – окт 2026',
-    )
-    expect(dialog.text()).toContain('Далее: 03 TimePath')
-    expect(dialog.find('button[aria-label="Закрыть"]').exists()).toBe(true)
-    await waitFor(() => document.documentElement.lang === 'ru')
-    expect(document.documentElement.lang).toBe('ru')
-  })
-
-  it('switches EN → RU from the bar button without a reload: content, URL and <html lang>', async () => {
-    const { wrapper } = mountApp()
-    await flushPromises()
-    await waitFor(() => document.documentElement.lang === 'en')
-    const hero = wrapper.get('.hero')
-    expect(hero.text()).toContain('Open to work')
-
-    await wrapper
-      .get('nav.bottom-bar button[aria-label="Language: English. Switch to Russian"]')
-      .trigger('click')
-    await flushPromises()
-
-    expect(location.pathname).toBe('/ru/')
-    expect(wrapper.get('.hero').element).toBe(hero.element)
-    expect(hero.text()).toContain(ruContent.profile.status)
-    expect(wrapper.get('.route-stop__title').text()).toBe('Профиль')
-    await waitFor(() => document.documentElement.lang === 'ru')
-    expect(document.documentElement.lang).toBe('ru')
-    expect(localStorage.getItem('aboutme.lang')).toBe('ru')
-    expect(
-      wrapper.find('button[aria-label="Язык: русский. Переключить на английский"]').exists(),
-    ).toBe(true)
-  })
-
-  it('opens /ru/ in Russian without remembering it as the visitor’s choice', async () => {
-    history.replaceState(null, '', '/ru/')
-    const { wrapper, ui } = mountApp()
-    await flushPromises()
-
-    expect(ui.lang).toBe('ru')
-    expect(wrapper.get('.hero').text()).toContain('Яков Полежаев')
-    expect(localStorage.getItem('aboutme.lang')).toBeNull()
-  })
-
-  it('moves between / and /ru/ on a language switch without reloading, keeping the open chapter', async () => {
-    history.replaceState(null, '', '/#prospace')
-    const { wrapper, ui } = mountApp()
-    await flushPromises()
-
-    ui.setLang('ru')
-    await flushPromises()
-    expect(location.pathname).toBe('/ru/')
-    expect(location.hash).toBe('#prospace')
-    expect(openDialog(wrapper).exists()).toBe(true)
-
-    ui.setLang('en')
-    await flushPromises()
-    expect(location.pathname).toBe('/')
-    expect(localStorage.getItem('aboutme.lang')).toBe('en')
-  })
-
-  it('has a language button in the top bar of the stacked layout', () => {
-    setViewport(768)
-    const { wrapper } = mountApp()
-
-    expect(
-      wrapper.find('.top-bar button[aria-label="Language: English. Switch to Russian"]').exists(),
-    ).toBe(true)
-  })
-
-  it('renders the hero card and the chapters bar on desktop', () => {
-    const { wrapper, ui } = mountApp()
-
-    expect(ui.mode).toBe('3d')
-    expect(wrapper.find('.hero--desktop').exists()).toBe(true)
-    const bar = wrapper.get('nav[aria-label="Chapters"]')
-    expect(bar.classes()).toContain('bottom-bar--desktop')
-    expect(bar.findAll('.route-stop')).toHaveLength(6)
-    expect(wrapper.find('.scene-placeholder').exists()).toBe(true)
-  })
-
-  it('uses the laptop hero and compact bar at 1280 px', () => {
-    setViewport(1280)
-    const { wrapper } = mountApp()
-
-    expect(wrapper.find('.hero--laptop').exists()).toBe(true)
-    expect(wrapper.get('nav[aria-label="Chapters"]').classes()).toContain('bottom-bar--compact')
-  })
-
-  it('stacks the hero over the scene on a tablet, with the theme toggle in the top bar', () => {
-    setViewport(768)
-    const { wrapper, ui } = mountApp()
-
-    expect(ui.mode).toBe('3d')
-    expect(wrapper.get('.app').classes()).toContain('app--stacked')
-    expect(wrapper.get('.top-bar').text()).toContain('YP · .NET backend')
-    const theme = wrapper.get('.top-bar button[aria-label^="Theme"]')
-    expect(theme.attributes('aria-label')).toBe('Theme: day. Switch to evening')
-    expect(theme.attributes('aria-pressed')).toBeUndefined()
-    expect(wrapper.find('.top-bar button[aria-label="Pause animation"]').exists()).toBe(true)
-    expect(wrapper.get('nav[aria-label="Chapters"]').classes()).toContain('bottom-bar--compact')
-  })
-
   it('opens the ProSpace window right after a click on stop 02', async () => {
     const { wrapper, ui } = mountApp()
 
@@ -470,32 +239,6 @@ describe('App', () => {
     expect(wrapper.get('.app').classes()).toContain('app--shot')
   })
 
-  it('stacks TopBar → Hero → map → bar on a phone, without metrics or a Monitoring link', () => {
-    setViewport(390)
-    const { wrapper } = mountApp()
-
-    const order = [...wrapper.get('.app').element.querySelectorAll('*')]
-      .map((el) =>
-        ['top-bar', 'hero', 'static-map', 'bottom-bar'].find((name) => el.classList.contains(name)),
-      )
-      .filter(Boolean)
-    expect(order).toEqual(['top-bar', 'hero', 'static-map', 'bottom-bar'])
-
-    const map = wrapper.get('.static-map').element
-    const siblings = [...map.parentElement!.children].filter((el) => el !== map)
-    expect(siblings.map((el) => el.textContent).join(' ')).not.toContain('Monitoring')
-    expect(wrapper.get('.hero').text()).not.toContain('1000+')
-  })
-
-  it('shows the compact hero with CV from content on desktop', () => {
-    const { wrapper } = mountApp()
-
-    const hero = wrapper.get('.hero')
-    expect(hero.classes()).toContain('hero--compact')
-    expect(hero.get('a.btn--secondary').attributes('href')).toBe('/cv/Yakov_Polezhaev_CV_EN.pdf')
-    expect(hero.find('a[aria-label="Telegram"]').exists()).toBe(true)
-  })
-
   it('decides 2D by the same media query as CSS, not by innerWidth', () => {
     setViewport(1440)
     const matchMedia = window.matchMedia
@@ -515,35 +258,6 @@ describe('App', () => {
 
     expect(ui.mode).toBe('2d')
     expect(wrapper.findAll('.static-map button.hotspot')).toHaveLength(7)
-  })
-
-  it('cycles the theme from the bar, sets data-theme and remembers it', async () => {
-    const { wrapper } = mountApp()
-    expect(document.documentElement.dataset.theme).toBe('day')
-
-    await wrapper.get('.bottom-bar__actions button[aria-label^="Theme"]').trigger('click')
-
-    expect(document.documentElement.dataset.theme).toBe('evening')
-    expect(wrapper.get('.app').attributes('data-theme')).toBe('evening')
-    expect(localStorage.getItem('aboutme.theme')).toBe('evening')
-  })
-
-  it('lets ?theme= override the saved theme', () => {
-    localStorage.setItem('aboutme.theme', 'evening')
-    history.replaceState(null, '', '/?theme=night')
-
-    mountApp()
-
-    expect(document.documentElement.dataset.theme).toBe('night')
-    expect(localStorage.getItem('aboutme.theme')).toBe('evening')
-  })
-
-  it('does not remember a theme that came from ?theme=', () => {
-    history.replaceState(null, '', '/?theme=night')
-
-    mountApp()
-
-    expect(localStorage.getItem('aboutme.theme')).toBeNull()
   })
 
   it('rotates the map a quarter turn from the top controls in 3D', async () => {
