@@ -166,5 +166,5 @@
 - Footer Proof: «Source of this site» (external), «30-second summary» (arrow-right → 07). Nav: нет.
 
 ## Иконки знаков
-`frontend/src/ui/icons/sign-{licence,waybill,route,rack,diploma,envelope,summary,monitoring}.svg` — экспорт из Figma
+`frontend/src/shared/ui/icons/sign-{licence,waybill,route,rack,diploma,envelope,summary,monitoring}.svg` — экспорт из Figma
 2026-10-23 (20×20, stroke 1.75, `currentColor`), имена добавлены в `IconName`. Цвет в EyebrowRow — `text/secondary`.
