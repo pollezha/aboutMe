@@ -89,7 +89,8 @@ function requestClose() {
         <IconButton icon="close" :label="closeLabel" @click="requestClose" />
       </header>
 
-      <div ref="bodyEl" class="window__body">
+      <!-- Тело прокручивается: tabindex — чтобы его можно было листать с клавиатуры (axe scrollable-region-focusable). -->
+      <div ref="bodyEl" class="window__body" role="region" :aria-labelledby="titleId" tabindex="0">
         <slot />
       </div>
 
@@ -183,6 +184,11 @@ function requestClose() {
   min-height: 0;
   overflow-y: auto;
   padding: 0 var(--window-pad) var(--space-4);
+}
+
+.window__body:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: -3px;
 }
 
 .window__footer {

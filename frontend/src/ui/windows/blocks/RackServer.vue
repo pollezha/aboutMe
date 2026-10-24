@@ -38,7 +38,8 @@ withDefaults(
   padding: 0 var(--space-3);
   border: 2px solid transparent;
   border-radius: var(--radius-sm);
-  color: var(--text-on-dark);
+  /* Ночью цвет главы светлый: цвет текста — контрастный к цвету главы, как у пинов (theme/pins.css). */
+  color: var(--pin-ink-techstack);
   background: var(--chapter-techstack);
   text-align: start;
   cursor: pointer;

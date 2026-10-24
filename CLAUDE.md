@@ -66,7 +66,7 @@ docs/claude-workflow.md  # описание процесса и рекоменд
 
 ## Окружение
 - Windows 11, Git Bash. Хуки запускаются через `bash`, логика хука — на node (jq не нужен).
-- Плагины (scope project, `.claude/settings.json`; переустановка — `bash scripts/install-plugins.sh`): csharp-lsp, typescript-lsp, context7 (свежие доки .NET 10/Aspire/TresJS), playwright, github, frontend-design, figma; streaming-skills-plugin (Kafka) выключен до этапа 4, grafana-mcp — к этапу мониторинга.
+- Плагины (scope project, `.claude/settings.json`; переустановка — `bash scripts/install-plugins.sh`): csharp-lsp, typescript-lsp, context7 (свежие доки .NET 10/Aspire/TresJS), playwright, github, frontend-design, figma, streaming-skills-plugin (Kafka); grafana-mcp — к этапу мониторинга.
 - Концепт: `docs/concept/plan.md` (план) и `docs/concept/mockup-v6.html` (актуальный концепт-арт, не финальный дизайн; v5 — предыдущий). Большие HTML/картинки не вставлять в чат — только путь к файлу.
 - Хук `.claude/hooks/guard-protected-files.sh` (логика в `.js`) блокирует правку `.env*`, `secrets/`, ключей, lock-файлов и `.github/workflows/` через Edit/Write и через команды Bash/PowerShell (cp/sed -i/rm/redirect/Set-Content), а также чтение секретов (cat .env). Тесты хука: `node --test .claude/hooks/guard-protected-files.test.js` (гонять после каждой правки); lock-файлы меняются только через npm/dotnet.
 
