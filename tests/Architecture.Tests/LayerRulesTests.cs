@@ -192,5 +192,12 @@ public sealed class LayerRulesTests
 
         // Замыкания, state machine и служебные типы компилятора слиты во внешний тип или пропущены
         Assert.DoesNotContain(assembly.Types, t => t.FullName.Contains('<', StringComparison.Ordinal));
+
+        // file-local тип в корне сборки (Samples/FileLocalSample.cs) — обычный тип: `file class` не обходит правила слоёв
+        var self = ServiceAssemblies.LoadFile("Architecture.Tests", typeof(LayerRules).Assembly.Location);
+        var fileLocal = Assert.Single(self.Types, t => t.FullName.EndsWith("__FileLocalSample", StringComparison.Ordinal));
+        Assert.Equal("Architecture.Tests.Samples", fileLocal.Namespace);
+        Assert.Contains(fileLocal.References, r => r.FullName == "Architecture.Tests.LayerRules");
+        Assert.Contains(LayerRules.FindViolations(self), v => v.StartsWith(fileLocal.FullName, StringComparison.Ordinal));
     }
 }

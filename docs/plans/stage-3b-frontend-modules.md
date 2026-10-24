@@ -269,7 +269,7 @@ frontend/src/
   - Готово, когда: `src/stores/` нет; `grep -r useUiStore src` пусто.
   - Зависит от: M12.
 
-- [ ] M14 — `mode`: загрузка сцены и `SceneHost`
+- [x] M14 — `mode`: загрузка сцены и `SceneHost`
   - Файлы: `mode/useSceneLoader.ts` (start/fail/ready/continue, таймаут `SCENE_TIMEOUT_MS`, `scene_ready`),
     `mode/SceneHost.vue` (scene-layer, заглушка, `SceneLoading`; стили из `App.vue`); `App.scene-loading.spec`
     → `mode/__tests__/`. Логику берём из `App.vue` после T12b (он менял момент старта сцены).
@@ -279,7 +279,7 @@ frontend/src/
     `npm run shots` без видимой разницы с базовой линией.
   - Зависит от: M13.
 
-- [ ] M15 — `hero`: данные карточки
+- [x] M15 — `hero`: данные карточки
   - Файлы: `hero/useHero.ts` (`profile`, `highlights`, `links` из контента текущего языка), `hero/index.ts`;
     `App.vue` передаёт только `variant`. Класс `.app__hero` остаётся на корне `HeroCard` (селектор e2e).
   - Тест сначала: `useHero.spec.ts`: на RU-бандле ссылка CV ведёт на RU-PDF; 3 метрики = `resolveHighlights`.
