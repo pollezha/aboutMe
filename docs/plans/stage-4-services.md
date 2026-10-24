@@ -299,6 +299,19 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
   - Файлы: `tests/Integration.Tests/SecurityTests.cs`, `docs/plans/roadmap.md`, `docs/learnings.md`.
   - Зависит от: T11b, R8
 
+### Исправления по ревью раунда 1 (2026-10-24)
+- [ ] F1 — Валидация `stop`/`skill` по закрытым спискам, poison для детерминированных ошибок БД, 400 на суррогаты, проверка `device` в projector
+  - Файлы: `src/Contracts/Events/{EventTypes,EventValidator}.cs` (`Stops` = id глав; `skill` по формату), `src/BuildingBlocks/Messaging/Kafka/{KafkaConsumerLoop,KafkaConsumerLoopOptions}.cs` (`IsPoison(Exception)`), `services/projector/Workers/ProjectorWorker.cs`, `services/projector/Infrastructure/Messaging/SiteEventDeserializer.cs`, `services/events-api/Application/IngestEvents/IngestEventsHandler.cs`, тесты. Контракт: ужесточение валидации — запись в `docs/design/architecture.md` §5.4 и контрактный тест.
+  - Закрывает: blocker B1, major M1, minor m3, «500 на суррогате».
+- [ ] F2 — live-hub: порядок dirty/снапшот, рассылка при смене суток, тесты троттлинга; Architecture.Tests: file-local типы; EventsApi: тест 503 ≤ 5 с с реальным продюсером
+  - Файлы: `services/live-hub/Workers/LiveBroadcastWorker.cs`, `services/live-hub/Domain/LiveState.cs`, `tests/LiveHub.Tests/Workers/LiveBroadcastWorkerTests.cs`, `tests/Architecture.Tests/ServiceAssemblies.cs`, `tests/EventsApi.Tests/KafkaProducerTests.cs`.
+  - Закрывает: minor m1, m2, m8, m9, M2↓.
+
+### Перенесено на этапы 5–6 (из ревью этапа 4)
+- gateway: ключ лимитера для IPv6 — префикс /64 (`Edge/ClientAddress.cs`); закрытость `/health` решать по источнику соединения (KnownProxies), а не по Host, плюс явный запрет в Caddyfile со smoke-тестом.
+- projector: очистка `processed_events` только с окном ≥ retention топика (365 дней) или поднять `offsets.retention.minutes`; зафиксировать в ADR-0002.
+- Kafka в compose: `KAFKA_AUTO_CREATE_TOPICS_ENABLE=false`; неуспех `TopicInitializer` отражать в `/health`.
+
 Параллельные группы (каждая — свой worktree): T8a → T8b → T8c; параллельно R1 → R2 → {R3, R4, R5, R6, R7} → R8;
 затем T11a → T11b → T11c; T10a–c отдельно после закрытия этапа 3.
 
