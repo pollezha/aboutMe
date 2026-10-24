@@ -279,7 +279,7 @@ frontend/src/
     `npm run shots` без видимой разницы с базовой линией.
   - Зависит от: M13.
 
-- [ ] M15 — `hero`: данные карточки
+- [x] M15 — `hero`: данные карточки
   - Файлы: `hero/useHero.ts` (`profile`, `highlights`, `links` из контента текущего языка), `hero/index.ts`;
     `App.vue` передаёт только `variant`. Класс `.app__hero` остаётся на корне `HeroCard` (селектор e2e).
   - Тест сначала: `useHero.spec.ts`: на RU-бандле ссылка CV ведёт на RU-PDF; 3 метрики = `resolveHighlights`.
