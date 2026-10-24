@@ -234,7 +234,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
   - Готово, когда: `dotnet test --project tests/EventsApi.Tests` зелёный; в `Api/` нет ссылок на Kafka/Telegram.
   - Зависит от: R1, R2, T8a
 
-- [ ] R4 — content-api по слоям
+- [x] R4 — content-api по слоям
   - Файлы: `Api/ContentEndpoint.cs`; `Application/GetContent/{GetContentQuery,GetContentHandler}.cs`,
     `Application/SeedContent/{SeedContentCommand,SeedContentHandler}.cs`, `Application/Abstractions/{IContentBundleRepository,IContentSource}.cs` (`GetByLangAsync`, `UpsertAsync`; реализация `Infrastructure/Persistence/ContentBundleRepository.cs`);
     `Domain/{ContentBundle,ContentBundleValidator}.cs`; `Infrastructure/Persistence/{ContentDbContext,ContentBundleRepository,Migrations/}`,
