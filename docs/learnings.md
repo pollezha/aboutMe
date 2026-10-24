@@ -126,3 +126,21 @@
   прозрачности искажает контраст; комментарии с hex в `<style>` роняют `tokens-only`.
 - Урок: e2e + axe в 3 темах и 2 размерах ловят то, что не ловит jsdom; у native `<dialog>` Tab после последнего элемента
   уходит в UI браузера, не на страницу — это норма. Скриншоты e2e перезаписываются каждый прогон — не коммитить шум.
+
+## 2026-10-24 — этап 4, T2–T6, T9: сервисы на Aspire-интеграциях
+- Что случилось: Aspire.Confluent.Kafka сам трассирует продюсер/консьюмер и дублирует спаны поверх обёртки
+  `KafkaTracePropagation` → `DisableTracing = true`; его health check пишет сообщение в `healthchecks-topic` на каждую
+  пробу → `DisableHealthChecks` и свой check по метаданным брокера (AdminClient, 2 с). `DateTimeOffset.Date` в тестах
+  даёт локальное смещение — для UTC-суток строить `new DateTimeOffset(…, TimeSpan.Zero)`. STJ пишет UTC как `+00:00`,
+  не `Z` — нужен конвертер. `dotnet sln add` переписывает `aboutMe.slnx` в CRLF. Параллельные worktree конфликтуют в
+  `aboutMe.slnx` и `Directory.Packages.props`; при разрешении конфликта git может оставить обе одинаковые строки
+  CPM — проверять `grep -c` после слияния; снятие маркеров `sed` в slnx ломает вложенные `<Folder>` — читать файл.
+- SignalR на TestServer — только LongPolling + `HttpMessageHandlerFactory = _ => Server.CreateHandler()`; консьюмер
+  хоста в тесте закрывать через `Close()`, иначе следующий хост той же группы ждёт session timeout.
+- EF + Aspire Npgsql: транзакция батча через сырой `NpgsqlConnection`/`NpgsqlBatch`, иначе конфликт с retry
+  execution strategy; `INSERT … unnest … ON CONFLICT DO NOTHING RETURNING` возвращает дубликат внутри одного батча —
+  нужен `DistinctBy(eventId)`. `WebApplicationFactory` не выполняет код Program после `Build()` — CLI-ветки
+  (`migrate`, `rebuild`) выносить в функции.
+- Токен Telegram в пути URL: HttpClient-логи для клиента отключены, спаны чистит OTel-процессор, зарегистрированный
+  до `AddServiceDefaults`; `#pragma` для EXTEXP0001 не действует внутри fluent-цепочки — вызов отдельным оператором.
+- Куда закреплено: тесты сервисов (двойные спаны, 304, poison, идемпотентность), этот раздел.
