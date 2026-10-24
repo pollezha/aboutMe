@@ -46,7 +46,8 @@ KafkaHealthCheck); `content-api/Seeding`, `live-hub/Live`, `gateway/Policies` �
 | live-hub | `ApplyLiveEvent`, `GetLiveSnapshot` | `ILiveStateRepository` (in-memory), `ILiveNotifier` |
 | gateway | — (нет домена: маршруты и политики; слои `Application/Domain` отсутствуют осознанно) | — |
 
-Слово «Messaging» зарезервировано за Kafka (`Infrastructure/Messaging`, `BuildingBlocks/Messaging`); записки — `Contact`.
+Имя фичи не должно оканчиваться на `Event` (иначе `<Feature>Handler` ловит CA1711 «EventHandler»); исключение `ApplyLiveEvent`
+подавлено точечно. Слово «Messaging» зарезервировано за Kafka (`Infrastructure/Messaging`, `BuildingBlocks/Messaging`); записки — `Contact`.
 
 ### Раскладка сервиса (обязательная)
 ```

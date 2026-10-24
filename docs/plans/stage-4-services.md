@@ -253,7 +253,7 @@ Namespace = путь: `<Svc>.<Layer>[.<Feature>]`; `IDE0130` включён ка
   - Готово, когда: `tests/Projector.Tests` зелёный (включая Integration).
   - Зависит от: R1, R2
 
-- [ ] R6 — live-hub по слоям
+- [x] R6 — live-hub по слоям
   - Файлы: `Domain/LiveState.cs`; `Application/ApplyLiveEvent/*`, `Application/GetLiveSnapshot/*`, `Application/Abstractions/{ILiveStateRepository,ILiveNotifier}.cs` (`Infrastructure/InMemory/InMemoryLiveStateRepository.cs`);
     `Infrastructure/Messaging/StartOfDayRewind.cs`, `Infrastructure/Realtime/SignalRLiveNotifier.cs` (реализация `ILiveNotifier`; Workers не ссылаются на хаб); `Api/Hubs/LiveHub.cs`;
     `Workers/{LiveConsumerWorker,LiveBroadcastWorker}.cs`. Тесты: существующие + `ApplyLiveEventHandlerTests`.
