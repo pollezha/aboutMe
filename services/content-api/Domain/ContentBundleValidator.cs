@@ -3,13 +3,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using Contracts.Content;
 
-namespace ContentApi.Seeding;
-
-/// <summary>Результат проверки файла бандла: снимок версии либо список ошибок «файл $.путь: причина».</summary>
-public sealed record ContentValidationResult(ContentBundleInfo? Info, IReadOnlyList<string> Errors)
-{
-    public bool IsValid => Errors.Count == 0;
-}
+namespace ContentApi.Domain;
 
 /// <summary>
 /// Проверка бандла перед сидом: типизированный снимок версии (<see cref="ContentBundleInfo"/>) и правило AC7 —

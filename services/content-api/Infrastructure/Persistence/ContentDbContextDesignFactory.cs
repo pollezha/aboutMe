@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-namespace ContentApi.Data;
+namespace ContentApi.Infrastructure.Persistence;
 
 /// <summary>Для <c>dotnet ef</c>: модель строится без подключения к БД.</summary>
 public sealed class ContentDbContextDesignFactory : IDesignTimeDbContextFactory<ContentDbContext>

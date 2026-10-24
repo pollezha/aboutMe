@@ -1,9 +1,10 @@
+using ContentApi.Application.Abstractions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace ContentApi.Seeding;
+namespace ContentApi.Infrastructure.Health;
 
 /// <summary>Итог сида при старте; health check <c>content</c> отражает его в <c>/health</c>.</summary>
-public sealed class ContentSeedState
+public sealed class ContentSeedState : IContentSeedState
 {
     private readonly Lock _lock = new();
     private HealthCheckResult _result = HealthCheckResult.Unhealthy("Content seeding has not completed");
@@ -30,12 +31,4 @@ public sealed class ContentSeedState
             _result = result;
         }
     }
-}
-
-public sealed class ContentSeedHealthCheck(ContentSeedState state) : IHealthCheck
-{
-    public const string Name = "content";
-
-    public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default) =>
-        Task.FromResult(state.Result);
 }

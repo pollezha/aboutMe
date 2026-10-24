@@ -22,7 +22,7 @@
 - Соответствие CLAUDE.md; если изменение делает строку в CLAUDE.md устаревшей — отметить.
 
 ## Пропускать
-- Сгенерированный код, lock-файлы, миграции-снапшоты: `frontend/package-lock.json`, `services/*/Migrations/*.Designer.cs`, `services/*/Migrations/*ModelSnapshot.cs`, `bin/`, `obj/`, `frontend/dist/`
+- Сгенерированный код, lock-файлы, миграции-снапшоты: `frontend/package-lock.json`, `services/*/Infrastructure/Persistence/Migrations/*`, `bin/`, `obj/`, `frontend/dist/`
 - Чистое форматирование (это работа форматтера).
 
 ## Формат находок

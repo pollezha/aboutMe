@@ -39,6 +39,17 @@ public sealed class HttpProblemsTests
     }
 
     [Fact]
+    public async Task Not_found_is_404_problem_with_title_and_detail()
+    {
+        var (response, body) = await ExecuteAsync(HttpProblems.NotFound("Unknown language", "Supported languages: en, ru."));
+
+        Assert.Equal(StatusCodes.Status404NotFound, response.StatusCode);
+        Assert.StartsWith(ProblemJson, response.ContentType, StringComparison.Ordinal);
+        Assert.Equal("Unknown language", body.GetProperty("title").GetString());
+        Assert.Equal("Supported languages: en, ru.", body.GetProperty("detail").GetString());
+    }
+
+    [Fact]
     public async Task Bad_request_is_400_problem_with_title()
     {
         var (response, body) = await ExecuteAsync(HttpProblems.BadRequest("Malformed JSON"));

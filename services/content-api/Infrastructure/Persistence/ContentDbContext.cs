@@ -1,7 +1,8 @@
+using ContentApi.Domain;
 using Microsoft.EntityFrameworkCore;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
 
-namespace ContentApi.Data;
+namespace ContentApi.Infrastructure.Persistence;
 
 /// <summary>Бандлы контента в схеме <c>content</c> (docs/design/architecture.md §5.7, §5.8).</summary>
 public sealed class ContentDbContext(DbContextOptions<ContentDbContext> options) : DbContext(options)

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace ContentApi.Data;
+namespace ContentApi.Infrastructure.Persistence;
 
 /// <summary>Применение миграций схемы <c>content</c>: команда <c>migrate</c> и <c>Database:MigrateOnStart</c>.</summary>
 public static partial class ContentMigrations
