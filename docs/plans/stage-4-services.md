@@ -76,7 +76,7 @@
     (поля и допустимые значения перечислены в одном месте — в Contracts, дизайн ссылается на него).
   - Зависит от: — (параллельно с T0)
 
-- [ ] T2 — events-api: приём, валидация, обезличивание, продюсер (E4-T4)
+- [x] T2 — events-api: приём, валидация, обезличивание, продюсер (E4-T4)
   - Файлы: `services/events-api/` (Program.cs; `Endpoints/EventsEndpoints.cs` — `POST /api/events`: одно событие
     или массив ≤ 20 только `web_vital`, тело ≤ 16 КБ, невалидно → 400 ProblemDetails со списком ошибок, иначе 202;
     `Anonymizer.cs` — `sessionHash = base64url(HMAC-SHA256(sessionId, dailySalt))`, соль в памяти, ротация по
@@ -123,7 +123,7 @@
   - Готово, когда: тесты зелёные; `--rebuild` на тестовой БД пересчитывает агрегаты из журнала в те же числа.
   - Зависит от: T0, T1, T3
 
-- [ ] T5 — content-api: схема `content`, миграция, сид из JSON, `GET /api/content/{lang}` с ETag (E4-T3)
+- [x] T5 — content-api: схема `content`, миграция, сид из JSON, `GET /api/content/{lang}` с ETag (E4-T3)
   - Файлы: `services/content-api/` (`ContentApi.csproj`, `Data/ContentDbContext.cs` — `content.bundles(lang pk,
     content_version, version_hash, json jsonb, updated_at)`, `Data/Migrations/*`, `Seeding/ContentSeeder.cs` —
     при старте читает `content/{en,ru}.json` (путь из конфига `Content:Path`, в AppHost — корень репо; в образе —
@@ -138,7 +138,7 @@
   - Готово, когда: тесты зелёные; `curl -i localhost:<port>/api/content/ru` показывает ETag и 304 при повторе.
   - Зависит от: T1 (DTO) — параллельно с T2–T4
 
-- [ ] T6 — live-hub: consumer group `live-hub`, счётчики в памяти, SignalR `/hubs/live` (E4-T6; AC9, TC-13)
+- [x] T6 — live-hub: consumer group `live-hub`, счётчики в памяти, SignalR `/hubs/live` (E4-T6; AC9, TC-13)
   - Файлы: `services/live-hub/` (`LiveHub.csproj`, `Live/LiveState.cs` — онлайн = уникальные sessionHash за 5 мин,
     событий сегодня, счётчики по типам/остановкам; потокобезопасно; `Live/LiveConsumerWorker.cs` — группа
     `live-hub`, автокоммит, при старте `OffsetsForTimes(начало суток UTC)` и перечитывание сегодняшних событий;

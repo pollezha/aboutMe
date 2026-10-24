@@ -38,7 +38,16 @@ const boundary = (files, patterns) => ({
 const bottom = 'нижний слой не зависит от верхних.'
 
 export default defineConfig(
-  { ignores: ['dist/**', 'coverage/**', 'node_modules/**', '.lighthouseci/**'] },
+  {
+    ignores: [
+      'dist/**',
+      'coverage/**',
+      'node_modules/**',
+      '.lighthouseci/**',
+      'playwright-report/**',
+      'test-results/**',
+    ],
+  },
   ...tseslint.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
   {

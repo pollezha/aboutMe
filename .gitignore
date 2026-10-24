@@ -19,6 +19,8 @@ out/
 coverage/
 .cache/
 .vite-ssg-temp/
+playwright-report/
+test-results/
 .lighthouseci/
 bin/
 obj/

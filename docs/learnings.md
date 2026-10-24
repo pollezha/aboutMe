@@ -118,3 +118,11 @@
   `ServiceDefaults.Kafka.KafkaTracePropagation`, конфиг — через `KafkaDefaults.Apply*`/`Create*`.
 - Куда закреплено: тест (`tests/ServiceDefaults.Tests/KafkaTracePropagationTests.cs`,
   `KafkaTelemetryRegistrationTests.cs`).
+
+## 2026-10-24 — этап 3, T11: Playwright и axe
+- Что случилось: axe нашёл два serious-дефекта, которых не видели vitest и ручные проверки — прокручиваемое тело окна
+  без фокуса с клавиатуры (`scrollable-region-focusable`) и контраст имён серверов ночью 1.75:1 (светлый
+  `chapter/techstack`); `AxeBuilder.include('dialog[open]')` + `reducedMotion: 'reduce'` обязательны, иначе анимация
+  прозрачности искажает контраст; комментарии с hex в `<style>` роняют `tokens-only`.
+- Урок: e2e + axe в 3 темах и 2 размерах ловят то, что не ловит jsdom; у native `<dialog>` Tab после последнего элемента
+  уходит в UI браузера, не на страницу — это норма. Скриншоты e2e перезаписываются каждый прогон — не коммитить шум.
