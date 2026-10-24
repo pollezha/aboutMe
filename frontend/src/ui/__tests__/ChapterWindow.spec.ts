@@ -119,6 +119,15 @@ describe('ChapterWindow', () => {
     expect(w.emitted('close')).toHaveLength(1)
   })
 
+  it('makes the scrolling body a keyboard-reachable region named by the title (axe scrollable-region-focusable)', () => {
+    const w = mountWindow()
+    const body = w.get('.window__body')
+
+    expect(body.attributes('tabindex')).toBe('0')
+    expect(body.attributes('role')).toBe('region')
+    expect(body.attributes('aria-labelledby')).toBe(w.get('h2').attributes('id'))
+  })
+
   it('moves focus to the new title and scrolls the body to the top when the chapter changes', async () => {
     const w = mountWindow()
     const body = w.get('.window__body').element
