@@ -151,7 +151,7 @@ Roadmap: docs/plans/roadmap.md, этап 3 (E3-T1…T10) · ADR: 0003 (HTML по
     (`?mode=2d`, урок этапа 2); webp ≤ 120 КБ каждый.
   - Зависит от: T8 (рендер со сцены). Хотспоты и `?mode=2d` можно сделать до T8 на текущей заглушке.
 
-- [ ] T11 — Playwright: smoke, клавиатура, axe по 8 окнам × 3 темы
+- [x] T11 — Playwright: smoke, клавиатура, axe по 8 окнам × 3 темы
   - Файлы: `frontend/playwright.config.ts` (chromium; проекты `desktop-1280`, `phone-390`, `no-webgl`
     через `--disable-webgl`), `frontend/e2e/first-screen.spec.ts` (TC-01: видимость без прокрутки, обе темы,
     скриншоты), `e2e/windows.spec.ts` (TC-02, TC-03 замер ≤ 600 мс, TC-07, TC-08 `mode`/темы),
