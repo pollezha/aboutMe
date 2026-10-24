@@ -22,16 +22,16 @@ export const MODULES = {
   // route, hero реэкспортируют компоненты из ui/ до переезда (M9).
   route: { deps: ['content', 'locale', ...shared], legacyDeps: ['ui'], facade: true },
   hero: { deps: ['content', 'locale', ...shared], legacyDeps: ['ui'], facade: true },
-  // chapters, windows реэкспортируют окна, ChapterWindow и ProofLinks из ui/ до переезда (M8).
+  // chapters, windows берут общий стор из stores/ (openWindow, openChapter) до M12.
   chapters: {
     deps: ['content', 'locale', 'route', ...shared],
-    legacyDeps: ['ui'],
+    legacyDeps: ['stores'],
     facade: true,
     prerendered: true,
   },
   windows: {
     deps: ['chapters', 'content', 'locale', 'route', ...shared],
-    legacyDeps: ['ui'],
+    legacyDeps: ['stores'],
     facade: true,
     prerendered: true,
   },

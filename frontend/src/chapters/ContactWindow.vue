@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, useId } from 'vue'
-import { type ContentBundle, type ContentLink, type LinkKind, resolveChapter } from '../../content'
-import { useUiStore } from '../../stores/ui'
-import { BaseButton, Icon, type IconName, StatusPill } from '../../shared/ui'
+import { type ContentBundle, type ContentLink, type LinkKind, resolveChapter } from '../content'
+import { useUiStore } from '../stores/ui'
+import { BaseButton, Icon, type IconName, StatusPill } from '../shared/ui'
 import ChipList from './blocks/ChipList.vue'
 import MetaRow from './blocks/MetaRow.vue'
 import SectionHeading from './blocks/SectionHeading.vue'
