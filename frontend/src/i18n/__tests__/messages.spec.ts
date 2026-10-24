@@ -98,10 +98,24 @@ const UI_WORDS = [
   'offline',
 ]
 
-const sources = import.meta.glob<string>(
-  ['../../App.vue', '../../ui/**/*.vue', '../../fallback2d/**/*.vue', '../../scene/Labels.vue'],
-  { query: '?raw', import: 'default', eager: true },
-)
+// Все компоненты вне 3D-сцены, где бы они ни лежали, плюс подписи сцены (Labels.vue — единственный
+// компонент сцены с текстом интерфейса). Два вызова: исключение `!` в одном glob отбросило бы и Labels.vue.
+const sources = {
+  ...import.meta.glob<string>(['../../**/*.vue', '!../../scene/**', '!**/__tests__/**'], {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  }),
+  ...import.meta.glob<string>('../../scene/Labels.vue', {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  }),
+}
+
+// Число компонентов на момент M2 (этап 3b: 35 вне scene/ + Labels.vue): переезд файлов не должен молча
+// сузить проверку.
+const MIN_FILES = 36
 
 function withoutComments(source: string): string {
   return source
@@ -115,7 +129,7 @@ describe('UI strings', () => {
   const files = Object.keys(sources)
 
   it('finds the components', () => {
-    expect(files.length).toBeGreaterThanOrEqual(20)
+    expect(files.length).toBeGreaterThanOrEqual(MIN_FILES)
   })
 
   it.each(files)('%s has no English UI literals outside i18n', (file) => {

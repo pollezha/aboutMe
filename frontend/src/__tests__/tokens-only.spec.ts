@@ -1,14 +1,21 @@
 import { describe, expect, it } from 'vitest'
 
-const sources = import.meta.glob<string>(
-  ['../**/*.vue', '../../fallback2d/**/*.vue', '../../App.vue'],
-  {
-    query: '?raw',
-    import: 'default',
-    eager: true,
-  },
-)
+// Все компоненты вне 3D-сцены (у сцены свои цвета из палитры), где бы они ни лежали.
+const sources = import.meta.glob<string>(['../**/*.vue', '!../scene/**', '!**/__tests__/**'], {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+})
 const files = Object.keys(sources)
+
+// Число .vue вне scene/ на момент M2 (этап 3b): переезд файлов не должен молча сузить проверку.
+const MIN_FILES = 35
+
+function byName(name: string): string {
+  const file = files.find((f) => f.endsWith(`/${name}`))
+  if (file === undefined) throw new Error(`missing ${name}`)
+  return file
+}
 
 function styleFor(file: string): string {
   const source = sources[file]
@@ -18,7 +25,7 @@ function styleFor(file: string): string {
 
 describe('ui components use design tokens only', () => {
   it('finds the ui components', () => {
-    expect(files.length).toBeGreaterThanOrEqual(5)
+    expect(files.length).toBeGreaterThanOrEqual(MIN_FILES)
   })
 
   it.each(files)('%s has no raw colours in <style>', (file) => {
@@ -34,10 +41,10 @@ describe('ui components use design tokens only', () => {
     }
   })
 
-  it.each(['../BaseButton.vue', '../IconButton.vue'])(
+  it.each(['BaseButton.vue', 'IconButton.vue'])(
     '%s styles :focus-visible with --focus-ring',
-    (file) => {
-      expect(styleFor(file)).toMatch(/:focus-visible\s*\{[^}]*var\(--focus-ring\)/)
+    (name) => {
+      expect(styleFor(byName(name))).toMatch(/:focus-visible\s*\{[^}]*var\(--focus-ring\)/)
     },
   )
 })
