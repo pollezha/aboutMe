@@ -7,8 +7,6 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.Testing" />
-    <!-- Npgsql (транзитивно) — проверка строки в stats.cta_clicks -->
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>

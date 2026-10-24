@@ -29,6 +29,7 @@
     <Project Path="tests/Contracts.Tests/Contracts.Tests.csproj" />
     <Project Path="tests/EventsApi.Tests/EventsApi.Tests.csproj" />
     <Project Path="tests/Gateway.Tests/Gateway.Tests.csproj" />
+    <Project Path="tests/Integration.Tests/Integration.Tests.csproj" />
     <Project Path="tests/LiveHub.Tests/LiveHub.Tests.csproj" />
     <Project Path="tests/Projector.Tests/Projector.Tests.csproj" />
     <Project Path="tests/ServiceDefaults.Tests/ServiceDefaults.Tests.csproj" />
