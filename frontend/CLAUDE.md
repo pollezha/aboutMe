@@ -44,6 +44,10 @@ npm run test:e2e   # Playwright: сборка + preview :4174, 3 проекта 
 
 ## Соглашения
 
+- Код идёт от дизайна: эталон — Figma (ID узлов — `docs/design/figma-state.json`, снимки — `scripts/design/figma-*.md`,
+  кадры — `docs/design/figma-screens/`); UI-задача принимается по паре кадров (`docs/design/visual-acceptance.md`).
+- Спека модуля — `docs/spec/frontend/<module>.md`: читать перед задачей вместо исходников модуля, обновлять тем же коммитом.
+
 - Цвета, радиусы, отступы — только через токены (`var(--…)`), сгенерированные файлы `src/theme` руками не править.
 - Сценарии через App — `<module>/__tests__/App.<module>.spec.ts`, монтировать через `app/__tests__/mountApp.ts`.
 - Оверлеи/окна — через `history.pushState`, «Назад» закрывает окно.
